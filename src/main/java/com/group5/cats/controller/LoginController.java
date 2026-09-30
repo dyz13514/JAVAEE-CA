@@ -31,7 +31,7 @@ public class LoginController {
     public String processEmployeeLogin(@RequestParam String username, @RequestParam String password,HttpSession session,RedirectAttributes redirectAttrs) {
         Optional<Employee> employee = authService.login(username, password);
         if (employee.isPresent()) {
-            session.setAttribute("loggerInUser", employee.get());
+            session.setAttribute("loggedInUser", employee.get());
             return "redirect:/employee/home";
         } else {
             redirectAttrs.addFlashAttribute("errorMessage", "Invalid username or password");

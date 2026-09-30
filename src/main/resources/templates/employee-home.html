@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Home - CATS</title>
+</head>
+<body>
+    <h1 th:text="'Welcome, ' + ${session.loggedInUser.name}">Welcome</h1>
+    <p>This is the CATS home page.</p>
+</body>
+</html>
