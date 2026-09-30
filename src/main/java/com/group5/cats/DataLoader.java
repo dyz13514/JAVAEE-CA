@@ -5,6 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import com.group5.cats.model.Employee;
+import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.EmployeeRepository;
 
 @Component 
@@ -18,10 +19,10 @@ public DataLoader(EmployeeRepository employeeRepository) {
      public void run(String... args) throws Exception {
         if (employeeRepository.count() == 0) {
             employeeRepository.saveAll(List.of(
-                new Employee("admin", "admin123", "System Admin", "ADMIN"),
-                new Employee("manager1", "manager123", "Alice Wong", "MANAGER"),
-                new Employee("emp1", "emp123", "Ben Tan", "EMPLOYEE"),
-                new Employee("emp2", "emp123", "Cathy Lim", "EMPLOYEE")
+                new Employee("admin", "admin123", "System Admin", EmployeeRole.ADMIN),
+                new Employee("manager1", "manager123", "Alice Wong", EmployeeRole.MANAGER),
+                new Employee("emp1", "emp123", "Ben Tan", EmployeeRole.REGULAR_STAFF),
+                new Employee("emp2", "emp123", "Cathy Lim", EmployeeRole.REGULAR_STAFF)
             ));
         }
     }
