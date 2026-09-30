@@ -6,6 +6,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 
@@ -21,6 +23,13 @@ public class Employee {
     private String password;
     private String name;
     
+    @ManyToOne
+    @JoinColumn(name = "supervisor_id")
+    private Employee supervisor; 
+    
+    @Enumerated(EnumType.STRING)
+    private EmployeeDesignation designation;
+    
     @Enumerated(EnumType.STRING)
     private EmployeeRole role;
 
@@ -35,9 +44,20 @@ public class Employee {
         this.name = name;
         this.role = role;
     }
+    
+
+    public Employee(String username, String password, String name, Employee supervisor,
+			EmployeeDesignation designation, EmployeeRole role) {
+		this.username = username;
+		this.password = password;
+		this.name = name;
+		this.supervisor = supervisor;
+		this.designation = designation;
+		this.role = role;
+	}
 
 
-    public Long getId() {
+	public Long getId() {
         return id;
     }
     public void setId(Long id) {
@@ -67,6 +87,27 @@ public class Employee {
     public void setRole(EmployeeRole role) {
         this.role = role;
     }
+
+
+	public Employee getSupervisor() {
+		return supervisor;
+	}
+
+
+	public void setSupervisor(Employee supervisor) {
+		this.supervisor = supervisor;
+	}
+
+
+	public EmployeeDesignation getDesignation() {
+		return designation;
+	}
+
+
+	public void setDesignation(EmployeeDesignation designation) {
+		this.designation = designation;
+	}
+    
 
     
 }
