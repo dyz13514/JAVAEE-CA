@@ -1,5 +1,8 @@
 package com.group5.cats.model;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,14 +20,16 @@ public class Employee {
     private String username;
     private String password;
     private String name;
-    private String role;
+    
+    @Enumerated(EnumType.STRING)
+    private EmployeeRole role;
 
     
     public Employee() {
     }
 
     
-    public Employee(String username, String password, String name, String role) {
+    public Employee(String username, String password, String name, EmployeeRole role) {
         this.username = username;
         this.password = password;
         this.name = name;
@@ -56,10 +61,10 @@ public class Employee {
     public void setName(String name) {
         this.name = name;
     }
-    public String getRole() {
+    public EmployeeRole getRole() {
         return role;
     }
-    public void setRole(String role) {
+    public void setRole(EmployeeRole role) {
         this.role = role;
     }
 
