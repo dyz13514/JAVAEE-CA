@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Apply for Course - CATS</title>
+</head>
+<body>
+    <h1>Apply for a Course</h1>
+
+    <form th:action="@{/employee/apply}" th:object="${application}" method="post">
+
+        <label>Course Title: <input type="text" th:field="*{courseTitle}" required /></label><br><br>
+
+        <label>Category:
+            <select th:field="*{category}" required>
+                <option value="">-- Select --</option>
+                <option value="INTERNAL">Internal Training</option>
+                <option value="EXTERNAL">External Course</option>
+                <option value="CERTIFICATION">Professional Certification</option>
+            </select>
+        </label><br><br>
+
+        <label>Training Provider: <input type="text" th:field="*{provider}" /></label><br><br>
+
+        <label>From: <input type="date" th:field="*{fromDate}" required /></label><br>
+        <label>To: <input type="date" th:field="*{toDate}" required /></label><br><br>
+
+        <label>Course Fee (S$): <input type="number" step="0.01" min="0" th:field="*{fee}" /></label><br><br>
+
+        <label>Justification:<br>
+            <textarea th:field="*{justification}" rows="4" cols="50" required></textarea>
+        </label><br>
+
+        <label>Work Dissemination (optional):<br>
+            <textarea th:field="*{dissemination}" rows="3" cols="50"></textarea>
+        </label><br><br>
+
+        <button type="submit">Submit Application</button>
+    </form>
+</body>
+</html>
