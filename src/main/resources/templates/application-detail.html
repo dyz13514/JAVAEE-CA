@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Application Detail - CATS</title>
+</head>
+<body>
+    <h1 th:text="${application.courseTitle}">Course Title</h1>
+
+    <dl>
+        <dt>Status</dt><dd th:text="${application.status}">APPLIED</dd>
+        <dt>Category</dt><dd th:text="${application.category}">EXTERNAL</dd>
+        <dt>Training Provider</dt><dd th:text="${application.provider}">Provider</dd>
+        <dt>Course Period</dt>
+        <dd th:text="${application.fromDate} + ' to ' + ${application.toDate}">period</dd>
+        <dt>Course Fee (S$)</dt><dd th:text="${application.fee}">0</dd>
+        <dt>Justification</dt><dd th:text="${application.justification}">why</dd>
+        <dt>Work Dissemination</dt>
+        <dd th:text="${application.dissemination != null ? application.dissemination : '-'}">-</dd>
+
+        <dt>Manager's Decision &amp; Reason</dt>
+        <dd th:text="${application.managerComment != null ? application.managerComment : 'Pending review'}">Pending</dd>
+
+        <dt>Experience Comments</dt>
+        <dd th:text="${application.experienceComments != null ? application.experienceComments : '-'}">-</dd>
+    </dl>
+
+    <p><a th:href="@{/employee/history}">&larr; Back to My History</a></p>
+</body>
+</html>

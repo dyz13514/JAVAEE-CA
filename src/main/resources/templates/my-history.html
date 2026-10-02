@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Course History - CATS</title>
+</head>
+<body>
+    <h1>My Course History</h1>
+
+    <p th:if="${#lists.isEmpty(applications)}">No course applications this year.</p>
+
+    <table border="1" th:unless="${#lists.isEmpty(applications)}">
+        <tr>
+            <th>Course Title</th><th>Category</th><th>From</th>
+            <th>To</th><th>Fee</th><th>Status</th>
+        </tr>
+        <tr th:each="app : ${applications}">
+            <td><a th:href="@{/employee/history/{id}(id=${app.id})}"
+                   th:text="${app.courseTitle}">Course</a></td>
+            <td th:text="${app.category}">Category</td>
+            <td th:text="${app.fromDate}">From</td>
+            <td th:text="${app.toDate}">To</td>
+            <td th:text="${app.fee}">0</td>
+            <td th:text="${app.status}">APPLIED</td>
+        </tr>
+    </table>
+</body>
+</html>

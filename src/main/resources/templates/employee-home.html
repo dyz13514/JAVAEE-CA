@@ -6,5 +6,11 @@
 <body>
     <h1 th:text="'Welcome, ' + ${session.loggedInUser.name}">Welcome</h1>
     <p>This is the CATS home page.</p>
+    <p>
+    <a th:href="@{/employee/apply}">Apply for a Course</a> |
+    <a th:href="@{/employee/history}">My Course History</a>
+</p>
+
+
 </body>
 </html>
