@@ -1,0 +1,139 @@
+package com.group5.cats.service;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.group5.cats.model.AnnualEntitlement;
+import com.group5.cats.model.Employee;
+import com.group5.cats.model.EmployeeDesignation;
+import com.group5.cats.repository.AnnualEntitlementRepository;
+import com.group5.cats.repository.EmployeeRepository;
+
+@Service
+public class EntitlementServiceImpl implements EntitlementService {
+	
+	private final AnnualEntitlementRepository annualEntitlementRepository;
+	private final EmployeeRepository employeeRepository;
+	
+	private static final BigDecimal ADMINISTRATIVE_DAYS = new BigDecimal("50.00");
+	private static final BigDecimal PROFESSIONAL_DAYS = new BigDecimal("100.00");
+	private static final BigDecimal DEFAULT_TRAINING_BUDGET = new BigDecimal("20000.00");
+	
+	public EntitlementServiceImpl(AnnualEntitlementRepository annualEntitlementRepository,
+			EmployeeRepository employeeRepository) {
+		this.annualEntitlementRepository = annualEntitlementRepository;
+		this.employeeRepository = employeeRepository;
+	}
+	
+	private void validateInputs(
+			Long employeeId, Integer entitlementYear) {
+		
+		if(employeeId == null || employeeId <= 0) {
+			throw new IllegalArgumentException("EmployeeId must be positive.");
+		}
+		
+		if(entitlementYear == null || entitlementYear <= 0) {
+			throw new IllegalArgumentException("EntitlementYear must be positive.");
+		}
+	}
+
+	@Override
+	public Optional<AnnualEntitlement> findEntitlement(Long employeeId, Integer entitlementYear) {
+	
+		validateInputs(employeeId, entitlementYear);
+	
+		return annualEntitlementRepository
+				.findByEmployee_IdAndEntitlementYear(employeeId, entitlementYear);
+	}
+
+	@Override
+	public AnnualEntitlement createDefaultEntitlement(Long employeeId, Integer entitlementYear) {
+		
+		validateInputs(employeeId, entitlementYear);
+		
+		Optional<AnnualEntitlement> existing = annualEntitlementRepository
+				.findByEmployee_IdAndEntitlementYear(employeeId, entitlementYear);
+		
+		if(existing.isPresent()) {
+			return existing.get();
+		}
+		
+		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
+		//这里参考了 demo 项目 EmployeeService 中，查询员工不存在时使用lambda orElseThrow 的写法。
+		
+		BigDecimal daysLimit = getDefaultTrainingDays(employee.getDesignation());
+		
+		AnnualEntitlement entitlement = new AnnualEntitlement(
+				employee, 
+				entitlementYear,
+				//这里没有检查entitlementYear是过去还是未来，传入什么entitlementYear录入什么，因为创建的entitlement记录可以录入之前的也可以录入之后的
+				daysLimit,
+				DEFAULT_TRAINING_BUDGET);
+				
+		return annualEntitlementRepository.save(entitlement);
+	}
+	
+	private BigDecimal getDefaultTrainingDays(
+			EmployeeDesignation designation) {
+		
+		if(designation == null ) {
+		throw new IllegalArgumentException("Please set the employee's designation first.");
+	}
+		
+		switch (designation) {
+		case ADMINISTRATIVE:
+			return ADMINISTRATIVE_DAYS;
+		case PROFESSIONAL:
+			return  PROFESSIONAL_DAYS;
+		}
+		
+		throw new IllegalArgumentException("The designation is not valid.");
+		
+	}
+	
+	@Override
+	public AnnualEntitlement setEntitlement(
+			Long employeeId,
+			Integer entitlementYear,
+			BigDecimal trainingDaysLimit,
+			BigDecimal trainingBudget
+			) {
+		validateInputs(employeeId, entitlementYear);
+		
+		if(trainingDaysLimit == null || trainingDaysLimit.compareTo(BigDecimal.ZERO) < 0) {
+			throw new IllegalArgumentException("TrainingDaysLimit must >= 0.");
+		}
+		
+		if(trainingBudget == null || trainingBudget.compareTo(BigDecimal.ZERO) < 0) {
+			throw new IllegalArgumentException("trainingBudget must >= 0.");
+		}
+		
+		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist.")); 
+		
+		Optional<AnnualEntitlement> existing = annualEntitlementRepository
+				.findByEmployee_IdAndEntitlementYear(employeeId, entitlementYear);
+		
+		AnnualEntitlement entitlement;
+		
+		if(existing.isPresent()) {
+			entitlement =  existing.get();
+		} else {
+			entitlement = new AnnualEntitlement();
+			entitlement.setEmployee(employee);
+			entitlement.setEntitlementYear(entitlementYear);
+		}
+		
+		entitlement.setTrainingDaysLimit(trainingDaysLimit);
+		entitlement.setTrainingBudget(trainingBudget);
+		
+		return annualEntitlementRepository.save(entitlement);
+		
+		
+		
+			}
+	
+	
+
+}

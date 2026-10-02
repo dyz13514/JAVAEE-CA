@@ -2,17 +2,26 @@ package com.group5.cats;
 import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.EmployeeRepository;
+import com.group5.cats.service.EntitlementService;
 
 @Component 
+@Order(1)
 public class DataLoader implements CommandLineRunner {
+	
 private final EmployeeRepository employeeRepository;
-public DataLoader(EmployeeRepository employeeRepository) {
+private final EntitlementService entitlementService;
+
+
+public DataLoader(EmployeeRepository employeeRepository,
+		EntitlementService entitlementService) {
         this.employeeRepository = employeeRepository;
+        this.entitlementService = entitlementService;
     }
 
     @Override
