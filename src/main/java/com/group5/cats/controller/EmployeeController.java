@@ -73,7 +73,7 @@ public class EmployeeController {
         return "error/404";
     }
 
-     model.addAttribute("application", result.get());
+     model.addAttribute("courseApplication", result.get());
     return "application-detail";
     
     
