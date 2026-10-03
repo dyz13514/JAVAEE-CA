@@ -45,7 +45,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 		validateInputs(employeeId, entitlementYear);
 	
 		return annualEntitlementRepository
-				.findByEmployee_IdAndEntitlementYear(employeeId, entitlementYear);
+				.findByEmployeeIdAndEntitlementYear(employeeId, entitlementYear);
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 		validateInputs(employeeId, entitlementYear);
 		
 		Optional<AnnualEntitlement> existing = annualEntitlementRepository
-				.findByEmployee_IdAndEntitlementYear(employeeId, entitlementYear);
+				.findByEmployeeIdAndEntitlementYear(employeeId, entitlementYear);
 		
 		if(existing.isPresent()) {
 			return existing.get();
@@ -113,7 +113,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist.")); 
 		
 		Optional<AnnualEntitlement> existing = annualEntitlementRepository
-				.findByEmployee_IdAndEntitlementYear(employeeId, entitlementYear);
+				.findByEmployeeIdAndEntitlementYear(employeeId, entitlementYear);
 		
 		AnnualEntitlement entitlement;
 		

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8">
+	    <title>Entitlement - CATS</title>
+	</head>
+	<body>
+		<h1>
+			Welcome, <span th:text="${currentUser.name}"></span> !
+		</h1>
+	    <h2>View Annual Entitlement</h2>
+		
+		<form th:action="@{/entitlements/search}" method ="get">
+			<p>
+				<label>Enter Employee ID</label>
+				<input type="number"
+				       name="queryEmployeeId"
+					   min="1"
+					   required>
+				<input type="submit" value ="Search By Id">
+			</p>
+		</form>
+		
+		<form th:action="@{/entitlements/search}" method ="get">
+			<p>
+				<label>Enter Employee Name</label>
+				<input type="text"
+					   name="queryEmployeeName"
+					   required>
+				<input type="submit" value ="Seach By Name">
+			</p>
+		</form>
+		
+		<p><a th:href="@{/entitlements}">Show All Accessible Employees</a></p>
+		
+		
+		
+	    <form th:action="@{/entitlements}" method ="get">
+			<p>
+				<label>Employee</label>
+				<select name="employeeId" required>
+				    <option value="" th:selected="${selectedId == null}">Select an Employee</option>
+					<option th:each="employee : ${toBeViewedEmployees}"
+					        th:value="${employee.id}"
+							th:text="${employee.id + '-' + employee.name}"
+							th:selected="${employee.id == selectedId}">
+						</option>
+				</select>
+			</p>
+			
+			<p>
+				<label>Entitlement Year</label>
+		     	<input type="number"
+			       name="entitlementYear"
+				   th:value="${selectedYear}"
+				   min="1"
+				   required>
+		    </p>
+			
+			<input type="submit" value="View Entitlement">
+		</form>
+		
+		<p th:if="${message != null}" th:text="${message}"></p>
+		
+		
+		<div th:if="${selectedEmployee != null}">
+			<p>
+				Employee ID: <span th:text="${selectedEmployee.id}"></span>
+			</p>
+			<p>
+				Employee Name: <span th:text="${selectedEmployee.name}"></span>
+			</p>
+			
+			<table border="1" th:if="${entitlement != null}">
+				<tr>
+					<th>Entitlement Year</th>
+					<th>Training Days Limit</th>
+					<th>Training Budget</th>
+				</tr>
+				<tr>
+					<td th:text="${entitlement.entitlementYear}"></td>
+					<td th:text="${entitlement.trainingDaysLimit}"></td>
+					<td th:text="${entitlement.trainingBudget}"></td>
+				</tr>
+			</table>
+			</div>
+			
+			<div th:if="${canEdit}">
+				<h2>Create or Update Entitlement</h2>
+		
+			
+			<form th:action="@{/admin/entitlements}" method ="post">
+				<p>
+					<label>Employee ID</label>
+					<input name="employeeId" 
+					       th:value="${selectedId}"
+						   type="number"
+						   min="1"
+						   required>
+				</p>
+				
+				<p>
+					<label>Entitlement Year</label>
+					<input name="entitlementYear" 
+						   th:value="${selectedYear}"
+						   type="number"
+						   min="1"
+						   required>
+				</p>
+				
+				<p>
+					<label>Training Days Limit</label>
+					<input type="number"
+						   name="trainingDaysLimit"
+						   min="0"
+						   step="0.5"
+						   required>
+				</p>
+				<p>
+					<label>Training Budget</label>
+					<input type="number"
+						   name="trainingBudget"
+						   min="0"
+						   step="1"
+						   required>
+				</p>
+				<input type="submit" value="Save">
+			</form>
+		</div>
+
+				<p th:if="${saveMessage != null}" th:text="${saveMessage}"></p>
+				
+				<p><a th:href="@{/employee/home}">Back to Home</a></p>
+
+
+	</body>
+</html>

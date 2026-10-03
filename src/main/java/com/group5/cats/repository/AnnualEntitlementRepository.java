@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.group5.cats.model.AnnualEntitlement;
 
 public interface AnnualEntitlementRepository extends JpaRepository<AnnualEntitlement, Long> {
-	Optional<AnnualEntitlement> findByEmployee_IdAndEntitlementYear(
+	Optional<AnnualEntitlement> findByEmployeeIdAndEntitlementYear(
 			Long employeeId, Integer entitlementYear);
 
 }

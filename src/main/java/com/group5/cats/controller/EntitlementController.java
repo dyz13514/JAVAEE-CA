@@ -1,5 +1,6 @@
 package com.group5.cats.controller;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +9,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.group5.cats.model.AnnualEntitlement;
 import com.group5.cats.model.Employee;
@@ -94,10 +97,10 @@ public class EntitlementController {
 		
 		
 
-		
+		model.addAttribute("currentUser", currentUser);
 		model.addAttribute("toBeViewedEmployees", toBeViewedEmployees);
-		model.addAttribute("employeeId", selectedId);
-		model.addAttribute("entitlementYear", selectedYear);
+		model.addAttribute("selectedId", selectedId);
+		model.addAttribute("selectedYear", selectedYear);
 		model.addAttribute("canEdit", currentUser.getRole() == EmployeeRole.ADMIN);//传递true或false。html根据true或false检查是否展现编辑div模块
 		//向页面传递数据。传递可以被看到的所有toBeViewedEmployees和对应的id，year
 		
@@ -132,7 +135,7 @@ public class EntitlementController {
 		
 			model.addAttribute("entitlement", result.get());
 		} else {
-			model.addAttribute("message", "No entitlement record for this employeeId and year.");
+			model.addAttribute("message", "No entitlement record for this employee in this year.");
 		}
 		}
 	catch (IllegalArgumentException exception) {
@@ -148,10 +151,104 @@ public class EntitlementController {
 		
 	}
 	
+	@PostMapping("/admin/entitlements")
+	public String setEntitlement(
+			@RequestParam Long employeeId,
+			@RequestParam Integer entitlementYear,
+			@RequestParam BigDecimal trainingDaysLimit,
+			@RequestParam BigDecimal trainingBudget,
+			HttpSession session,
+			RedirectAttributes redirectAttributes
+			) {
+		
+		Employee currentUser = getCurrentUser(session);
+		if (currentUser == null) {
+			return "redirect:/employee/login";
+		}
+		
+		if(currentUser.getRole() != EmployeeRole.ADMIN) {
+			redirectAttributes.addFlashAttribute("saveMessage", 
+					"Only administrators can change entitlements.");
+			return "redirect:/entitlements";
+		}
+		
+		try{
+			entitlementService.setEntitlement(employeeId, entitlementYear, trainingDaysLimit, trainingBudget);
+			redirectAttributes.addFlashAttribute("saveMessage", "Entitlement saved.");
+		} catch (IllegalArgumentException exception) {
+			redirectAttributes.addFlashAttribute("saveMessage", exception.getMessage());
+		}
+		//和之前showEntitlement()调用findEntitlement()因此调用validateInputs一样
+		//这里setEntitlement因此调用validateInputs，有抛出的exception需要catch
+		//使用addFlashAttribute不是addAttribute因为是在"redirect:/entitlements"显示，产生第二次请求的原因是 redirect:，需要用addFlashAttribute在第二次请求临时保存显示
+		
+		
+		redirectAttributes.addAttribute("employeeId",employeeId);
+		redirectAttributes.addAttribute("entitlementYear",entitlementYear);
+		
+		return "redirect:/entitlements";
+		//这里redirect，因为可能修改了数据库，保存后重新展示，同时避免反复刷新提交多个（suria Mentioned）
+		
+	}
+	
+	@GetMapping("/entitlements/search")
+	public String searchEmployees(
+			@RequestParam(required = false) Long queryEmployeeId,
+			@RequestParam(required = false) String queryEmployeeName,
+			HttpSession session,
+			Model model) {
+		
+		Employee currentUser = getCurrentUser(session);
+		if (currentUser == null) {
+			return "redirect:/employee/login";
+		}
+		
+		List<Employee> canBeSearchedEmployees = getQueryableEmployees(currentUser);
+		List<Employee> searchedEmployees = new ArrayList<>();
+		
+		
+		if(queryEmployeeId != null) {
+			for(Employee employee : canBeSearchedEmployees) {
+				if(employee.getId().equals(queryEmployeeId)) {
+					searchedEmployees.add(employee);
+				}
+			}
+		} else if (queryEmployeeName != null && !queryEmployeeName.trim().isEmpty()) {
+			String keyword = queryEmployeeName.trim().toLowerCase();
+			
+			for(Employee employee : canBeSearchedEmployees) {
+				if(employee.getName() != null && employee.getName().toLowerCase().contains(keyword)) {
+					searchedEmployees.add(employee);
+				}
+			}
+		} 
+		
+		model.addAttribute("currentUser", currentUser);
+		model.addAttribute("toBeViewedEmployees", searchedEmployees);
+		model.addAttribute("selectedId", null);
+		model.addAttribute("selectedYear", LocalDate.now().getYear());
+		model.addAttribute("canEdit", currentUser.getRole() == EmployeeRole.ADMIN);
+		
+		if(searchedEmployees.isEmpty()) {
+			model.addAttribute("message", "No matching employees.");
+		}
+		
+		return "entitlement";
+		//这里不redirect，因为只是重新渲染出查到的页面
+			
+		}
+
+		
+		
+	}
+	
+	
+			
+	
 	
 
 	
 
 	
 
-}
+
