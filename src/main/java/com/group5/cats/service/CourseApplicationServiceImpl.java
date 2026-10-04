@@ -95,5 +95,25 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         courseApplicationRepository.save(application);
          return "Course application cancelled successfully";
     }
-}
-
+    @Override
+    public String completeApplication(Long id, Employee employee, String experienceComments) {  
+           Optional<CourseApplication> result = courseApplicationRepository.findById(id);
+        if (result.isEmpty()) {
+            return "Application not found.";
+    }
+        CourseApplication application = result.get();
+        if (!application.getEmployee().getId().equals(employee.getId())) {
+            return "You can only complete your own application";
+        }
+        if (!"APPROVED".equals(application.getStatus())) {
+            return "Only approved applications can be completed";
+        }  
+          if (application.getToDate() == null || !application.getToDate().isBefore(LocalDate.now())) {
+        return "Course has not ended yet";
+    }
+        application.setStatus("COMPLETED");
+        application.setExperienceComments(experienceComments);
+        courseApplicationRepository.save(application);
+         return "Course application completed successfully";
+        }
+    }

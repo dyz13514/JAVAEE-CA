@@ -11,4 +11,6 @@ Optional<CourseApplication> findApplicationById(Long id);
 String withdrawApplication(Long id, Employee employee);
 String updateApplication(Long id, CourseApplication updatedData, Employee employee);
 String cancelApplication(Long id, Employee employee);
+String completeApplication(Long id, Employee employee, String experienceComments);
+
 }

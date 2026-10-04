@@ -85,6 +85,7 @@ public class EmployeeController {
         redirectAttrs.addFlashAttribute("message", message);
         return "redirect:/employee/history";
     }
+
     @GetMapping("/employee/history/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model, HttpSession session, HttpServletResponse response) {
         Employee employee = (Employee) session.getAttribute("loggedInUser");
@@ -97,20 +98,23 @@ public class EmployeeController {
             response.setStatus(404);
             return "error/404";
         }
-         model.addAttribute("courseApplication", result.get());
+        model.addAttribute("courseApplication", result.get());
         model.addAttribute("formAction", "/employee/history/" + id + "/edit");
         return "apply-course";
-     }
+    }
+
     @PostMapping("/employee/history/{id}/edit")
-    public String updateAppliaction(@PathVariable Long id, @ModelAttribute CourseApplication updatedData, HttpSession session, RedirectAttributes redirectAttrs) {
+    public String updateAppliaction(@PathVariable Long id, @ModelAttribute CourseApplication updatedData,
+            HttpSession session, RedirectAttributes redirectAttrs) {
         Employee employee = (Employee) session.getAttribute("loggedInUser");
         if (employee == null) {
             return "redirect:/employee/login";
         }
-         String message = courseApplicationService.updateApplication(id, updatedData, employee);
-         redirectAttrs.addFlashAttribute("message", message);
-         return "redirect:/employee/history";
+        String message = courseApplicationService.updateApplication(id, updatedData, employee);
+        redirectAttrs.addFlashAttribute("message", message);
+        return "redirect:/employee/history";
     }
+
     @PostMapping("/employee/history/{id}/cancel")
     public String cancelApplication(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttrs) {
         Employee employee = (Employee) session.getAttribute("loggedInUser");
@@ -121,8 +125,17 @@ public class EmployeeController {
         redirectAttrs.addFlashAttribute("message", message);
         return "redirect:/employee/history";
     }
-    
-    
-    
 
+    @PostMapping("/employee/history/{id}/complete")
+    public String completeApplication(@PathVariable Long id,
+            @RequestParam String experienceComments,
+            HttpSession session, RedirectAttributes redirectAttrs) {
+        Employee employee = (Employee) session.getAttribute("loggedInUser");
+        if (employee == null) {
+            return "redirect:/employee/login";
+        }
+        String message = courseApplicationService.completeApplication(id, employee, experienceComments);
+        redirectAttrs.addFlashAttribute("message", message);
+        return "redirect:/employee/history";
+    }
 }
