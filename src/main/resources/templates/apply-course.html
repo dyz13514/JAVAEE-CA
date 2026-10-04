@@ -6,7 +6,7 @@
 <body>
     <h1>Apply for a Course</h1>
 
-    <form th:action="@{/employee/apply}" th:object="${application}" method="post">
+    <form th:action="${formAction}" th:object="${courseApplication}" method="post">
 
         <label>Course Title: <input type="text" th:field="*{courseTitle}" required /></label><br><br>
 

@@ -8,6 +8,7 @@ public interface CourseApplicationService {
 void submitApplication(CourseApplication application, Employee applicant);
 List<CourseApplication> findApplicationsByEmployee(Employee employee);
 Optional<CourseApplication> findApplicationById(Long id);
-
-
+String withdrawApplication(Long id, Employee employee);
+String updateApplication(Long id, CourseApplication updatedData, Employee employee);
+String cancelApplication(Long id, Employee employee);
 }

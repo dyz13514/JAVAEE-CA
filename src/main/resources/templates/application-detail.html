@@ -15,16 +15,33 @@
         <dt>Course Fee (S$)</dt><dd th:text="${courseApplication.fee}">0</dd>
         <dt>Justification</dt><dd th:text="${courseApplication.justification}">why</dd>
         <dt>Work Dissemination</dt>
-        <dd th:text="${courseApplication.dissemination != null ? application.dissemination : '-'}">-</dd>
+        <dd th:text="${courseApplication.dissemination != null ? courseApplication.dissemination : '-'}">-</dd>
 
         <dt>Manager's Decision &amp; Reason</dt>
-        <dd th:text="${courseApplication.managerComment != null ? application.managerComment : 'Pending review'}">Pending</dd>
+        <dd th:text="${courseApplication.managerComment != null ? courseApplication.managerComment : 'Pending review'}">Pending</dd>
 
         <dt>Experience Comments</dt>
-        <dd th:text="${courseApplication.experienceComments != null ? application.experienceComments : '-'}">-</dd>
+        <dd th:text="${courseApplication.experienceComments != null ? courseApplication.experienceComments : '-'}">-</dd>
     </dl>
-
-    <p><a th:href="@{/employee/history}">&larr; Back to My History</a></p>
+        <p>
+        <a th:if="${courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED'}"
+        th:href="@{/employee/history/{id}/edit(id=${courseApplication.id})}">Edit Application</a>
+        </p>
+        <form method="post"
+         th:action="@{/employee/history/{id}/withdraw(id=${courseApplication.id})}"
+        th:if="${courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED'}"
+        onsubmit="return confirm('Are you sure you want to withdraw this application?');">
+        <button type="submit">Withdraw Application</button>
+        </form>
+        <form method="post"
+         th:action="@{/employee/history/{id}/cancel(id=${courseApplication.id})}"
+        th:if="${courseApplication.status == 'APPROVED'}"
+      onsubmit="return confirm('Are you sure you want to cancel this approved application?');">
+    <button type="submit">Cancel Application</button>
+        </form>
+        <p><a th:href="@{/employee/history}">&larr; Back to My History</a></p>
 </body>
-
+        <div th:if="${message}" th:text="${message}"
+            style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 4px;">
+        </div>
 </html>

@@ -34,5 +34,66 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     public Optional<CourseApplication> findApplicationById(Long id){
         return courseApplicationRepository.findById(id);
     }
+    @Override 
+    public String withdrawApplication(Long id, Employee employee) {
+        Optional<CourseApplication> result = courseApplicationRepository.findById(id);
+        if (result.isEmpty()) {
+            return "Application not found.";
+        }
+        CourseApplication application = result.get();
+         if (!application.getEmployee().getId().equals(employee.getId())) {
+        return "You can only withdraw your own application";
+        }
+        if (!"APPLIED".equals(application.getStatus()) && !"UPDATED".equals(application.getStatus())) {
+        return "Only pending applications can be withdrawn";
+        }
+        application.setStatus("DELETED");
+        courseApplicationRepository.save(application);
+         return "Course application withdrawn successfully";
+
+    }
+    @Override 
+    public String updateApplication(Long id, CourseApplication updatedData, Employee employee) {
+        Optional<CourseApplication> result = courseApplicationRepository.findById(id);
+        if (result.isEmpty()) {
+            return "Application not found.";
+        }
+        CourseApplication application = result.get();
+        if (!application.getEmployee().getId().equals(employee.getId())) {
+            return "You can only update your own application";
+        }
+        if (!"APPLIED".equals(application.getStatus()) && !"UPDATED".equals(application.getStatus())) {
+            return "Only pending applications can be updated";
+        }
+        application.setCourseTitle(updatedData.getCourseTitle());
+        application.setCategory(updatedData.getCategory());
+        application.setFromDate(updatedData.getFromDate());
+        application.setProvider(updatedData.getProvider());
+        application.setFromDate(updatedData.getFromDate());
+        application.setToDate(updatedData.getToDate());
+        application.setFee(updatedData.getFee());
+        application.setJustification(updatedData.getJustification());
+        application.setDissemination(updatedData.getDissemination());
+        application.setStatus("UPDATED");
+        courseApplicationRepository.save(application);
+         return "Course application updated successfully";
+    }
+    @Override
+    public String cancelApplication(Long id, Employee employee) {
+        Optional<CourseApplication> result = courseApplicationRepository.findById(id);
+        if (result.isEmpty()) {
+            return "Application not found.";
+        }
+        CourseApplication application = result.get();
+        if (!application.getEmployee().getId().equals(employee.getId())) {
+            return "You can only cancel your own application";
+        }
+        if (!"APPROVED".equals(application.getStatus())){
+            return "Only approved applications can be cancelled";
+        }
+        application.setStatus("CANCELLED");
+        courseApplicationRepository.save(application);
+         return "Course application cancelled successfully";
+    }
 }
 
