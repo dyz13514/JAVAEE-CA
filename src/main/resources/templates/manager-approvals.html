@@ -1,0 +1,64 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Subordinate Applications - CATS</title>
+  </head>
+  <body>
+    <h1>Subordinate Course Applications</h1>
+    <div
+      th:if="${message}"
+      th:text="${message}"
+      style="
+        background-color: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 4px;
+      "
+    ></div>
+
+    <table border="1">
+      <tr>
+        <th>Employee</th>
+        <th>Course</th>
+        <th>Category</th>
+        <th>Period</th>
+        <th>Fee (S$)</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+      <tr th:each="app : ${applications}">
+        <td th:text="${app.employee.name}">Name</td>
+        <td th:text="${app.courseTitle}">Title</td>
+        <td th:text="${app.category}">INTERNAL</td>
+        <td th:text="${app.fromDate} + ' to ' + ${app.toDate}">period</td>
+        <td th:text="${app.fee}">0</td>
+        <td th:text="${app.status}">APPLIED</td>
+        <td>
+          <form
+            method="post"
+            th:action="@{/manager/review/{id}(id=${app.id})}"
+            th:if="${app.status == 'APPLIED' or app.status == 'UPDATED'}"
+          >
+            <textarea
+              name="comment"
+              rows="2"
+              cols="25"
+              placeholder="Comment (required)"
+              required
+            ></textarea
+            ><br />
+            <button type="submit" name="decision" value="APPROVE">
+              Approve
+            </button>
+            <button type="submit" name="decision" value="REJECT">Reject</button>
+          </form>
+        </td>
+      </tr>
+    </table>
+
+    <p th:if="${#lists.isEmpty(applications)}">
+      No applications from your subordinates yet.
+    </p>
+    <p><a th:href="@{/employee/home}">&larr; Back to Home</a></p>
+  </body>
+</html>

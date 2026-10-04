@@ -12,5 +12,7 @@ String withdrawApplication(Long id, Employee employee);
 String updateApplication(Long id, CourseApplication updatedData, Employee employee);
 String cancelApplication(Long id, Employee employee);
 String completeApplication(Long id, Employee employee, String experienceComments);
+List<CourseApplication> findSubordinateApplications(Employee manager);
+String reviewApplication(Long id, Employee manager, String decision, String comment);
 
 }

@@ -1,19 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
+  <head>
     <title>Home - CATS</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1 th:text="'Welcome, ' + ${session.loggedInUser.name}">Welcome</h1>
     <p>This is the CATS home page.</p>
     <p>
-    <a th:href="@{/employee/apply}">Apply for a Course</a> |
-    <a th:href="@{/employee/history}">My Course History</a>
-</p>
-<p>
-	<a th:href="@{/entitlements}">View Annual Entitlement</a>
-</p>
-
-
-</body>
+      <a th:href="@{/employee/apply}">Apply for a Course</a> |
+      <a th:href="@{/employee/history}">My Course History</a>
+    </p>
+    <p>
+      <a th:href="@{/entitlements}">View Annual Entitlement</a>
+    </p>
+    <p th:if="${session.loggedInUser.role.name() == 'MANAGER'}">
+      <a th:href="@{/manager/approvals}">Review Subordinate Applications</a>
+    </p>
+  </body>
 </html>
