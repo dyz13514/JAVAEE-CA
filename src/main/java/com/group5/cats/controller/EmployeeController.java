@@ -33,7 +33,11 @@ public class EmployeeController {
         if (employee == null) {
             return "redirect:/employee/login";
         }
-        courseApplicationService.submitApplication(application, employee);
+        String error = courseApplicationService.submitApplication(application, employee);
+        if (error != null) {
+            redirectAttrs.addFlashAttribute("errorMessage", error);
+            return "redirect:/employee/apply";
+        }
         redirectAttrs.addFlashAttribute("successMessage",
                 "Course application submitted successfully!");
         return "redirect:/employee/home";

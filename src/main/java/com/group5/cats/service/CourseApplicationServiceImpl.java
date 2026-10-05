@@ -23,12 +23,32 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     }
 
     @Override
-    public void submitApplication(CourseApplication application, Employee employee) {
+    public String submitApplication(CourseApplication application, Employee employee) {
+        String error = validateBasicRules(application);
+        if (error != null) {
+            return error;
+        }
+
         application.setEmployee(employee);
         application.setStatus("APPLIED");
         courseApplicationRepository.save(application);
+        return null;
     }
 
+    private String validateBasicRules(CourseApplication application) {
+        LocalDate from = application.getFromDate();
+        LocalDate to = application.getToDate();
+        if (from == null || to == null) {
+            return "Course start and end dates must be provided";
+    }
+        if (!from.isBefore(to)) {
+            return "Course start date cannot be after end date";
+        }
+        if (!from.isAfter(LocalDate.now())) {
+            return "From date must start in the future";
+        }
+        return null;
+    }
     @Override
     public List<CourseApplication> findApplicationsByEmployee(Employee employee) {
         int currentYear = LocalDate.now().getYear();
