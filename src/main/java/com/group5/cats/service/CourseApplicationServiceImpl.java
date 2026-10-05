@@ -10,6 +10,7 @@ import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.time.DayOfWeek;
 
 @Service
 public class CourseApplicationServiceImpl implements CourseApplicationService {
@@ -46,6 +47,12 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         if (!from.isAfter(LocalDate.now())) {
             return "From date must start in the future";
+        }
+        if (from.getDayOfWeek()==DayOfWeek.SATURDAY || from.getDayOfWeek()==DayOfWeek.SUNDAY) {
+            return "'From' date must be a working day (Monday to Friday).";
+        }
+        if (to.getDayOfWeek()==DayOfWeek.SATURDAY || to.getDayOfWeek()==DayOfWeek.SUNDAY) {
+            return "'To' date must be a working day (Monday to Friday).";
         }
         return null;
     }
