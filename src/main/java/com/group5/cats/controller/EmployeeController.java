@@ -39,7 +39,7 @@ public class EmployeeController {
             return "redirect:/employee/apply";
         }
         redirectAttrs.addFlashAttribute("successMessage",
-                "Course application submitted successfully!");
+                "Course application submitted successfully! Training days: "+ application.getTrainingDays());
         return "redirect:/employee/home";
     }
 

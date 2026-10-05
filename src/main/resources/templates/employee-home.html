@@ -5,6 +5,22 @@
   </head>
   <body>
     <h1 th:text="'Welcome, ' + ${session.loggedInUser.name}">Welcome</h1>
+    <div
+      th:if="${successMessage}"
+      th:text="${successMessage}"
+      style="
+        background-color: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 4px;
+      "
+    ></div>
+    <div
+      th:if="${errorMessage}"
+      th:text="${errorMessage}"
+      style="color: red"
+    ></div>
+
     <p>This is the CATS home page.</p>
     <p>
       <a th:href="@{/employee/apply}">Apply for a Course</a> |
