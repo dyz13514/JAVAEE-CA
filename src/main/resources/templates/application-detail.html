@@ -1,0 +1,95 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Application Detail - CATS</title>
+  </head>
+  <body>
+    <h1 th:text="${courseApplication.courseTitle}">Course Title</h1>
+
+    <dl>
+      <dt>Status</dt>
+      <dd th:text="${courseApplication.status}">APPLIED</dd>
+      <dt>Category</dt>
+      <dd th:text="${courseApplication.category}">EXTERNAL</dd>
+      <dt>Training Provider</dt>
+      <dd th:text="${courseApplication.provider}">Provider</dd>
+      <dt>Course Period</dt>
+      <dd
+        th:text="${courseApplication.fromDate} + ' to ' + ${courseApplication.toDate}"
+      >
+        period
+      </dd>
+      <dt>Course Fee (S$)</dt>
+      <dd th:text="${courseApplication.fee}">0</dd>
+      <dt>Justification</dt>
+      <dd th:text="${courseApplication.justification}">why</dd>
+      <dt>Work Dissemination</dt>
+      <dd
+        th:text="${courseApplication.dissemination != null ? courseApplication.dissemination : '-'}"
+      >
+        -
+      </dd>
+
+      <dt>Manager's Decision &amp; Reason</dt>
+      <dd
+        th:text="${courseApplication.managerComment != null ? courseApplication.managerComment : 'Pending review'}"
+      >
+        Pending
+      </dd>
+
+      <dt>Experience Comments</dt>
+      <dd
+        th:text="${courseApplication.experienceComments != null ? courseApplication.experienceComments : '-'}"
+      >
+        -
+      </dd>
+    </dl>
+    <p>
+      <a
+        th:if="${courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED'}"
+        th:href="@{/employee/history/{id}/edit(id=${courseApplication.id})}"
+        >Edit Application</a
+      >
+    </p>
+    <form
+      method="post"
+      th:action="@{/employee/history/{id}/withdraw(id=${courseApplication.id})}"
+      th:if="${courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED'}"
+      onsubmit="
+        return confirm('Are you sure you want to withdraw this application?');
+      "
+    >
+      <button type="submit">Withdraw Application</button>
+    </form>
+    <form
+      method="post"
+      th:action="@{/employee/history/{id}/cancel(id=${courseApplication.id})}"
+      th:if="${courseApplication.status == 'APPROVED'}"
+      onsubmit="
+        return confirm(
+          'Are you sure you want to cancel this approved application?',
+        );
+      "
+    >
+      <button type="submit">Cancel Application</button>
+    </form>
+    <form
+      method="post"
+      th:action="@{/employee/history/{id}/complete(id=${courseApplication.id})}"
+      th:if="${courseApplication.status == 'APPROVED'}"
+    >
+      <label
+        >Experience Comments (required):<br />
+        <textarea
+          name="experienceComments"
+          rows="3"
+          cols="50"
+          required
+        ></textarea></label
+      ><br />
+      <button type="submit">Mark as Completed</button>
+    </form>
+    <p><a th:href="@{/employee/history}">&larr; Back to My History</a></p>
+  </body>
+  
+</html>
