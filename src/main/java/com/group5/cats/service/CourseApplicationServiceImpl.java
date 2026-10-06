@@ -12,32 +12,35 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.time.DayOfWeek;
 import java.util.Set;
+import com.group5.cats.model.AnnualEntitlement;
 
 @Service
 public class CourseApplicationServiceImpl implements CourseApplicationService {
     private final CourseApplicationRepository courseApplicationRepository;
     private final EmployeeRepository employeeRepository;
+    private final EntitlementService entitlementService;
     private static final Set<LocalDate> PUBLIC_HOLIDAYS_2026 = Set.of(
-        LocalDate.of(2026, 1, 1),   // New Year's Day
-        LocalDate.of(2026, 2, 17),  // Chinese New Year
-        LocalDate.of(2026, 2, 18),  // Chinese New Year
-        LocalDate.of(2026, 3, 21),  // Hari Raya Puasa
-        LocalDate.of(2026, 4, 3),   // Good Friday
-        LocalDate.of(2026, 5, 1),   // Labour Day
-        LocalDate.of(2026, 5, 27),  // Hari Raya Haji
-        LocalDate.of(2026, 5, 31),  // Vesak Day (Sunday)
-        LocalDate.of(2026, 6, 1),   // Vesak Day observed (Monday)
-        LocalDate.of(2026, 8, 9),   // National Day (Sunday)
-        LocalDate.of(2026, 8, 10),  // National Day observed (Monday)
-        LocalDate.of(2026, 11, 8),  // Deepavali (Sunday)
-        LocalDate.of(2026, 11, 9),  // Deepavali observed (Monday)
-        LocalDate.of(2026, 12, 25)  // Christmas Day
-);
+            LocalDate.of(2026, 1, 1), // New Year's Day
+            LocalDate.of(2026, 2, 17), // Chinese New Year
+            LocalDate.of(2026, 2, 18), // Chinese New Year
+            LocalDate.of(2026, 3, 21), // Hari Raya Puasa
+            LocalDate.of(2026, 4, 3), // Good Friday
+            LocalDate.of(2026, 5, 1), // Labour Day
+            LocalDate.of(2026, 5, 27), // Hari Raya Haji
+            LocalDate.of(2026, 5, 31), // Vesak Day (Sunday)
+            LocalDate.of(2026, 6, 1), // Vesak Day observed (Monday)
+            LocalDate.of(2026, 8, 9), // National Day (Sunday)
+            LocalDate.of(2026, 8, 10), // National Day observed (Monday)
+            LocalDate.of(2026, 11, 8), // Deepavali (Sunday)
+            LocalDate.of(2026, 11, 9), // Deepavali observed (Monday)
+            LocalDate.of(2026, 12, 25) // Christmas Day
+    );
 
     public CourseApplicationServiceImpl(CourseApplicationRepository courseApplicationRepository,
-            EmployeeRepository employeeRepository) {
+            EmployeeRepository employeeRepository, EntitlementService entitlementService) {
         this.courseApplicationRepository = courseApplicationRepository;
         this.employeeRepository = employeeRepository;
+        this.entitlementService = entitlementService;
     }
 
     @Override
@@ -49,6 +52,10 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
 
         application.setEmployee(employee);
         application.setTrainingDays(countTrainingDays(application.getFromDate(), application.getToDate()));
+        String quotaError = validateQuota(application, employee);
+        if (quotaError != null) {
+            return quotaError;
+        }
         application.setStatus("APPLIED");
         courseApplicationRepository.save(application);
         return null;
@@ -59,21 +66,47 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         LocalDate to = application.getToDate();
         if (from == null || to == null) {
             return "Course start and end dates must be provided";
-    }
+        }
         if (!from.isBefore(to)) {
             return "Course start date cannot be after end date";
         }
         if (!from.isAfter(LocalDate.now())) {
             return "From date must start in the future";
         }
-        if (from.getDayOfWeek()==DayOfWeek.SATURDAY || from.getDayOfWeek()==DayOfWeek.SUNDAY) {
+        if (from.getDayOfWeek() == DayOfWeek.SATURDAY || from.getDayOfWeek() == DayOfWeek.SUNDAY) {
             return "'From' date must be a working day (Monday to Friday).";
         }
-        if (to.getDayOfWeek()==DayOfWeek.SATURDAY || to.getDayOfWeek()==DayOfWeek.SUNDAY) {
+        if (to.getDayOfWeek() == DayOfWeek.SATURDAY || to.getDayOfWeek() == DayOfWeek.SUNDAY) {
             return "'To' date must be a working day (Monday to Friday).";
         }
         return null;
     }
+
+    private String validateQuota(CourseApplication application, Employee employee){
+        int year = application.getFromDate().getYear();
+        Optional<AnnualEntitlement> entitlement = entitlementService.findEntitlement(employee.getId(), year);
+         if (entitlement.isEmpty()) {
+        return "No training entitlement configured for " + year + ". Please contact the administrator.";
+    }
+        double limit = entitlement.get().getTrainingDaysLimit();
+        double used=0;
+        for (CourseApplication existing : courseApplicationRepository.findByEmployee(employee)) {
+        String status = existing.getStatus();
+        if (existing.getFromDate() != null && existing.getFromDate().getYear() == year && (status.equals("APPROVED") || status.equals("COMPLETED")|| status.equals("APPLIED")||status.equals("UPDATED")))
+         {
+            used += existing.getTrainingDays();
+        }}
+        if (used + application.getTrainingDays() > limit) {
+        return "Training days quota exceeded for " + year + ": used " + used
+                + " + requested " + application.getTrainingDays()
+                + " exceeds your limit of " + limit + " days.";
+        }
+        return null;
+    }
+    
+    
+
+
     @Override
     public List<CourseApplication> findApplicationsByEmployee(Employee employee) {
         int currentYear = LocalDate.now().getYear();
@@ -211,6 +244,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         courseApplicationRepository.save(application);
         return "APPROVE".equals(decision) ? "Application approved" : "Application rejected";
     }
+
     private double countTrainingDays(LocalDate from, LocalDate to) {
         double days = 0;
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
