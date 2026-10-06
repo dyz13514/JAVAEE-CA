@@ -37,6 +37,8 @@ public class CourseApplication {
     private String managerComment;
     private String experienceComments;
 
+    private double trainingDays;
+
     
 
     public CourseApplication() {
@@ -146,7 +148,15 @@ public class CourseApplication {
         this.experienceComments = experienceComments;
     }
 
+    public double getTrainingDays() {
+        return trainingDays;
+    }
 
+    public void setTrainingDays(double trainingDays) {
+        this.trainingDays = trainingDays;
+    }
+
+    
         
 }
 

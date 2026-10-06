@@ -1,6 +1,5 @@
 package com.group5.cats.controller;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -155,8 +154,8 @@ public class EntitlementController {
 	public String setEntitlement(
 			@RequestParam Long employeeId,
 			@RequestParam Integer entitlementYear,
-			@RequestParam BigDecimal trainingDaysLimit,
-			@RequestParam BigDecimal trainingBudget,
+			@RequestParam double trainingDaysLimit,
+			@RequestParam double trainingBudget,
 			HttpSession session,
 			RedirectAttributes redirectAttributes
 			) {

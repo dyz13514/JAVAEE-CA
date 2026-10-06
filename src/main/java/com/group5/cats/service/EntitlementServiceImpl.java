@@ -1,6 +1,5 @@
 package com.group5.cats.service;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -17,9 +16,9 @@ public class EntitlementServiceImpl implements EntitlementService {
 	private final AnnualEntitlementRepository annualEntitlementRepository;
 	private final EmployeeRepository employeeRepository;
 	
-	private static final BigDecimal ADMINISTRATIVE_DAYS = new BigDecimal("50.00");
-	private static final BigDecimal PROFESSIONAL_DAYS = new BigDecimal("100.00");
-	private static final BigDecimal DEFAULT_TRAINING_BUDGET = new BigDecimal("20000.00");
+	private static final double ADMINISTRATIVE_DAYS = 50.0;
+	private static final double PROFESSIONAL_DAYS = 100.0;
+	private static final double DEFAULT_TRAINING_BUDGET = 20000.0;
 	
 	public EntitlementServiceImpl(AnnualEntitlementRepository annualEntitlementRepository,
 			EmployeeRepository employeeRepository) {
@@ -63,7 +62,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
 		//这里参考了 demo 项目 EmployeeService 中，查询员工不存在时使用lambda orElseThrow 的写法。
 		
-		BigDecimal daysLimit = getDefaultTrainingDays(employee.getDesignation());
+		double daysLimit = getDefaultTrainingDays(employee.getDesignation());
 		
 		AnnualEntitlement entitlement = new AnnualEntitlement(
 				employee, 
@@ -75,7 +74,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 		return annualEntitlementRepository.save(entitlement);
 	}
 	
-	private BigDecimal getDefaultTrainingDays(
+	private double getDefaultTrainingDays(
 			EmployeeDesignation designation) {
 		
 		if(designation == null ) {
@@ -97,16 +96,16 @@ public class EntitlementServiceImpl implements EntitlementService {
 	public AnnualEntitlement setEntitlement(
 			Long employeeId,
 			Integer entitlementYear,
-			BigDecimal trainingDaysLimit,
-			BigDecimal trainingBudget
+			double trainingDaysLimit,
+			double trainingBudget
 			) {
 		validateInputs(employeeId, entitlementYear);
 		
-		if(trainingDaysLimit == null || trainingDaysLimit.compareTo(BigDecimal.ZERO) < 0) {
+		if(trainingDaysLimit < 0) {
 			throw new IllegalArgumentException("TrainingDaysLimit must >= 0.");
 		}
 		
-		if(trainingBudget == null || trainingBudget.compareTo(BigDecimal.ZERO) < 0) {
+		if(trainingBudget < 0) {
 			throw new IllegalArgumentException("trainingBudget must >= 0.");
 		}
 		

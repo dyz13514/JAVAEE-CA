@@ -5,7 +5,7 @@
 </head>
 <body>
     <h1>Apply for a Course</h1>
-
+    <div th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></div>
     <form th:action="${formAction}" th:object="${courseApplication}" method="post">
 
         <label>Course Title: <input type="text" th:field="*{courseTitle}" required /></label><br><br>
