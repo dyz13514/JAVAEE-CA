@@ -1,6 +1,5 @@
 package com.group5.cats.service;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import com.group5.cats.model.AnnualEntitlement;
@@ -16,8 +15,9 @@ public interface EntitlementService{
 	AnnualEntitlement setEntitlement(
 			Long employeeId,
 			Integer entitlementYear,
-			BigDecimal trainingDaysLimit,
-			BigDecimal trainingBudget
+			double trainingDaysLimit,
+			double trainingBudget
 			);
+	
 
 }

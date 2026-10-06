@@ -1,6 +1,5 @@
 package com.group5.cats.model;
 
-import java.math.BigDecimal;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,17 +23,17 @@ public class AnnualEntitlement {
 	
 	private Integer entitlementYear;
 	
-	private BigDecimal trainingDaysLimit;
+	private double trainingDaysLimit;
 	
-	private BigDecimal trainingBudget;
+	private double trainingBudget;
 
 	
 	
 	public AnnualEntitlement() {
 	}
 
-	public AnnualEntitlement(Employee employee, Integer entitlementYear, BigDecimal trainingDaysLimit,
-			BigDecimal trainingBudget) {
+	public AnnualEntitlement(Employee employee, Integer entitlementYear, double trainingDaysLimit,
+			double trainingBudget) {
 		this.employee = employee;
 		this.entitlementYear = entitlementYear;
 		this.trainingDaysLimit = trainingDaysLimit;
@@ -65,19 +64,19 @@ public class AnnualEntitlement {
 		this.entitlementYear = entitlementYear;
 	}
 
-	public BigDecimal getTrainingDaysLimit() {
+	public double getTrainingDaysLimit() {
 		return trainingDaysLimit;
 	}
 
-	public void setTrainingDaysLimit(BigDecimal trainingDaysLimit) {
+	public void setTrainingDaysLimit(double trainingDaysLimit) {
 		this.trainingDaysLimit = trainingDaysLimit;
 	}
 
-	public BigDecimal getTrainingBudget() {
+	public double getTrainingBudget() {
 		return trainingBudget;
 	}
 
-	public void setTrainingBudget(BigDecimal trainingBudget) {
+	public void setTrainingBudget(double trainingBudget) {
 		this.trainingBudget = trainingBudget;
 	}
 	
