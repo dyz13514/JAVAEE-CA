@@ -75,14 +75,25 @@
 				<tr>
 					<th>Entitlement Year</th>
 					<th>Training Days Limit</th>
+					<th>Occupied Training Days</th>
+					<th>Remaining Training Days</th>
 					<th>Training Budget</th>
+					<th>Occupied Training Budget</th>
+					<th>Remaining Training Budget</th>
 				</tr>
 				<tr>
 					<td th:text="${entitlement.entitlementYear}"></td>
 					<td th:text="${entitlement.trainingDaysLimit}"></td>
+					<td th:text="${occupiedDays}"></td>
+					<td th:text="${remainingDays}"></td>
 					<td th:text="${entitlement.trainingBudget}"></td>
+					<td th:text="${occupiedBudget}"></td>
+					<td th:text="${remainingBudget}"></td>
 				</tr>
 			</table>
+			<p th:if="${entitlement != null}">
+				Tips: Course applications in APPLIED, UPDATED, APPROVED or COMPLETED status occupy your annual entitlement! 
+			</p>
 			</div>
 			
 			<div th:if="${canEdit}">

@@ -1,13 +1,17 @@
 package com.group5.cats.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.group5.cats.model.AnnualEntitlement;
+import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeDesignation;
 import com.group5.cats.repository.AnnualEntitlementRepository;
+import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
 
 @Service
@@ -15,15 +19,17 @@ public class EntitlementServiceImpl implements EntitlementService {
 	
 	private final AnnualEntitlementRepository annualEntitlementRepository;
 	private final EmployeeRepository employeeRepository;
+	private final CourseApplicationRepository courseApplicationRepository;
 	
 	private static final double ADMINISTRATIVE_DAYS = 50.0;
 	private static final double PROFESSIONAL_DAYS = 100.0;
 	private static final double DEFAULT_TRAINING_BUDGET = 20000.0;
 	
 	public EntitlementServiceImpl(AnnualEntitlementRepository annualEntitlementRepository,
-			EmployeeRepository employeeRepository) {
+			EmployeeRepository employeeRepository, CourseApplicationRepository courseApplicationRepository) {
 		this.annualEntitlementRepository = annualEntitlementRepository;
 		this.employeeRepository = employeeRepository;
+		this.courseApplicationRepository = courseApplicationRepository;
 	}
 	
 	private void validateInputs(
@@ -132,6 +138,55 @@ public class EntitlementServiceImpl implements EntitlementService {
 		
 		
 			}
+	
+	private List<CourseApplication> getOccupyingApplications(
+			Long employeeId, Integer entitlementYear) {
+		validateInputs(employeeId, entitlementYear);
+		
+		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
+		
+		List<CourseApplication> applications = courseApplicationRepository.findByEmployee(employee);
+		
+		List<CourseApplication> occupyingApplications = new ArrayList<>();
+		
+		for (CourseApplication application : applications) {
+			if (application.getFromDate() != null  && application.getFromDate().getYear() == entitlementYear) {
+				String status = application.getStatus();
+				if("APPLIED".equals(status) || "UPDATED".equals(status) || "APPROVED".equals(status) || "COMPLETED".equals(status) ) {
+					occupyingApplications.add(application);
+				}
+			}
+		}
+		
+		return occupyingApplications;
+	}
+	
+	@Override
+	public double getOccupiedTrainingDays(Long employeeId, Integer entitlementYear) {
+		List<CourseApplication> applications = getOccupyingApplications(employeeId, entitlementYear);
+		double occupiedDays= 0.0;
+		
+		for (CourseApplication application : applications) { 
+			occupiedDays += application.getTrainingDays();
+		}
+		
+		return occupiedDays;
+	}
+	
+	@Override
+	public double getOccupiedTrainingBudget(Long employeeId, Integer entitlementYear) {
+		List<CourseApplication> applications = getOccupyingApplications(employeeId, entitlementYear);
+		double occupiedBudget = 0.0;
+		
+		for (CourseApplication application : applications) { 
+			String category = application.getCategory();
+			if ("EXTERNAL".equals(category) || "CERTIFICATION".equals(category) ) {
+				occupiedBudget += application.getFee();
+			}
+		}
+		
+		return occupiedBudget;
+	}
 	
 	
 

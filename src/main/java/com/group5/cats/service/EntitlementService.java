@@ -19,5 +19,11 @@ public interface EntitlementService{
 			double trainingBudget
 			);
 	
+	double getOccupiedTrainingDays(
+			Long employeeId, Integer entitlementYear);
+	
+	double getOccupiedTrainingBudget(
+			Long employeeId, Integer entitlementYear);
+	
 
 }

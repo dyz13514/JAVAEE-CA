@@ -131,8 +131,19 @@ public class EntitlementController {
 		
 		
 			if(result.isPresent()) {
-		
-			model.addAttribute("entitlement", result.get());
+				
+			AnnualEntitlement entitlement = result.get();
+			double occupiedDays =  entitlementService.getOccupiedTrainingDays(selectedId, selectedYear);
+			double occupiedBudget =  entitlementService.getOccupiedTrainingBudget(selectedId, selectedYear);
+			double remainingDays = entitlement.getTrainingDaysLimit() - occupiedDays;
+			double remainingBudget = entitlement.getTrainingBudget() - occupiedBudget;
+
+			model.addAttribute("entitlement", entitlement);
+			model.addAttribute("occupiedDays", occupiedDays);
+			model.addAttribute("occupiedBudget", occupiedBudget);
+			model.addAttribute("remainingDays", remainingDays);
+			model.addAttribute("remainingBudget", remainingBudget);
+			
 		} else {
 			model.addAttribute("message", "No entitlement record for this employee in this year.");
 		}
