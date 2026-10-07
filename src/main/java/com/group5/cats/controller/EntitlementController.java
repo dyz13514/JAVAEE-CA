@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.group5.cats.model.AnnualEntitlement;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeRole;
+import com.group5.cats.model.EntitlementSummary;
 import com.group5.cats.repository.EmployeeRepository;
 import com.group5.cats.service.EntitlementService;
 
@@ -45,21 +45,10 @@ public class EntitlementController {
 	}
 	
 	private List<Employee> getQueryableEmployees(Employee currentUser) {
-		
-		if(currentUser.getRole() == EmployeeRole.ADMIN) {
-			return employeeRepository.findAll();
-		}
-		
-		List<Employee> toBeViewedEmployees = new ArrayList<>();
-		toBeViewedEmployees.add(currentUser);
-		
-		if(currentUser.getRole() == EmployeeRole.MANAGER) {
-			toBeViewedEmployees.addAll(employeeRepository.findBySupervisor_Id(currentUser.getId()));
-		}
-		
-		return toBeViewedEmployees;
+	
+		return entitlementService.getQueryableEmployees(currentUser);
 	}
-	//使用List，因为我们这一个方法就可以覆盖三个角色的查询额度。ADMIN查全部，MANAGER和REGULAR_STAFF至少能看到自己，而MANAGER除了自己的还在List加上自己当supervisor的下属
+
 	
 	@GetMapping("/entitlements")
 	public String showEntitlement(
@@ -127,22 +116,23 @@ public class EntitlementController {
 		//向页面传递数据。传递被选择查看的selectedEmployee
 		
 		try{
-		Optional<AnnualEntitlement> result = entitlementService.findEntitlement(selectedId, selectedYear);
-		
+		Optional<EntitlementSummary> result = entitlementService.getEntitlementSummary(selectedId, selectedYear);
+		//使用REST后统一装进dto summary，因此直接调用summary从里面取得数据
 		
 			if(result.isPresent()) {
 				
-			AnnualEntitlement entitlement = result.get();
-			double occupiedDays =  entitlementService.getOccupiedTrainingDays(selectedId, selectedYear);
-			double occupiedBudget =  entitlementService.getOccupiedTrainingBudget(selectedId, selectedYear);
-			double remainingDays = entitlement.getTrainingDaysLimit() - occupiedDays;
-			double remainingBudget = entitlement.getTrainingBudget() - occupiedBudget;
+				EntitlementSummary summary = result.get();
+		
 
-			model.addAttribute("entitlement", entitlement);
-			model.addAttribute("occupiedDays", occupiedDays);
-			model.addAttribute("occupiedBudget", occupiedBudget);
-			model.addAttribute("remainingDays", remainingDays);
-			model.addAttribute("remainingBudget", remainingBudget);
+			model.addAttribute("entitlement", summary);
+			//这里就是之前我改为REST之前的痕迹。之前没有汇总数据到summary，用的是entitlement类。
+		    //然而现在使用REST同样有getEntitlementYear()、getTrainingDaysLimit()、getTrainingBudget()
+			//HTML里的${entitlement.entitlementYear} ${entitlement.trainingDaysLimit} ${entitlement.trainingBudget}，所以就不必把这里"entitlement"统一为"summary"，减少HTML的修改
+			
+			model.addAttribute("occupiedDays", summary.getOccupiedDays());
+			model.addAttribute("occupiedBudget", summary.getOccupiedBudget());
+			model.addAttribute("remainingDays", summary.getRemainingDays());
+			model.addAttribute("remainingBudget", summary.getRemainingBudget());
 			
 		} else {
 			model.addAttribute("message", "No entitlement record for this employee in this year.");
@@ -151,7 +141,7 @@ public class EntitlementController {
 	catch (IllegalArgumentException exception) {
 		model.addAttribute("message", exception.getMessage());
 	}
-		//try-catch 使用到findEntitlement，也就调用到validateInputs，当validateInputs throw出异常由catch接住。
+		//try-catch 使用到getEntitlementSummary 调用 findEntitlement，进而调用 validateInputs。当validateInputs throw出异常由catch接住。
 		//前面程序已通过Id判断员工是否在可被查询的范围，这里if-else判断根据年份找没找到记录。
 		//没有记录本身不是异常，只显示 message。
 		
@@ -201,6 +191,39 @@ public class EntitlementController {
 		
 	}
 	
+	@PostMapping("/admin/entitlements/delete")
+	public String deleteEntitlement (
+			@RequestParam Long employeeId,
+			@RequestParam Integer entitlementYear,
+			HttpSession session,
+			RedirectAttributes redirectAttributes) {
+		
+		Employee currentUser = getCurrentUser(session);
+		if (currentUser == null) {
+			return "redirect:/employee/login";
+		}
+		
+		if(currentUser.getRole() != EmployeeRole.ADMIN) {
+			redirectAttributes.addFlashAttribute("saveMessage", 
+					"Only administrators can delete entitlements.");
+			return "redirect:/entitlements";
+		}
+		
+		try{
+			entitlementService.deleteEntitlement(employeeId, entitlementYear);
+			redirectAttributes.addFlashAttribute("saveMessage", "Entitlement deleted.");
+		} catch (IllegalArgumentException exception) {
+			redirectAttributes.addFlashAttribute("saveMessage", exception.getMessage());
+		}
+		
+		redirectAttributes.addAttribute("employeeId",employeeId);
+		redirectAttributes.addAttribute("entitlementYear",entitlementYear);
+		
+		return "redirect:/entitlements";
+
+		
+	}
+	
 	@GetMapping("/entitlements/search")
 	public String searchEmployees(
 			@RequestParam(required = false) Long queryEmployeeId,
@@ -241,6 +264,8 @@ public class EntitlementController {
 		
 		if(searchedEmployees.isEmpty()) {
 			model.addAttribute("message", "No matching employees.");
+		} else {
+			model.addAttribute("message", "Search successful, found " + searchedEmployees.size() + " employee(s). Use the Employee bar to select.");
 		}
 		
 		return "entitlement";

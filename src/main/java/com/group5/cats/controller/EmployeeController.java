@@ -44,7 +44,14 @@ public class EmployeeController {
     }
 
     @GetMapping("/employee/home")
-    public String showEmployeeHome() {
+    public String showEmployeeHome(HttpSession session) {
+    	
+    	Employee employee = (Employee) session.getAttribute("loggedInUser");
+    	
+    	if (employee == null) {
+    		return "redirect:/employee/login";
+    	}
+    	
         return "employee-home";
     }
 

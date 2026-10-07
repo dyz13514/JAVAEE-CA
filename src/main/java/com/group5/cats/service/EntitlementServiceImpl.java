@@ -10,6 +10,8 @@ import com.group5.cats.model.AnnualEntitlement;
 import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeDesignation;
+import com.group5.cats.model.EmployeeRole;
+import com.group5.cats.model.EntitlementSummary;
 import com.group5.cats.repository.AnnualEntitlementRepository;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
@@ -115,7 +117,8 @@ public class EntitlementServiceImpl implements EntitlementService {
 			throw new IllegalArgumentException("trainingBudget must >= 0.");
 		}
 		
-		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist.")); 
+		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
+		//必须employee表中存在的id，才能为其创建或修改额度
 		
 		Optional<AnnualEntitlement> existing = annualEntitlementRepository
 				.findByEmployeeIdAndEntitlementYear(employeeId, entitlementYear);
@@ -188,6 +191,83 @@ public class EntitlementServiceImpl implements EntitlementService {
 		return occupiedBudget;
 	}
 	
+	@Override
+	public Optional<EntitlementSummary> getEntitlementSummary(Long employeeId, Integer entitlementYear) {
+		
+		Optional<AnnualEntitlement>result = findEntitlement(employeeId, entitlementYear);
+		
+		if (result.isEmpty()) {
+			return Optional.empty();
+		}
+		
+		AnnualEntitlement entitlement = result.get();
+		
+		List<CourseApplication> applications =  getOccupyingApplications(employeeId, entitlementYear);
+		
+		double occupiedDays = 0.0;
+		double occupiedBudget = 0.0;
+		
+		for (CourseApplication application : applications) { 
+			occupiedDays += application.getTrainingDays();
+			String category = application.getCategory();
+			if ("EXTERNAL".equals(category) || "CERTIFICATION".equals(category) ) {
+				occupiedBudget += application.getFee();
+			}
+		}
+		
+		//从这里开始将九项数据在这里计算并填入我们的dto: EntitlementSummary summary，并最后为调用者返回它
+		EntitlementSummary summary = new EntitlementSummary();
+		
+		summary.setEmployeeId(entitlement.getEmployee().getId());
+		summary.setEmployeeName(entitlement.getEmployee().getName());
+		summary.setEntitlementYear(entitlement.getEntitlementYear());
+		
+		summary.setOccupiedBudget(occupiedBudget);
+		summary.setOccupiedDays(occupiedDays);
+		
+		summary.setRemainingBudget(entitlement.getTrainingBudget() - occupiedBudget);
+		summary.setRemainingDays(entitlement.getTrainingDaysLimit() - occupiedDays);
+		
+		summary.setTrainingBudget(entitlement.getTrainingBudget());
+		summary.setTrainingDaysLimit(entitlement.getTrainingDaysLimit());
+		
+		
+		return Optional.of(summary);
+	    //使用Optional.of(summary)将summary包装为方法要求的返回类型
+		
+	}
 	
+
+	@Override
+     public List<Employee> getQueryableEmployees(Employee currentUser) {
+		
+		if(currentUser.getRole() == EmployeeRole.ADMIN) {
+			return employeeRepository.findAll();
+		}
+		
+		List<Employee> toBeViewedEmployees = new ArrayList<>();
+		toBeViewedEmployees.add(currentUser);
+		
+		if(currentUser.getRole() == EmployeeRole.MANAGER) {
+			toBeViewedEmployees.addAll(employeeRepository.findBySupervisor_Id(currentUser.getId()));
+		}
+		
+		return toBeViewedEmployees;
+	}
+	//使用List，因为我们这一个方法就可以覆盖三个角色的查询额度。ADMIN查全部，MANAGER和REGULAR_STAFF至少能看到自己，而MANAGER除了自己的还在List加上自己当supervisor的下属
+	//原本只写在EntitlementController，现在用REST后写在这里，因为这是EntitlementController和EntitlementRestController都要用到的方法，因此统一放在service层
+	
+	@Override
+	public void deleteEntitlement(
+			Long employeeId, Integer entitlementYear) {
+		
+		Optional<AnnualEntitlement>result = findEntitlement(employeeId, entitlementYear);
+
+		if(result.isEmpty()) {
+			throw new IllegalArgumentException("No entitlement record for this employee in this year.");
+		}
+		
+		annualEntitlementRepository.delete(result.get());
+	}
 
 }

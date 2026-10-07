@@ -27,7 +27,7 @@
 				<input type="text"
 					   name="queryEmployeeName"
 					   required>
-				<input type="submit" value ="Seach By Name">
+				<input type="submit" value ="Search By Name">
 			</p>
 		</form>
 		
@@ -35,7 +35,10 @@
 		
 		
 		
-	    <form th:action="@{/entitlements}" method ="get">
+	    <form id="entitlementQueryForm"
+		      th:action="@{/entitlements}" 
+		      method ="get">
+
 			<p>
 				<label>Employee</label>
 				<select name="employeeId" required>
@@ -57,21 +60,28 @@
 				   required>
 		    </p>
 			
-			<input type="submit" value="View Entitlement">
+			<button type="submit">View Entitlement</button>
 		</form>
 		
-		<p th:if="${message != null}" th:text="${message}"></p>
+		<p id="queryMessage" th:text="${message}"></p>
 		
 		
-		<div th:if="${selectedEmployee != null}">
+		<div id="entitlementResult" 
+		     th:style="${entitlement == null ? 'display:none;' : ''}">
+			 <!-- 使用REST前，Thymeleaf写法是th:if，因为条件不满足时服务器生成页面时删除整块元素-->
+			 <!-- 使用REST后，JavaScript 要填入数据，必须能找到现成的表格，因此使用th:style。元素仍存在，通过 display:none 隐藏-->
+			 <!-- 三元表达式：条件 ? 条件成立时的值 : 条件不成立时的值 -->
+
 			<p>
-				Employee ID: <span th:text="${selectedEmployee.id}"></span>
+				Employee ID: <span id="resultEmployeeId"
+				                   th:text="${entitlement == null ? '' : entitlement.employeeId}"></span>
 			</p>
 			<p>
-				Employee Name: <span th:text="${selectedEmployee.name}"></span>
+				Employee Name: <span id="resultEmployeeName"
+								     th:text="${entitlement == null ? '' : entitlement.employeeName}"></span>
 			</p>
 			
-			<table border="1" th:if="${entitlement != null}">
+			<table border="1">
 				<tr>
 					<th>Entitlement Year</th>
 					<th>Training Days Limit</th>
@@ -82,16 +92,22 @@
 					<th>Remaining Training Budget</th>
 				</tr>
 				<tr>
-					<td th:text="${entitlement.entitlementYear}"></td>
-					<td th:text="${entitlement.trainingDaysLimit}"></td>
-					<td th:text="${occupiedDays}"></td>
-					<td th:text="${remainingDays}"></td>
-					<td th:text="${entitlement.trainingBudget}"></td>
-					<td th:text="${occupiedBudget}"></td>
-					<td th:text="${remainingBudget}"></td>
+					<!-- 首次生成页面：Thymeleaf 通过 th:text 填内容 -->
+					<!-- 后续 REST 查询：JavaScript 通过 resultDaysLimit 找到它，更新内容。-->
+
+					<td id="resultYear"
+					    th:text="${entitlement == null ? '' : entitlement.entitlementYear}"></td>
+					<td id="resultDaysLimit"
+						th:text="${entitlement == null ? '' : entitlement.trainingDaysLimit}"></td>
+					<td id="resultOccupiedDays" th:text="${occupiedDays}"></td>					
+					<td id="resultRemainingDays" th:text="${remainingDays}"></td>
+					<td id="resultBudget"
+						th:text="${entitlement == null ? '' : entitlement.trainingBudget}"></td>					
+					<td id="resultOccupiedBudget" th:text="${occupiedBudget}"></td>
+					<td id="resultRemainingBudget" th:text="${remainingBudget}"></td>
 				</tr>
 			</table>
-			<p th:if="${entitlement != null}">
+			<p>
 				Tips: Course applications in APPLIED, UPDATED, APPROVED or COMPLETED status occupy your annual entitlement! 
 			</p>
 			</div>
@@ -100,7 +116,9 @@
 				<h2>Create or Update Entitlement</h2>
 		
 			
-			<form th:action="@{/admin/entitlements}" method ="post">
+			<form id="entitlementSaveForm"
+			      th:action="@{/admin/entitlements}" method ="post">
+				  <!-- 因为我们设置了entitlement“查询表单选定的ID和entitlementYear自动填进下方Create or Update Entitlement表单，所以也要为此表单加上ID令javascript脚本可以让ID和entitlementYear与其同步-->
 				<p>
 					<label>Employee ID</label>
 					<input name="employeeId" 
@@ -135,7 +153,13 @@
 						   step="1"
 						   required>
 				</p>
-				<input type="submit" value="Save">
+				<button type="submit">Save</button>
+				<button type="submit"
+				        th:formaction="@{/admin/entitlements/delete}"
+						formnovalidate>Delete Entitlement</button>
+				<p>
+					Tips: For deletion, you only need to enter Employee ID and Entitlement Year!
+				</p>
 			</form>
 		</div>
 
@@ -143,6 +167,117 @@
 				
 				<p><a th:href="@{/employee/home}">Back to Home</a></p>
 
+				<!-- java script 脚本 -->
+				<script th:inline="javascript">
+					// th:inline="javascript" 允许 Thymeleaf 在生成页面时，把表达式结果正确写进 JavaScript
+					
+					const queryForm = document.getElementById("entitlementQueryForm");
+					const queryMessage = document.getElementById("queryMessage");
+					const resultArea = document.getElementById("entitlementResult");
+					//document指当前网页，getElementById这里的Id就是我们为这个html里各个元素命名的Id，const使指向不可更改
+                    //这些对象是网页中的DOM元素；DOM把网页表示为由节点组成的树
+					
+					const apiUrl = "/api/entitlements/summary";
+					//设置REST查询接口地址。
+					
+					queryForm.addEventListener("submit", async function (event){
+						event.preventDefault();
+						//对queryForm的submit监听，点击View Entitlement，触发queryForm的 submit 事件，开始执行那个内部代码
+						//表单提交时执行submit,event.preventDefault阻止浏览器原本的表单提交行为,async让该函数里面可以使用await等待异步请求结果
+						//await表示，当前函数等这一步完成后，再继续下面的代码
+						
+						//这里就是REST发挥作用的位置，原本表单提交按照点击type为submit的	View Entitlement使用th:action="@{/entitlements}"路径map到showEntitlement更换整页
+						//现在event.preventDefault阻止原本提交，由下面	fetch发送请求				 
+
+						
+						const employeeId = queryForm.elements["employeeId"].value;
+						const entitlementYear = queryForm.elements["entitlementYear"].value;
+						//queryForm.elements[""]根据name找到下拉框和输入框中的employeeId和entitlementYear
+					    //即读取输入的employeeId和entitlementYear，赋值进const employeeId和const entitlementYear
+						
+						const queryButton = queryForm.querySelector('[type="submit"]');
+						//在queryForm表单里按type="submit找到提交按钮view entitlement
+						
+						queryButton.disabled = true;
+						//临时禁用queryButton，避免连续点击
+						queryMessage.textContent = "Loading...";
+						//修改queryMessage的内容为Loading...
+						resultArea.style.display = "none";
+						//先把原有entilement查询结果隐藏
+						
+						const saveForm = document.getElementById("entitlementSaveForm");
+						
+						if (saveForm != null) {
+							saveForm.elements["employeeId"].value = employeeId;
+							saveForm.elements["entitlementYear"].value = entitlementYear;
+						}
+						//不管是否能查到记录，都同步进save表格
+						//我们设置了<div th:if="${canEdit}">才有saveForm这个元素，因此先检查是否存在
+						//如果存在，把表中的对应值更新为新输入的值，完成同步的效果
+						
+						//原来View Entitlement后走entitlements用showEntitlement给model传递新数据，现在不会重新生成，因此需要javaScript主动写入
+						//按目前逻辑，同步发生在发送请求之前。即使查询没找到记录，员工和年份也会同步
+						
+						try{
+							const response = await fetch(apiUrl
+							 + "?employeeId=" + encodeURIComponent(employeeId)
+							 + "&entitlementYear=" + encodeURIComponent(entitlementYear)
+						); 
+						//fetch发送 REST 请求，await 等待响应
+						//fetch执行：向此url发送GET请求，收到答复后，把响应交给response
+						//拼出URL：?代表开始URL参数，&连接第二个参数，encodeURIComponent()对参数值进行 URL 编码
+						//根据apiUrl，我们使用/api/entitlements/summary路径，map到getSummary方法。
+						//Spring 把 summary 转成 JSON，写入 HTTP 响应体；而此时fetch()取得HTTP响应给response。
+						
+						const data = await response.json();
+						//读取响应体中的 JSON，解析成data。await等待解析完成后再执行后续代码
+						
+						
+						if(!response.ok) {
+							//response.ok：reponse的状态码处于200—299 为boolean true，否则为false
+							//放在解析成data后处理异常，方便读取data里的message
+							if (data.message) {
+								//读取error时传回的响应体
+								//message有东西，就把它写到queryMessage。
+								queryMessage.textContent = data.message;
+							} else {
+								queryMessage.textContent = "Query failed. Http status: " + response.status;
+								//message没有东西，就自己写queryMessage并显示具体状态码response.status
+							}
+							
+							return;
+							//response非ok，直接用return结束，不执行try{}里后面的其他所有代码
+						}
+						
+						document.getElementById("resultEmployeeId").textContent = data.employeeId;
+						document.getElementById("resultEmployeeName").textContent = data.employeeName;
+						document.getElementById("resultYear").textContent = data.entitlementYear;
+						document.getElementById("resultDaysLimit").textContent = data.trainingDaysLimit;
+						document.getElementById("resultOccupiedDays").textContent = data.occupiedDays;
+						document.getElementById("resultRemainingDays").textContent = data.remainingDays;
+						document.getElementById("resultBudget").textContent = data.trainingBudget;
+						document.getElementById("resultOccupiedBudget").textContent = data.occupiedBudget;
+						document.getElementById("resultRemainingBudget").textContent = data.remainingBudget;
+						//按data数据，写入当前页面
+						
+						queryMessage.textContent = "";
+						resultArea.style.display = "";
+						//清除queryMessage
+						//之前设置resultArea.style.display = "none"隐藏旧结果，现在有了新结果把entitlementResult取消隐藏
+						
+					} catch (error) {
+						queryMessage.textContent = "Unable to load entitlement. Please try again."
+				        ////try中的请求、JSON解析或页面更新抛出异常时，显示此提示。
+					} finally {
+						queryButton.disabled = false;
+						//无论什么情况都将设置的queryButton.disabled = true解除禁用
+					}
+
+						
+						
+						
+					}); 
+				</script>
 
 	</body>
 </html>

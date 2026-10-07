@@ -120,15 +120,19 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (!"APPLIED".equals(application.getStatus()) && !"UPDATED".equals(application.getStatus())) {
             return "Only pending applications can be updated";
         }
+        String error = validateBasicRules(updatedData); 
+        if (error != null) {
+        	return error;
+        }
         application.setCourseTitle(updatedData.getCourseTitle());
         application.setCategory(updatedData.getCategory());
-        application.setFromDate(updatedData.getFromDate());
         application.setProvider(updatedData.getProvider());
         application.setFromDate(updatedData.getFromDate());
         application.setToDate(updatedData.getToDate());
         application.setFee(updatedData.getFee());
         application.setJustification(updatedData.getJustification());
         application.setDissemination(updatedData.getDissemination());
+        application.setTrainingDays(countTrainingDays(application.getFromDate(), application.getToDate()));
         application.setStatus("UPDATED");
         courseApplicationRepository.save(application);
         return "Course application updated successfully";
