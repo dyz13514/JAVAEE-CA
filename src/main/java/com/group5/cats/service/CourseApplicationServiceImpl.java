@@ -46,6 +46,10 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     @Override
     public String submitApplication(CourseApplication application, Employee employee) {
         String error = validateBasicRules(application);
+        String overlapError = validateOverlap(application, employee, null);
+        if (overlapError != null) {
+            return overlapError;
+        }
         if (error != null) {
             return error;
         }
@@ -114,6 +118,29 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
             return "Training budget exceeded for " + year + ": used $" + usedFees
                     + " + requested $" + application.getFee()
                     + " exceeds your annual budget of $" + budget + ".";
+        }
+        return null;
+    }
+
+    private String validateOverlap(CourseApplication application, Employee employee, Long excludeId) {
+        LocalDate from = application.getFromDate();
+        LocalDate to = application.getToDate();
+        for (CourseApplication existing : courseApplicationRepository.findByEmployee(employee)) {
+            if (excludeId != null && excludeId.equals(existing.getId())) {
+                continue;
+            }
+            String status = existing.getStatus();
+            if (!"APPLIED".equals(status) && !"UPDATED".equals(status) && !"APPROVED".equals(status)) {
+                continue;
+            }
+            if (existing.getFromDate() == null || existing.getToDate() == null) {
+                continue;
+            }
+            if (!from.isAfter(existing.getToDate()) && !existing.getFromDate().isAfter(to)) {
+                return "Course period overlaps with an existing application: "
+                        + existing.getCourseTitle() + " (" + existing.getFromDate()
+                        + " to " + existing.getToDate() + ").";
+            }
         }
         return null;
     }
