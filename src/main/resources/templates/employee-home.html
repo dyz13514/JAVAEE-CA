@@ -1,36 +1,464 @@
-<!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <title>Home - CATS</title>
-  </head>
-  <body>
-    <h1 th:text="'Welcome, ' + ${session.loggedInUser.name}">Welcome</h1>
-    <div
-      th:if="${successMessage}"
-      th:text="${successMessage}"
-      style="
-        background-color: #d4edda;
-        color: #155724;
-        padding: 10px;
-        border-radius: 4px;
-      "
-    ></div>
-    <div
-      th:if="${errorMessage}"
-      th:text="${errorMessage}"
-      style="color: red"
-    ></div>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CATS (NUS-ISS)</title>
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --nus-blue: #003D7C;
+            --nus-orange: #EF7C00;
+            --bg-body: #f8fafc;
+            --card-border: #e2e8f0;
+        }
+        body {
+            background-color: var(--bg-body);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        /* Top Navigation */
+        .navbar-custom {
+            background: #ffffff;
+            border-bottom: 1px solid var(--card-border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--nus-blue) !important;
+            letter-spacing: -0.3px;
+        }
+        .user-pill {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 0.35rem 0.85rem;
+            border-radius: 50rem;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .role-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.2rem 0.55rem;
+            border-radius: 50rem;
+            letter-spacing: 0.5px;
+        }
+        .tag-STAFF { background: #e0f2fe; color: #0284c7; }
+        .tag-MANAGER { background: #fef3c7; color: #b45309; }
+        .tag-ADMIN { background: #ede9fe; color: #6d28d9; }
 
-    <p>This is the CATS home page.</p>
-    <p>
-      <a th:href="@{/employee/apply}">Apply for a Course</a> |
-      <a th:href="@{/employee/history}">My Course History</a>
-    </p>
-    <p>
-      <a th:href="@{/entitlements}">View Annual Entitlement</a>
-    </p>
-    <p th:if="${session.loggedInUser.role.name() == 'MANAGER'}">
-      <a th:href="@{/manager/approvals}">Review Subordinate Applications</a>
-    </p>
-  </body>
+        /* Dashboard Hero Banner */
+        .dashboard-hero {
+            background: linear-gradient(135deg, var(--nus-blue) 0%, #002244 100%);
+            border-radius: 1.25rem;
+            color: #ffffff;
+            padding: 2.25rem 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 61, 124, 0.15);
+        }
+        .dashboard-hero::after {
+            content: "";
+            position: absolute;
+            right: -30px;
+            bottom: -30px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(239, 124, 0, 0.25) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        /* Action Cards & Hover Lift */
+        .hub-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+        .hub-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 61, 124, 0.35);
+            box-shadow: 0 12px 24px rgba(0, 61, 124, 0.08);
+            color: inherit;
+        }
+        .icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Priority Cards */
+        .manager-priority {
+            border: 1.5px solid rgba(239, 124, 0, 0.4);
+            background: linear-gradient(180deg, #fffaf5 0%, #ffffff 100%);
+        }
+        .manager-priority:hover {
+            border-color: var(--nus-orange);
+            box-shadow: 0 12px 28px rgba(239, 124, 0, 0.15);
+        }
+        .admin-priority {
+            border: 1.5px solid rgba(99, 102, 241, 0.35);
+            background: linear-gradient(180deg, #fbfbfe 0%, #ffffff 100%);
+        }
+        .admin-priority:hover {
+            border-color: #6366f1;
+            box-shadow: 0 12px 28px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Sidebar Info Panel */
+        .side-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.5rem;
+        }
+        .lifecycle-step {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+        .lifecycle-step::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--nus-blue);
+        }
+        .lifecycle-step:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            left: 3.5px;
+            top: 14px;
+            bottom: -8px;
+            width: 1px;
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-2">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/employee/home}">
+                <i class="bi bi-mortarboard-fill text-warning"></i>
+                <span>NUS-ISS CATS</span>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <div class="user-pill">
+                    <i class="bi bi-person-circle text-secondary"></i>
+                    <span class="fw-semibold" th:text="${session.loggedInUser.name}">User Name</span>
+                    <span th:class="'role-tag tag-' + ${session.loggedInUser.role.name()}"
+                          th:text="${session.loggedInUser.role.name()}">ROLE</span>
+                </div>
+                <a th:href="@{/employee/login}" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                    <i class="bi bi-box-arrow-right"></i> Sign Out
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <div class="container py-4">
+
+        <!-- Flash Notifications -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show d-flex align-items-center rounded-3 p-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+            <span th:text="${successMessage}">Action succeeded!</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show d-flex align-items-center rounded-3 p-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+            <span th:text="${errorMessage}">Action failed!</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Hero Header -->
+        <div class="dashboard-hero">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <span class="badge bg-white bg-opacity-25 text-white mb-2 px-3 py-1 rounded-pill small">
+                        <i class="bi bi-shield-lock-fill me-1"></i> Authorized Intranet Session
+                    </span>
+                    <h2 class="fw-bold mb-1" th:text="'Welcome back, ' + ${session.loggedInUser.name}">Welcome back</h2>
+                    <p class="mb-0 text-white-50 small">
+                        Department of Training & Professional Development &bull; Designation:
+                        <strong class="text-white" th:text="${session.loggedInUser.designation != null ? session.loggedInUser.designation.name() : 'GENERAL'}">ROLE</strong>
+                    </p>
+                </div>
+                <div>
+                    <span class="text-white-50 small d-block text-end">Academic Year</span>
+                    <h4 class="fw-bold mb-0 text-white">2026 AY</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2-Column Dashboard Grid -->
+        <div class="row g-4">
+
+            <!-- Left Main Column (2/3 width): Role-Specific Action Tiles -->
+            <div class="col-lg-8">
+                
+                <!-- ==================== 1. SYSTEM ADMIN VIEW ==================== -->
+                <div th:if="${session.loggedInUser.role.name() == 'ADMIN'}">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold text-dark mb-0"><i class="bi bi-sliders me-2 text-primary"></i>System Administration Console</h5>
+                        <span class="badge bg-primary-subtle text-primary">Admin Access Level</span>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Manage Entitlements -->
+                        <div class="col-md-6">
+                            <a th:href="@{/entitlements}" class="hub-card admin-priority">
+                                <div>
+                                    <div class="icon-box bg-primary text-white">
+                                        <i class="bi bi-wallet-fill"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-1">Manage Entitlements & Budgets</h6>
+                                    <p class="text-secondary small mb-0">Configure annual training day limits (Admin: 5d, Prof: 10d) and training expenditure quotas for all staff.</p>
+                                </div>
+                                <div class="pt-3 text-primary fw-semibold small d-flex align-items-center gap-1">
+                                    Open Entitlement Portal <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Staff Directory -->
+                        <div class="col-md-6">
+                            <a th:href="@{/entitlements}" class="hub-card">
+                                <div>
+                                    <div class="icon-box bg-secondary-subtle text-secondary">
+                                        <i class="bi bi-people-fill"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-1">Staff Hierarchy & Users</h6>
+                                    <p class="text-secondary small mb-0">Review active employee designations, reporting managers, and supervisory relationships.</p>
+                                </div>
+                                <div class="pt-3 text-secondary fw-semibold small d-flex align-items-center gap-1">
+                                    Lookup Staff Directory <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- System Policy & Holiday Calendar -->
+                        <div class="col-12">
+                            <div class="hub-card bg-light">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="icon-box bg-warning-subtle text-warning mb-0">
+                                            <i class="bi bi-calendar-event-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">2026 Singapore Public Holiday Calendar</h6>
+                                            <p class="text-secondary small mb-0">11 MOM statutory holidays pre-configured. Automatic non-working day exclusions enabled.</p>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success">Active Engine</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== 2. MANAGER VIEW ==================== -->
+                <div th:if="${session.loggedInUser.role.name() == 'MANAGER'}">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold text-dark mb-0"><i class="bi bi-check2-square me-2 text-warning"></i>Management & Approvals</h5>
+                        <span class="badge bg-warning-subtle text-warning-emphasis">Supervisor Authority</span>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Priority Approval Hub -->
+                        <div class="col-12">
+                            <a th:href="@{/manager/approvals}" class="hub-card manager-priority">
+                                <div class="d-flex align-items-start justify-content-between">
+                                    <div>
+                                        <div class="icon-box text-white" style="background: var(--nus-orange);">
+                                            <i class="bi bi-person-check-fill"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-1">Review Subordinate Applications</h5>
+                                        <p class="text-secondary small mb-0" style="max-width: 500px;">
+                                            Approve or reject submitted courses from your team members. Provide mandatory written justification and verify concurrent schedule clashes.
+                                        </p>
+                                    </div>
+                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
+                                        Action Required
+                                    </span>
+                                </div>
+                                <div class="pt-3 text-warning-emphasis fw-semibold small d-flex align-items-center gap-1">
+                                    Go to Approval Center <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Team Entitlement Monitoring -->
+                        <div class="col-md-6">
+                            <a th:href="@{/entitlements}" class="hub-card">
+                                <div>
+                                    <div class="icon-box bg-info-subtle text-info">
+                                        <i class="bi bi-bar-chart-line-fill"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-1">Subordinate Entitlements</h6>
+                                    <p class="text-secondary small mb-0">Audit your direct reports' accumulated training days and remaining fiscal budget allowances.</p>
+                                </div>
+                                <div class="pt-3 text-info fw-semibold small d-flex align-items-center gap-1">
+                                    Inspect Department Balances <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Manager's Personal Training History -->
+                        <div class="col-md-6">
+                            <a th:href="@{/employee/history}" class="hub-card">
+                                <div>
+                                    <div class="icon-box bg-success-subtle text-success">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-1">Personal Course Records</h6>
+                                    <p class="text-secondary small mb-0">Track and manage your own professional development applications and completion logs.</p>
+                                </div>
+                                <div class="pt-3 text-success fw-semibold small d-flex align-items-center gap-1">
+                                    My Records <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== 3. REGULAR STAFF VIEW ==================== -->
+                <div th:if="${session.loggedInUser.role.name() == 'REGULAR_STAFF'}">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold text-dark mb-0"><i class="bi bi-grid-fill me-2 text-primary"></i>My Training Workspace</h5>
+                        <span class="badge bg-primary-subtle text-primary">Employee Portal</span>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Apply for Course -->
+                        <div class="col-md-6">
+                            <a th:href="@{/employee/apply}" class="hub-card">
+                                <div>
+                                    <div class="icon-box bg-primary-subtle text-primary">
+                                        <i class="bi bi-file-earmark-plus-fill"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">Apply for Course</h5>
+                                    <p class="text-secondary small mb-0">Submit applications for Internal Training, External Courses, or Professional Certifications.</p>
+                                </div>
+                                <div class="pt-3 text-primary fw-semibold small d-flex align-items-center gap-1">
+                                    Submit Application <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- My Course History -->
+                        <div class="col-md-6">
+                            <a th:href="@{/employee/history}" class="hub-card">
+                                <div>
+                                    <div class="icon-box bg-success-subtle text-success">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">My Course History</h5>
+                                    <p class="text-secondary small mb-0">Track application statuses, edit pending forms, withdraw, cancel or submit completion experience.</p>
+                                </div>
+                                <div class="pt-3 text-success fw-semibold small d-flex align-items-center gap-1">
+                                    View My Applications <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- View Annual Entitlement -->
+                        <div class="col-12">
+                            <a th:href="@{/entitlements}" class="hub-card">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="icon-box bg-info-subtle text-info mb-0">
+                                            <i class="bi bi-pie-chart-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">Annual Training Entitlement & Budget Quota</h6>
+                                            <p class="text-secondary small mb-0">Verify your remaining days and training budget for the current calendar year.</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-info fw-semibold small d-flex align-items-center gap-1">
+                                        Check Quota <i class="bi bi-arrow-right"></i>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar Column (1/3 width): Guidelines & Lifecycle Info -->
+            <div class="col-lg-4">
+                
+                <!-- Application Lifecycle Roadmap -->
+                <div class="side-card">
+                    <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-diagram-3-fill text-primary"></i> Application Lifecycle
+                    </h6>
+                    <div class="lifecycle-step">
+                        <strong>1. Applied / Updated</strong>
+                        <div class="text-secondary">Submitted by employee; editable or withdrawable before review.</div>
+                    </div>
+                    <div class="lifecycle-step">
+                        <strong>2. Manager Review</strong>
+                        <div class="text-secondary">Supervisor approves or rejects with mandatory rationale comments.</div>
+                    </div>
+                    <div class="lifecycle-step">
+                        <strong>3. Approved</strong>
+                        <div class="text-secondary">Seat confirmed; employee may cancel if unable to attend.</div>
+                    </div>
+                    <div class="lifecycle-step mb-0">
+                        <strong>4. Completed</strong>
+                        <div class="text-secondary">Course attended; employee submits post-training feedback comments.</div>
+                    </div>
+                </div>
+
+                <!-- NUS-ISS Policy Quick Note -->
+                <div class="side-card bg-light border-0">
+                    <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle-fill text-warning"></i> Policy Guidelines
+                    </h6>
+                    <ul class="list-unstyled small text-secondary mb-0">
+                        <li class="mb-2">&bull; <strong>Working Days:</strong> Course start & end dates must fall on working days (Mon–Fri).</li>
+                        <li class="mb-2">&bull; <strong>Public Holidays:</strong> Automatically excluded from training day calculations.</li>
+                        <li class="mb-2">&bull; <strong>Half-Day:</strong> Supported strictly for Internal Training only.</li>
+                        <li>&bull; <strong>Budget Quota:</strong> External & certification courses are capped by annual employee limits.</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

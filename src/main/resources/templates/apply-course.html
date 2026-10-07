@@ -1,41 +1,233 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title>Apply for Course - CATS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Application - CATS</title>
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --nus-blue: #003D7C;
+            --nus-orange: #EF7C00;
+            --bg-body: #f8fafc;
+        }
+        body {
+            background-color: var(--bg-body);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .section-header {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--nus-blue);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-control, .form-select {
+            border-radius: 0.65rem;
+            border: 1.5px solid #cbd5e1;
+            padding: 0.7rem 0.9rem;
+            transition: all 0.25s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--nus-blue);
+            box-shadow: 0 0 0 4px rgba(0, 61, 124, 0.12);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, var(--nus-blue) 0%, #002244 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 0.8rem 2rem;
+            border-radius: 0.65rem;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 61, 124, 0.3);
+            color: #ffffff;
+        }
+    </style>
 </head>
 <body>
-    <h1>Apply for a Course</h1>
-    <div th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></div>
-    <form th:action="${formAction}" th:object="${courseApplication}" method="post">
 
-        <label>Course Title: <input type="text" th:field="*{courseTitle}" required /></label><br><br>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" th:href="@{/employee/home}">
+                <i class="bi bi-mortarboard-fill text-warning"></i> NUS-ISS CATS
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a th:href="@{/employee/home}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+                <a th:href="@{/employee/history}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    <i class="bi bi-clock-history"></i> My History
+                </a>
+            </div>
+        </div>
+    </nav>
 
-        <label>Category:
-            <select th:field="*{category}" required>
-                <option value="">-- Select --</option>
-                <option value="INTERNAL">Internal Training</option>
-                <option value="EXTERNAL">External Course</option>
-                <option value="CERTIFICATION">Professional Certification</option>
-            </select>
-        </label><br><br>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
 
-        <label>Training Provider: <input type="text" th:field="*{provider}" /></label><br><br>
+                <!-- Error Flash Alert -->
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show d-flex align-items-center rounded-3 p-3 mb-4 shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                    <div th:text="${errorMessage}">Validation Error</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
 
-        <label>From: <input type="date" th:field="*{fromDate}" required /></label><br>
-        <label>To: <input type="date" th:field="*{toDate}" required /></label><br><br>
-        <label><input type="checkbox" th:field="*{halfDay}" /> Half-day session (INTERNAL only)</label><br><br>
+                <div class="form-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3 class="fw-bold text-dark mb-1" th:text="${courseApplication.id != null ? 'Edit Course Application' : 'Submit Course Application'}">Course Application</h3>
+                            <p class="text-secondary small mb-0">Public holidays & weekends are automatically deducted; quotas are checked against your annual entitlement.</p>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+                            <i class="bi bi-shield-check"></i> Validation Rules Active
+                        </span>
+                    </div>
 
-        <label>Course Fee (S$): <input type="number" step="0.01" min="0" th:field="*{fee}" /></label><br><br>
+                    <form th:action="${formAction}" th:object="${courseApplication}" method="post" id="courseForm">
+                        
+                        <!-- Section 1: Course Info -->
+                        <div class="section-header">
+                            <i class="bi bi-info-circle-fill"></i> 1. Course Information
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Course Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" th:field="*{courseTitle}" placeholder="e.g. Advanced Spring Cloud Microservices" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Course Category <span class="text-danger">*</span></label>
+                                <select class="form-select" th:field="*{category}" id="categorySelect" required>
+                                    <option value="">-- Select Category --</option>
+                                    <option value="INTERNAL">Internal Training (In-house, 0.5-day granularity, zero fee)</option>
+                                    <option value="EXTERNAL">External Course (Fee-paying, subject to annual budget)</option>
+                                    <option value="CERTIFICATION">Professional Certification (Fee-paying, subject to annual budget)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Training Provider</label>
+                                <input type="text" class="form-control" th:field="*{provider}" placeholder="e.g. NUS-ISS / Coursera / AWS" />
+                            </div>
+                        </div>
 
-        <label>Justification:<br>
-            <textarea th:field="*{justification}" rows="4" cols="50" required></textarea>
-        </label><br>
+                        <!-- Section 2: Schedule & Fee -->
+                        <div class="section-header">
+                            <i class="bi bi-calendar-range-fill"></i> 2. Schedule & Financial Details
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">From Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" th:field="*{fromDate}" id="fromDateInput" required />
+                                <div class="form-text small">Must start on a future working day (Monday - Friday)</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">To Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" th:field="*{toDate}" id="toDateInput" required />
+                                <div class="form-text small">Must end on a working day after or on From Date</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Course Fee (S$)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">S$</span>
+                                    <input type="number" step="0.01" min="0" class="form-control" th:field="*{fee}" id="feeInput" placeholder="0.00" />
+                                </div>
+                                <div class="form-text small" id="feeHint">Deducted from annual budget for External & Certification categories</div>
+                            </div>
 
-        <label>Work Dissemination (optional):<br>
-            <textarea th:field="*{dissemination}" rows="3" cols="50"></textarea>
-        </label><br><br>
+                            <div class="col-md-6 d-flex align-items-center">
+                                <div class="form-check p-3 border rounded-3 w-100 bg-light" id="halfDayContainer">
+                                    <input class="form-check-input" type="checkbox" th:field="*{halfDay}" id="halfDayCheck">
+                                    <label class="form-check-label fw-semibold ms-1" for="halfDayCheck">
+                                        Half-day session
+                                    </label>
+                                    <div class="small text-secondary mt-1">Allowed for Internal Training only; From and To dates must match</div>
+                                </div>
+                            </div>
+                        </div>
 
-        <button type="submit">Submit Application</button>
-    </form>
+                        <!-- Section 3: Justification & Sharing -->
+                        <div class="section-header">
+                            <i class="bi bi-chat-left-text-fill"></i> 3. Justification & Value Proposition
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Course Justification <span class="text-danger">*</span></label>
+                            <textarea class="form-control" th:field="*{justification}" rows="3" placeholder="Explain how this course benefits your professional work and organizational goals..." required></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Work Dissemination Plan (Optional)</label>
+                            <textarea class="form-control" th:field="*{dissemination}" rows="2" placeholder="e.g. Conduct a team sharing session or prepare knowledge documentation within 2 weeks of completion..."></textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a th:href="@{/employee/history}" class="btn btn-outline-secondary px-4 rounded-pill">
+                                <i class="bi bi-arrow-left"></i> Cancel & Return
+                            </a>
+                            <button type="submit" class="btn btn-submit rounded-pill">
+                                <i class="bi bi-send-check-fill me-1"></i> Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categorySelect = document.getElementById('categorySelect');
+        const halfDayCheck = document.getElementById('halfDayCheck');
+        const halfDayContainer = document.getElementById('halfDayContainer');
+        const feeInput = document.getElementById('feeInput');
+
+        function updateFormRules() {
+            const cat = categorySelect.value;
+            if (cat === 'INTERNAL') {
+                halfDayCheck.disabled = false;
+                halfDayContainer.classList.remove('opacity-50');
+                if (!feeInput.value || feeInput.value === '0') {
+                    feeInput.value = '0';
+                }
+            } else {
+                halfDayCheck.checked = false;
+                halfDayCheck.disabled = true;
+                halfDayContainer.classList.add('opacity-50');
+            }
+        }
+        categorySelect.addEventListener('change', updateFormRules);
+        window.addEventListener('DOMContentLoaded', updateFormRules);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
