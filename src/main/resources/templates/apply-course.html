@@ -23,6 +23,7 @@
 
         <label>From: <input type="date" th:field="*{fromDate}" required /></label><br>
         <label>To: <input type="date" th:field="*{toDate}" required /></label><br><br>
+        <label><input type="checkbox" th:field="*{halfDay}" /> Half-day session (INTERNAL only)</label><br><br>
 
         <label>Course Fee (S$): <input type="number" step="0.01" min="0" th:field="*{fee}" /></label><br><br>
 

@@ -45,6 +45,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
 
     @Override
     public String submitApplication(CourseApplication application, Employee employee) {
+
         String error = validateBasicRules(application);
         String overlapError = validateOverlap(application, employee, null);
         if (overlapError != null) {
@@ -55,7 +56,14 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
 
         application.setEmployee(employee);
-        application.setTrainingDays(countTrainingDays(application.getFromDate(), application.getToDate()));
+        double days;
+        if (Boolean.TRUE.equals(application.getHalfDay())) {
+            days = 0.5;
+        } else {
+            days = countTrainingDays(application.getFromDate(), application.getToDate());
+        }
+        application.setTrainingDays(days);
+
         String entitlementError = validateEntitlement(application, employee);
         if (entitlementError != null) {
             return entitlementError;
@@ -71,9 +79,17 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (from == null || to == null) {
             return "Course start and end dates must be provided";
         }
-        if (!from.isBefore(to)) {
+        if (Boolean.TRUE.equals(application.getHalfDay())) {
+            if (!"INTERNAL".equals(application.getCategory())) {
+                return "Half-day sessions are allowed for Internal Training only.";
+            }
+            if (!from.equals(to)) {
+                return "Half-day session must start and end on the same date.";
+            }
+        } else if (!from.isBefore(to)) {
             return "Course start date cannot be after end date";
         }
+
         if (!from.isAfter(LocalDate.now())) {
             return "From date must start in the future";
         }
