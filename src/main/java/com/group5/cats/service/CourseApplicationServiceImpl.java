@@ -52,9 +52,9 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
 
         application.setEmployee(employee);
         application.setTrainingDays(countTrainingDays(application.getFromDate(), application.getToDate()));
-        String quotaError = validateQuota(application, employee);
-        if (quotaError != null) {
-            return quotaError;
+        String entitlementError = validateEntitlement(application, employee);
+        if (entitlementError != null) {
+            return entitlementError;
         }
         application.setStatus("APPLIED");
         courseApplicationRepository.save(application);
@@ -82,30 +82,41 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         return null;
     }
 
-    private String validateQuota(CourseApplication application, Employee employee){
+    private String validateEntitlement(CourseApplication application, Employee employee) {
         int year = application.getFromDate().getYear();
         Optional<AnnualEntitlement> entitlement = entitlementService.findEntitlement(employee.getId(), year);
-         if (entitlement.isEmpty()) {
-        return "No training entitlement configured for " + year + ". Please contact the administrator.";
-    }
+        if (entitlement.isEmpty()) {
+            return "No training entitlement configured for " + year + ". Please contact the administrator.";
+        }
         double limit = entitlement.get().getTrainingDaysLimit();
-        double used=0;
+        double budget = entitlement.get().getTrainingBudget();
+        double usedDays = 0;
+        double usedFees = 0;
         for (CourseApplication existing : courseApplicationRepository.findByEmployee(employee)) {
-        String status = existing.getStatus();
-        if (existing.getFromDate() != null && existing.getFromDate().getYear() == year && (status.equals("APPROVED") || status.equals("COMPLETED")|| status.equals("APPLIED")||status.equals("UPDATED")))
-         {
-            used += existing.getTrainingDays();
-        }}
-        if (used + application.getTrainingDays() > limit) {
-        return "Training days quota exceeded for " + year + ": used " + used
-                + " + requested " + application.getTrainingDays()
-                + " exceeds your limit of " + limit + " days.";
+            String status = existing.getStatus();
+            if (existing.getFromDate() != null && existing.getFromDate().getYear() == year && (status.equals("APPROVED")
+                    || status.equals("COMPLETED") || status.equals("APPLIED") || status.equals("UPDATED"))) {
+                usedDays += existing.getTrainingDays();
+
+                if ("EXTERNAL".equals(existing.getCategory()) || "CERTIFICATION".equals(existing.getCategory())) {
+                    usedFees += existing.getFee();
+                }
+            }
+
+        }
+        if (usedDays + application.getTrainingDays() > limit) {
+            return "Training days quota exceeded for " + year + ": used " + usedDays
+                    + " + requested " + application.getTrainingDays()
+                    + " exceeds your limit of " + limit + " days.";
+        }
+        if (("EXTERNAL".equals(application.getCategory()) || "CERTIFICATION".equals(application.getCategory()))
+                && usedFees + application.getFee() > budget) {
+            return "Training budget exceeded for " + year + ": used $" + usedFees
+                    + " + requested $" + application.getFee()
+                    + " exceeds your annual budget of $" + budget + ".";
         }
         return null;
     }
-    
-    
-
 
     @Override
     public List<CourseApplication> findApplicationsByEmployee(Employee employee) {
