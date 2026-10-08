@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration Home - CATS</title>
+    <style th:replace="~{employee-home :: style}"></style>
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" th:href="@{/admin/home}">CATS</a>
+    <div class="account">
+        <span th:text="${currentUser.name}">System Admin</span>
+        <a th:href="@{/admin/login}">Sign Out</a>
+    </div>
+</header>
+
+<aside class="sidebar">
+    <p class="nav-title">NAVIGATION</p>
+    <nav aria-label="Administration navigation">
+        <a class="active" th:href="@{/admin/home}" aria-current="page">Home</a>
+        <a th:href="@{/admin/employees}">Employees</a>
+        <a th:href="@{/entitlements}">Manage Entitlements</a>
+        <a th:href="@{/admin/providers}">Training Providers</a>
+        <a th:href="@{/admin/common-courses}">Commonly Attended Courses</a>
+        <a th:href="@{/admin/public-holidays}">Public Holidays</a>
+    </nav>
+</aside>
+
+<main class="content">
+    <div class="workspace">
+        <div th:if="${successMessage}"
+             th:text="${successMessage}"
+             class="notice"
+             role="status">
+        </div>
+
+        <div th:if="${errorMessage}"
+             th:text="${errorMessage}"
+             class="notice error"
+             role="alert">
+        </div>
+
+        <h1>Administration Home</h1>
+        <p class="welcome"
+           th:text="'Welcome back, ' + ${currentUser.name} + '.'">
+            Welcome back.
+        </p>
+
+        <h2>Quick Access</h2>
+        <div class="actions">
+            <a th:href="@{/admin/employees}" class="action">
+                <strong>Employee Management</strong>
+                <p>Manage employee accounts, roles and supervisors.</p>
+            </a>
+
+            <a th:href="@{/entitlements}" class="action">
+                <strong>Manage Entitlements</strong>
+                <p>Set annual training day limits and budgets for staff.</p>
+            </a>
+
+            <a th:href="@{/admin/providers}" class="action">
+                <strong>Training Providers</strong>
+                <p>Add, edit and delete training providers.</p>
+            </a>
+
+            <a th:href="@{/admin/common-courses}" class="action">
+                <strong>Commonly Attended Course Catalogue</strong>
+                <p>Maintain commonly attended courses and reference fees.</p>
+            </a>
+
+            <a th:href="@{/admin/public-holidays}" class="action">
+                <strong>Public Holidays</strong>
+                <p>View holidays by year and maintain holiday records.</p>
+            </a>
+        </div>
+
+        <section class="policies" aria-labelledby="policy-title">
+            <h2 id="policy-title">Policy Guidelines</h2>
+            <ul>
+                <li><strong>Working days:</strong> Course start and end dates must be working days (Monday to Friday).</li>
+                <li><strong>Public holidays:</strong> Excluded from training day calculations.</li>
+                <li><strong>Half-day sessions:</strong> Available for Internal Training only.</li>
+                <li><strong>Budget:</strong> External courses and certifications are subject to the employee's annual allowance.</li>
+            </ul>
+        </section>
+    </div>
+</main>
+
+</body>
+</html>

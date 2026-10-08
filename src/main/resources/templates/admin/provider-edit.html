@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Training Provider</title>
+</head>
+<body>
+
+<h1>Edit Training Provider</h1>
+
+<p th:if="${errorMessage != null}"
+   th:text="${errorMessage}">
+</p>
+
+<p>
+    <a th:href="@{/admin/providers}">Back to Training Provider List</a>
+</p>
+
+<form th:action="@{/admin/providers/{id}/update(id=${providerId})}"
+      method="post">
+
+    <p>
+        <label for="name">Provider Name:</label>
+        <input type="text"
+               id="name"
+               name="name"
+               th:value="${name}"
+               maxlength="255"
+               required>
+    </p>
+
+    <p>
+        <button type="submit">Save Changes</button>
+    </p>
+
+</form>
+
+</body>
+</html>

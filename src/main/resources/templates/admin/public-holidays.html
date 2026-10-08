@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Public Holiday Management</title>
+</head>
+<body>
+
+<h1>Public Holiday Management</h1>
+
+<p th:if="${successMessage != null}"
+   th:text="${successMessage}">
+</p>
+
+<p th:if="${errorMessage != null}"
+   th:text="${errorMessage}">
+</p>
+
+<p>
+    <a th:href="@{/employee/home}">Back to Home</a>
+</p>
+
+<p>
+    <a th:href="@{/admin/public-holidays/new}">Add Public Holiday</a>
+</p>
+
+<form th:action="@{/admin/public-holidays}" method="get">
+
+    <p>
+        <label for="year">Year:</label>
+        <input type="number"
+               id="year"
+               name="year"
+               th:value="${selectedYear}"
+               min="1"
+               max="9999"
+               step="1"
+               required>
+
+        <button type="submit">View Public Holidays</button>
+    </p>
+
+</form>
+
+<p>
+    Selected Year:
+    <span th:text="${selectedYear}"></span>
+</p>
+
+<p th:if="${errorMessage == null and #lists.isEmpty(holidays)}">
+    No public holidays found for this year.
+</p>
+
+<table border="1" th:if="${!#lists.isEmpty(holidays)}">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="holiday : ${holidays}">
+        <td th:text="${holiday.id}"></td>
+        <td th:text="${holiday.holidayDate}"></td>
+        <td th:text="${holiday.name}"></td>
+
+        <td>
+            <a th:href="@{/admin/public-holidays/{id}/edit(id=${holiday.id})}">
+                Edit
+            </a>
+
+            <form th:action="@{/admin/public-holidays/{id}/delete(id=${holiday.id})}"
+                  method="post"
+                  onsubmit="return confirm('Are you sure you want to delete this public holiday?');">
+
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

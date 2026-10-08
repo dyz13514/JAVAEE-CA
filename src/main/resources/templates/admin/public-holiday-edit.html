@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Public Holiday</title>
+</head>
+<body>
+
+<h1>Edit Public Holiday</h1>
+
+<p th:if="${errorMessage != null}"
+   th:text="${errorMessage}">
+</p>
+
+<p>
+    <a th:href="@{/admin/public-holidays(year=${selectedYear})}">
+        Back to Public Holiday List
+    </a>
+</p>
+
+<form th:action="@{/admin/public-holidays/{id}/update(id=${holidayId})}"
+      method="post">
+
+    <p>
+        <label for="holidayDate">Holiday Date:</label>
+        <input type="date"
+               id="holidayDate"
+               name="holidayDate"
+               th:value="${holidayDate}"
+               min="0001-01-01"
+               max="9999-12-31"
+               required>
+    </p>
+
+    <p>
+        <label for="name">Holiday Name:</label>
+        <input type="text"
+               id="name"
+               name="name"
+               th:value="${name}"
+               maxlength="255"
+               required>
+    </p>
+
+    <p>
+        <button type="submit">Save Changes</button>
+    </p>
+
+</form>
+
+</body>
+</html>
