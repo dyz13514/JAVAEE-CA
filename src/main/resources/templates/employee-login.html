@@ -1,137 +1,187 @@
-<!DOCTYPE html>
+<!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Staff Login - CATS</title>
     <!-- Bootstrap 5 CSS & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
     <style th:inline="css">
-        :root {
-            --nus-blue: #003D7C;
-            --nus-orange: #EF7C00;
+      :root {
+        --nus-blue: #003d7c;
+        --nus-orange: #ef7c00;
+      }
+      body {
+        background-color: #dce8ed;
+        background-image:
+          linear-gradient(rgba(0, 35, 70, 0.16), rgba(0, 35, 70, 0.16)),
+          url(/*[[@{/images/employee-login-background.png}]]*/"/images/employee-login-background.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+      }
+      .login-card {
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 1.25rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        width: 100%;
+        max-width: 440px;
+        padding: 2.5rem;
+        animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+      .login-card:hover {
+        box-shadow: 0 25px 50px rgba(0, 61, 124, 0.28);
+      }
+      @keyframes cardEntrance {
+        from {
+          opacity: 0;
+          transform: translateY(30px) scale(0.98);
         }
-        body {
-            background-color: #dce8ed;
-            background-image: linear-gradient(rgba(0, 35, 70, 0.16), rgba(0, 35, 70, 0.16)), url(/*[[@{/images/employee-login-background.png}]]*/ '/images/employee-login-background.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
         }
-        .login-card {
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 1.25rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            width: 100%;
-            max-width: 440px;
-            padding: 2.5rem;
-            animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .login-card:hover {
-            box-shadow: 0 25px 50px rgba(0, 61, 124, 0.28);
-        }
-        @keyframes cardEntrance {
-            from { opacity: 0; transform: translateY(30px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .brand-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(0, 61, 124, 0.08);
-            color: var(--nus-blue);
-            padding: 0.35rem 0.85rem;
-            border-radius: 50rem;
-            font-size: 0.825rem;
-            font-weight: 600;
-            margin-bottom: 1.25rem;
-        }
-        .form-floating > .form-control:focus ~ label {
-            color: var(--nus-blue);
-        }
-        .form-control {
-            border-radius: 0.75rem;
-            border: 1.5px solid #e2e8f0;
-            transition: all 0.25s ease;
-        }
-        .form-control:focus {
-            border-color: var(--nus-blue);
-            box-shadow: 0 0 0 4px rgba(0, 61, 124, 0.12);
-        }
-        .btn-submit {
-            background: linear-gradient(135deg, var(--nus-blue) 0%, #002855 100%);
-            border: none;
-            color: #ffffff;
-            font-weight: 600;
-            padding: 0.85rem;
-            border-radius: 0.75rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-submit:hover {
-            background: linear-gradient(135deg, #004c99 0%, var(--nus-blue) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 61, 124, 0.35);
-            color: #ffffff;
-        }
-        .role-switch-link {
-            color: #64748b;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.2s ease;
-        }
-        .role-switch-link:hover {
-            color: var(--nus-orange);
-        }
+      }
+      .brand-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(0, 61, 124, 0.08);
+        color: var(--nus-blue);
+        padding: 0.35rem 0.85rem;
+        border-radius: 50rem;
+        font-size: 0.825rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+      }
+      .form-floating > .form-control:focus ~ label {
+        color: var(--nus-blue);
+      }
+      .form-control {
+        border-radius: 0.75rem;
+        border: 1.5px solid #e2e8f0;
+        transition: all 0.25s ease;
+      }
+      .form-control:focus {
+        border-color: var(--nus-blue);
+        box-shadow: 0 0 0 4px rgba(0, 61, 124, 0.12);
+      }
+      .btn-submit {
+        background: linear-gradient(135deg, var(--nus-blue) 0%, #002855 100%);
+        border: none;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 0.85rem;
+        border-radius: 0.75rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .btn-submit:hover {
+        background: linear-gradient(135deg, #004c99 0%, var(--nus-blue) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 61, 124, 0.35);
+        color: #ffffff;
+      }
+      .role-switch-link {
+        color: #64748b;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.2s ease;
+      }
+      .role-switch-link:hover {
+        color: var(--nus-orange);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container d-flex justify-content-center px-3">
-        <div class="login-card">
-            <div class="text-center">
-                <div class="brand-badge">
-                    <i class="bi bi-mortarboard-fill"></i> NUS-ISS CATS
-                </div>
-                <h3 class="fw-bold text-dark mb-1">Staff Sign In</h3>
-                <p class="text-secondary small mb-4">forget password? call +65 12345678</p>
-            </div>
-
-            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show d-flex align-items-center py-2 px-3 mb-4 rounded-3" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-                <div th:text="${errorMessage}" class="small">Invalid username or password</div>
-                <button type="button" class="btn-close ms-auto p-2" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-
-            <form th:action="@{/employee/login}" method="post">
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Username" required autocomplete="username">
-                    <label for="username"><i class="bi bi-person me-1"></i> Username</label>
-                </div>
-                <div class="form-floating mb-4">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required autocomplete="current-password">
-                    <label for="password"><i class="bi bi-shield-lock me-1"></i> Password</label>
-                </div>
-                <button type="submit" class="btn btn-submit w-100 mb-3">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Portal
-                </button>
-            </form>
-
-            <div class="text-center pt-2 border-top">
-                <a th:href="@{/admin/login}" class="role-switch-link">
-                    <i class="bi bi-gear-fill me-1"></i> Switch to Administrator Portal
-                </a>
-            </div>
+      <div class="login-card">
+        <div class="text-center">
+          <div class="brand-badge">
+            <i class="bi bi-mortarboard-fill"></i> NUS-ISS CATS
+          </div>
+          <h3 class="fw-bold text-dark mb-1">Staff Sign In</h3>
+          <p class="text-secondary small mb-4">
+            Forget Password? Call: +65 12345678
+          </p>
         </div>
+
+        <div
+          th:if="${errorMessage}"
+          class="alert alert-danger alert-dismissible fade show d-flex align-items-center py-2 px-3 mb-4 rounded-3"
+          role="alert"
+        >
+          <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+          <div th:text="${errorMessage}" class="small">
+            Invalid username or password
+          </div>
+          <button
+            type="button"
+            class="btn-close ms-auto p-2"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
+
+        <form th:action="@{/employee/login}" method="post">
+          <div class="form-floating mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="username"
+              name="username"
+              placeholder="Username"
+              required
+              autocomplete="username"
+            />
+            <label for="username"
+              ><i class="bi bi-person me-1"></i> Username</label
+            >
+          </div>
+          <div class="form-floating mb-4">
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              placeholder="Password"
+              required
+              autocomplete="current-password"
+            />
+            <label for="password"
+              ><i class="bi bi-shield-lock me-1"></i> Password</label
+            >
+          </div>
+          <button type="submit" class="btn btn-submit w-100 mb-3">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Portal
+          </button>
+        </form>
+
+        <div class="text-center pt-2 border-top">
+          <a th:href="@{/admin/login}" class="role-switch-link">
+            <i class="bi bi-gear-fill me-1"></i> Switch to Administrator Portal
+          </a>
+        </div>
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  </body>
 </html>
