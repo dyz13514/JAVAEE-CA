@@ -1,5 +1,6 @@
 package com.group5.cats.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -261,6 +262,49 @@ public class EntitlementServiceImpl implements EntitlementService {
 		}
 		
 		annualEntitlementRepository.delete(result.get());
+	}
+	
+	@Override
+	public String createPatchDefaultEntitlementsForCurrentYear() {
+
+	    int currentYear = LocalDate.now().getYear();
+
+	    int createdCount = 0;
+	    int existingCount = 0;
+	    int skippedCount = 0;
+
+	    List<Long> skippedEmployeeIds = new ArrayList<>();
+
+	    List<Employee> employees = employeeRepository.findAll();
+
+	    for (Employee employee : employees) {
+
+	        if (findEntitlement(employee.getId(), currentYear).isPresent()) {
+
+	            existingCount++;
+
+	        } else if (employee.getDesignation() == null) {
+
+	            skippedCount++;
+	            skippedEmployeeIds.add(employee.getId());
+
+	        } else {
+
+	            createDefaultEntitlement(employee.getId(), currentYear);
+	            createdCount++;
+	        }
+	    }
+
+	    String message = "Year " + currentYear
+	            + ": created " + createdCount
+	            + ", already existed " + existingCount
+	            + ", skipped (missing designation) " + skippedCount + ".";
+
+	    if (skippedCount > 0) {
+	        message += " Skipped employee IDs: " + skippedEmployeeIds;
+	    }
+
+	    return message;
 	}
 
 }
