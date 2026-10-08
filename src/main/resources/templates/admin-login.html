@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator Login - CATS</title>
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --admin-dark: #1e1b4b;
+            --admin-accent: #6366f1;
+        }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+        }
+        .admin-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 1.25rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
+            width: 100%;
+            max-width: 440px;
+            padding: 2.5rem;
+            animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: transform 0.3s ease;
+        }
+        .admin-card:hover {
+            transform: translateY(-4px);
+        }
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .shield-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 1rem;
+            background: #ede9fe;
+            color: var(--admin-accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+        }
+        .form-control {
+            border-radius: 0.75rem;
+            border: 1.5px solid #e2e8f0;
+            transition: all 0.25s ease;
+        }
+        .form-control:focus {
+            border-color: var(--admin-accent);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+        .btn-admin {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 0.85rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        .btn-admin:hover {
+            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container d-flex justify-content-center px-3">
+        <div class="admin-card">
+            <div class="text-center">
+                <div class="shield-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">Admin Portal</h3>
+                <p class="text-secondary small mb-4">Course Application Tracking System</p>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show d-flex align-items-center py-2 px-3 mb-4 rounded-3" role="alert">
+                <i class="bi bi-shield-x me-2 fs-5"></i>
+                <div th:text="${errorMessage}" class="small">Invalid admin username or password</div>
+                <button type="button" class="btn-close ms-auto p-2" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <form th:action="@{/admin/login}" method="post">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Admin Username" required autocomplete="username">
+                    <label for="username"><i class="bi bi-person-gear me-1"></i> Admin Username</label>
+                </div>
+                <div class="form-floating mb-4">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required autocomplete="current-password">
+                    <label for="password"><i class="bi bi-key-fill me-1"></i> Admin Credentials</label>
+                </div>
+                <button type="submit" class="btn btn-admin w-100 mb-3">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Authenticate & Access Console
+                </button>
+            </form>
+
+            <div class="text-center pt-2 border-top">
+                <a th:href="@{/employee/login}" class="text-secondary text-decoration-none small">
+                    <i class="bi bi-arrow-left me-1"></i> Return to Staff Sign In
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

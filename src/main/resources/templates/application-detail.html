@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Detail - CATS</title>
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --nus-blue: #003D7C;
+            --nus-orange: #EF7C00;
+            --bg-body: #f8fafc;
+        }
+        body {
+            background-color: var(--bg-body);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .detail-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            padding: 2.25rem;
+            margin-bottom: 1.75rem;
+        }
+        .status-banner {
+            border-radius: 1rem;
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+        }
+        .status-banner.APPLIED { background: #e0f2fe; color: #0284c7; }
+        .status-banner.UPDATED { background: #fef3c7; color: #b45309; }
+        .status-banner.APPROVED { background: #dcfce7; color: #16a34a; }
+        .status-banner.REJECTED { background: #fee2e2; color: #dc2626; }
+        .status-banner.COMPLETED { background: #ccfbf1; color: #0d9488; }
+        .status-banner.CANCELLED, .status-banner.DELETED { background: #f1f5f9; color: #475569; }
+
+        .param-grid dt {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.5px;
+        }
+        .param-grid dd {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+        }
+        .comment-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--nus-blue);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+        }
+        .btn-action-withdraw {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        .btn-action-withdraw:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" th:href="@{/employee/home}">
+                <i class="bi bi-mortarboard-fill text-warning"></i> NUS-ISS CATS
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a th:href="@{/employee/history}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left"></i> Back to History
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <!-- Status Banner -->
+                <div th:class="'status-banner ' + ${courseApplication.status}">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-patch-question-fill fs-2" th:if="${courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED'}"></i>
+                        <i class="bi bi-patch-check-fill fs-2" th:if="${courseApplication.status == 'APPROVED' or courseApplication.status == 'COMPLETED'}"></i>
+                        <i class="bi bi-patch-exclamation-fill fs-2" th:if="${courseApplication.status == 'REJECTED' or courseApplication.status == 'CANCELLED' or courseApplication.status == 'DELETED'}"></i>
+                        <div>
+                            <div class="small text-uppercase fw-bold opacity-75">Workflow State</div>
+                            <h4 class="fw-bold mb-0" th:text="${courseApplication.status}">STATUS</h4>
+                        </div>
+                    </div>
+                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill fw-semibold" th:text="'App ID: #' + ${courseApplication.id}">#ID</span>
+                </div>
+
+                <!-- Main Detail Panel -->
+                <div class="detail-card">
+                    <div class="border-bottom pb-3 mb-4">
+                        <span class="badge bg-primary-subtle text-primary border px-2 py-1 mb-2" th:text="${courseApplication.category}">Category</span>
+                        <h2 class="fw-bold text-dark mb-0" th:text="${courseApplication.courseTitle}">Course Title</h2>
+                    </div>
+
+                    <dl class="row param-grid">
+                        <div class="col-md-4">
+                            <dt><i class="bi bi-building"></i> Training Provider</dt>
+                            <dd th:text="${courseApplication.provider != null and !courseApplication.provider.isEmpty() ? courseApplication.provider : 'Not Specified'}">Provider</dd>
+                        </div>
+                        <div class="col-md-4">
+                            <dt><i class="bi bi-calendar-event"></i> Course Period</dt>
+                            <dd th:text="${courseApplication.fromDate} + ' to ' + ${courseApplication.toDate}">From to To</dd>
+                        </div>
+                        <div class="col-md-4">
+                            <dt><i class="bi bi-cash-stack"></i> Total Course Fee</dt>
+                            <dd class="text-primary" th:text="'S$ ' + ${courseApplication.fee}">S$ 0</dd>
+                        </div>
+
+                        <div class="col-12">
+                            <dt><i class="bi bi-chat-square-quote"></i> Course Justification</dt>
+                            <dd class="fw-normal text-secondary mb-4" th:text="${courseApplication.justification}">Justification text</dd>
+                        </div>
+
+                        <div class="col-12" th:if="${courseApplication.dissemination != null and !courseApplication.dissemination.isEmpty()}">
+                            <dt><i class="bi bi-share"></i> Work Dissemination Plan</dt>
+                            <dd class="fw-normal text-secondary mb-4" th:text="${courseApplication.dissemination}">Dissemination</dd>
+                        </div>
+
+                        <div class="col-12">
+                            <dt><i class="bi bi-person-lines-fill"></i> Manager Decision &amp; Rationale</dt>
+                            <dd>
+                                <div class="comment-box text-dark fw-normal" th:text="${courseApplication.managerComment != null ? courseApplication.managerComment : 'Pending supervisor review...'}">
+                                    Pending review
+                                </div>
+                            </dd>
+                        </div>
+
+                        <div class="col-12" th:if="${courseApplication.experienceComments != null}">
+                            <dt><i class="bi bi-star"></i> Post-Training Experience Comments</dt>
+                            <dd>
+                                <div class="p-3 bg-light rounded-3 text-secondary fw-normal" th:text="${courseApplication.experienceComments}">-</div>
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <!-- Bottom Action Controls -->
+                    <div class="pt-3 border-top d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                        <div>
+                            <a th:href="@{/employee/history}" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="bi bi-arrow-left"></i> Return to History
+                            </a>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <!-- Edit & Withdraw for APPLIED / UPDATED -->
+                            <a th:if="${courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED'}"
+                               th:href="@{/employee/history/{id}/edit(id=${courseApplication.id})}"
+                               class="btn btn-warning rounded-pill px-4 fw-semibold text-dark">
+                                <i class="bi bi-pencil-square"></i> Edit Application
+                            </a>
+
+                            <form method="post" th:action="@{/employee/history/{id}/withdraw(id=${courseApplication.id})}"
+                                  th:if="${courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED'}"
+                                  onsubmit="return confirm('Are you sure you want to withdraw this application? Status will be changed to DELETED.');">
+                                <button type="submit" class="btn btn-action-withdraw btn-outline-danger rounded-pill px-4">
+                                    <i class="bi bi-trash3"></i> Withdraw Application
+                                </button>
+                            </form>
+
+                            <!-- Cancel for APPROVED -->
+                            <form method="post" th:action="@{/employee/history/{id}/cancel(id=${courseApplication.id})}"
+                                  th:if="${courseApplication.status == 'APPROVED'}"
+                                  onsubmit="return confirm('Are you sure you want to cancel this approved application? Status will be changed to CANCELLED.');">
+                                <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                                    <i class="bi bi-x-circle"></i> Cancel Application
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post-Course Completion Panel for APPROVED -->
+                <div class="detail-card border-success" th:if="${courseApplication.status == 'APPROVED'}">
+                    <div class="d-flex align-items-center gap-2 text-success mb-3">
+                        <i class="bi bi-check2-circle fs-4"></i>
+                        <h5 class="fw-bold mb-0">Post-Training Completion Feedback</h5>
+                    </div>
+                    <p class="text-secondary small mb-3">Once the approved course has ended, submit your experience comments to mark the training as <strong>COMPLETED</strong>.</p>
+                    
+                    <form method="post" th:action="@{/employee/history/{id}/complete(id=${courseApplication.id})}">
+                        <div class="mb-3">
+                            <textarea name="experienceComments" rows="3" class="form-control" placeholder="Provide mandatory experience comments and key learnings from the attended session..." required></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success rounded-pill px-4">
+                                <i class="bi bi-check-lg me-1"></i> Submit Feedback &amp; Mark as Completed
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

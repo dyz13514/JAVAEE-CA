@@ -1,6 +1,5 @@
 package com.group5.cats.model;
 
-import java.math.BigDecimal;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,9 +8,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "annual_entitlements")
+@Table(name = "annual_entitlements",
+       uniqueConstraints = @UniqueConstraint(
+    		   name = "uk_entitlement_employee_year",
+    		   columnNames = {"employee_id","entitlementYear"}))
 public class AnnualEntitlement {
 	
 	@Id
@@ -24,17 +27,17 @@ public class AnnualEntitlement {
 	
 	private Integer entitlementYear;
 	
-	private BigDecimal trainingDaysLimit;
+	private double trainingDaysLimit;
 	
-	private BigDecimal trainingBudget;
+	private double trainingBudget;
 
 	
 	
 	public AnnualEntitlement() {
 	}
 
-	public AnnualEntitlement(Employee employee, Integer entitlementYear, BigDecimal trainingDaysLimit,
-			BigDecimal trainingBudget) {
+	public AnnualEntitlement(Employee employee, Integer entitlementYear, double trainingDaysLimit,
+			double trainingBudget) {
 		this.employee = employee;
 		this.entitlementYear = entitlementYear;
 		this.trainingDaysLimit = trainingDaysLimit;
@@ -65,19 +68,19 @@ public class AnnualEntitlement {
 		this.entitlementYear = entitlementYear;
 	}
 
-	public BigDecimal getTrainingDaysLimit() {
+	public double getTrainingDaysLimit() {
 		return trainingDaysLimit;
 	}
 
-	public void setTrainingDaysLimit(BigDecimal trainingDaysLimit) {
+	public void setTrainingDaysLimit(double trainingDaysLimit) {
 		this.trainingDaysLimit = trainingDaysLimit;
 	}
 
-	public BigDecimal getTrainingBudget() {
+	public double getTrainingBudget() {
 		return trainingBudget;
 	}
 
-	public void setTrainingBudget(BigDecimal trainingBudget) {
+	public void setTrainingBudget(double trainingBudget) {
 		this.trainingBudget = trainingBudget;
 	}
 	
