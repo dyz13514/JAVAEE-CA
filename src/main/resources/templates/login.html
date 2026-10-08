@@ -8,13 +8,13 @@
         * { box-sizing: border-box; }
         body { margin: 0; background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; }
         .login-layout { display: grid; grid-template-columns: 45% 55%; width: 100%; max-width: 1600px; margin: 0 auto; min-height: 100vh; }
-        .artwork { margin: 0; padding: 0 12px; height: 100vh; border-right: 1px solid #d9d9d9; }
+        .artwork { margin: 0; padding: 0 24px; height: 100vh; border-right: 1px solid #d9d9d9; }
         .artwork img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: right center; }
-        .login-panel { padding: clamp(24px, 4vh, 48px) 64px 64px 16px; text-align: center; }
+        .login-panel { padding: clamp(24px, 4vh, 48px) 24px 64px; text-align: center; }
         h1 { max-width: 760px; margin: 0 auto; color: #0039a6; font-size: clamp(28px, 2.3vw, 44px); line-height: 1.2; font-weight: 700; }
-        h2 { width: min(100%, 280px); margin: 36px auto 28px; color: #808080; font-size: 7.2px; line-height: 1.2; text-align: left; }
-        .login-options { display: flex; flex-direction: column; gap: 28px; width: min(100%, 280px); margin: 0 auto; }
-        .login-link { display: flex; justify-content: center; align-items: center; min-height: 44px; padding: 6px 12px; border: 2px solid #0039a6; border-radius: 9px; color: #0039a6; background: #fff; font-size: clamp(20px, 1.3vw, 24px); line-height: 1.2; text-decoration: none; transition: background-color .15s, color .15s; }
+        h2 { width: min(100%, 140px); margin: 36px auto 28px; color: #808080; font-size: 14.4px; line-height: 1.2; text-align: left; }
+        .login-options { display: flex; flex-direction: column; gap: 28px; width: min(100%, 140px); margin: 0 auto; }
+        .login-link { display: flex; justify-content: center; align-items: center; min-height: 22px; padding: 3px 6px; border: 1px solid #0039a6; border-radius: 5px; color: #0039a6; background: #fff; font-size: clamp(10px, .65vw, 12px); line-height: 1.2; text-decoration: none; transition: background-color .15s, color .15s; }
         .login-link.primary { color: #fff; background: #0039a6; }
         .login-link:hover { background: #edf3ff; }
         .login-link.primary:hover { background: #002b80; border-color: #002b80; }
@@ -25,9 +25,9 @@
             .artwork img { object-position: center; }
             .login-panel { padding: 24px 24px 48px; }
             h1 { font-size: 28px; }
-            h2 { margin: 24px auto; font-size: 6px; }
+            h2 { margin: 24px auto; font-size: 12px; }
             .login-options { gap: 24px; }
-            .login-link { font-size: 22px; }
+            .login-link { font-size: 11px; }
         }
     </style>
 </head>
