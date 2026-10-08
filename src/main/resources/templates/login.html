@@ -78,7 +78,7 @@
             content.style.transform = `scale(${scale})`;
             // Lower only the information block into unused space; keep the upper layout unchanged.
             const spareHeight = Math.max(0, availableHeight / scale - content.scrollHeight);
-            const informationOffset = spareHeight;
+            const informationOffset = Math.max(0, spareHeight - 16 / scale);
             content.style.setProperty('--information-offset', `${informationOffset}px`);
         }
         new ResizeObserver(fitContent).observe(panel);
