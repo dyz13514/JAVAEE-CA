@@ -30,6 +30,12 @@ public class LoginController {
             HttpSession session, RedirectAttributes redirectAttrs) {
         Optional<Employee> employee = authService.login(username, password);
         if (employee.isPresent()) {
+        	if (employee.get().getRole() == EmployeeRole.ADMIN) {
+        		redirectAttrs.addFlashAttribute("errorMessage",
+        				"Administrators must use the admin login page.");
+        		return "redirect:/employee/login";
+        		
+        	}
             session.setAttribute("loggedInUser", employee.get());
             return "redirect:/employee/home";
         } else {
@@ -48,7 +54,7 @@ public class LoginController {
             Optional<Employee> admin = authService.login(username, password);
             if (admin.isPresent() && admin.get().getRole()== EmployeeRole.ADMIN) {
                 session.setAttribute("loggedInUser", admin.get());
-                return "redirect:/entitlements";
+                return "redirect:/employee/home";
             } else {
                 redirectAttrs.addFlashAttribute("errorMessage", "Invalid admin username or password");
                 return "redirect:/admin/login";
