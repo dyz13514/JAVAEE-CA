@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.group5.cats.model.AnnualEntitlement;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeRole;
+import com.group5.cats.model.EntitlementSummary;
 import com.group5.cats.repository.EmployeeRepository;
 import com.group5.cats.service.EntitlementService;
 
@@ -45,28 +45,17 @@ public class EntitlementController {
 	}
 	
 	private List<Employee> getQueryableEmployees(Employee currentUser) {
-		
-		if(currentUser.getRole() == EmployeeRole.ADMIN) {
-			return employeeRepository.findAll();
-		}
-		
-		List<Employee> toBeViewedEmployees = new ArrayList<>();
-		toBeViewedEmployees.add(currentUser);
-		
-		if(currentUser.getRole() == EmployeeRole.MANAGER) {
-			toBeViewedEmployees.addAll(employeeRepository.findBySupervisor_Id(currentUser.getId()));
-		}
-		
-		return toBeViewedEmployees;
+	
+		return entitlementService.getQueryableEmployees(currentUser);
 	}
-	//使用List，因为我们这一个方法就可以覆盖三个角色的查询额度。ADMIN查全部，MANAGER和REGULAR_STAFF至少能看到自己，而MANAGER除了自己的还在List加上自己当supervisor的下属
+
 	
 	@GetMapping("/entitlements")
 	public String showEntitlement(
 			@RequestParam(required = false) Long employeeId,
 			@RequestParam(required = false) Integer entitlementYear,
 			HttpSession session,
-			Model model)   //对于URL或其他形式传入参数如abc、超出类型范围的数字等无法转换成 Long、Integer时，Spring 在进入方法前拒绝，通常返回 400，无设置的 message
+			Model model)
 	{
 		
 		Employee currentUser = getCurrentUser(session);
@@ -74,7 +63,6 @@ public class EntitlementController {
 		if(currentUser == null) {
 			return "redirect:/employee/login";
 		}
-		//未登录，跳转到登录页
 		
 		List<Employee> toBeViewedEmployees = getQueryableEmployees(currentUser);
 		
@@ -84,7 +72,6 @@ public class EntitlementController {
 		} else {
 			selectedId = employeeId;
 		}
-		//已登录且请求未传 employeeId 时，默认查询自己
 		
 		Integer selectedYear;
 		if (entitlementYear == null) {
@@ -92,7 +79,6 @@ public class EntitlementController {
 		} else {
 			selectedYear = entitlementYear;
 		}
-		// 已登录且请求未传 entitlementYear 时，默认查询当前年份。
 		
 		
 
@@ -100,8 +86,7 @@ public class EntitlementController {
 		model.addAttribute("toBeViewedEmployees", toBeViewedEmployees);
 		model.addAttribute("selectedId", selectedId);
 		model.addAttribute("selectedYear", selectedYear);
-		model.addAttribute("canEdit", currentUser.getRole() == EmployeeRole.ADMIN);//传递true或false。html根据true或false检查是否展现编辑div模块
-		//向页面传递数据。传递可以被看到的所有toBeViewedEmployees和对应的id，year
+		model.addAttribute("canEdit", currentUser.getRole() == EmployeeRole.ADMIN);
 		
 		Employee selectedEmployee = null;
 		
@@ -116,23 +101,25 @@ public class EntitlementController {
 			model.addAttribute("message", "You are not authorised.");
 			return "entitlement";
 		}
-		//即通过id检查出selectedEmployee不在toBeViewedEmployees里。
-		//可能是员工存在但无权查询，也可能没有对应员工
-		//零或负数 ID 也会因没有匹配项而在这里被拒绝。
-		//总之会直接返回"entitlement"不执行之后的。
-		//此时只通过employee.getId()判断员工是否在可被查询的范围。没有验证年份，年份在后面findEntitlement调用到validateInputs验证
 		
 		
 		model.addAttribute("selectedEmployee", selectedEmployee);
-		//向页面传递数据。传递被选择查看的selectedEmployee
 		
 		try{
-		Optional<AnnualEntitlement> result = entitlementService.findEntitlement(selectedId, selectedYear);
-		
+		Optional<EntitlementSummary> result = entitlementService.getEntitlementSummary(selectedId, selectedYear);
 		
 			if(result.isPresent()) {
+				
+				EntitlementSummary summary = result.get();
 		
-			model.addAttribute("entitlement", result.get());
+
+			model.addAttribute("entitlement", summary);
+			
+			model.addAttribute("occupiedDays", summary.getOccupiedDays());
+			model.addAttribute("occupiedBudget", summary.getOccupiedBudget());
+			model.addAttribute("remainingDays", summary.getRemainingDays());
+			model.addAttribute("remainingBudget", summary.getRemainingBudget());
+			
 		} else {
 			model.addAttribute("message", "No entitlement record for this employee in this year.");
 		}
@@ -140,9 +127,6 @@ public class EntitlementController {
 	catch (IllegalArgumentException exception) {
 		model.addAttribute("message", exception.getMessage());
 	}
-		//try-catch 使用到findEntitlement，也就调用到validateInputs，当validateInputs throw出异常由catch接住。
-		//前面程序已通过Id判断员工是否在可被查询的范围，这里if-else判断根据年份找没找到记录。
-		//没有记录本身不是异常，只显示 message。
 		
 		
 		return "entitlement";
@@ -177,16 +161,45 @@ public class EntitlementController {
 		} catch (IllegalArgumentException exception) {
 			redirectAttributes.addFlashAttribute("saveMessage", exception.getMessage());
 		}
-		//和之前showEntitlement()调用findEntitlement()因此调用validateInputs一样
-		//这里setEntitlement因此调用validateInputs，有抛出的exception需要catch
-		//使用addFlashAttribute不是addAttribute因为是在"redirect:/entitlements"显示，产生第二次请求的原因是 redirect:，需要用addFlashAttribute在第二次请求临时保存显示
 		
 		
 		redirectAttributes.addAttribute("employeeId",employeeId);
 		redirectAttributes.addAttribute("entitlementYear",entitlementYear);
 		
 		return "redirect:/entitlements";
-		//这里redirect，因为可能修改了数据库，保存后重新展示，同时避免反复刷新提交多个（suria Mentioned）
+		
+	}
+	
+	@PostMapping("/admin/entitlements/delete")
+	public String deleteEntitlement (
+			@RequestParam Long employeeId,
+			@RequestParam Integer entitlementYear,
+			HttpSession session,
+			RedirectAttributes redirectAttributes) {
+		
+		Employee currentUser = getCurrentUser(session);
+		if (currentUser == null) {
+			return "redirect:/employee/login";
+		}
+		
+		if(currentUser.getRole() != EmployeeRole.ADMIN) {
+			redirectAttributes.addFlashAttribute("saveMessage", 
+					"Only administrators can delete entitlements.");
+			return "redirect:/entitlements";
+		}
+		
+		try{
+			entitlementService.deleteEntitlement(employeeId, entitlementYear);
+			redirectAttributes.addFlashAttribute("saveMessage", "Entitlement deleted.");
+		} catch (IllegalArgumentException exception) {
+			redirectAttributes.addFlashAttribute("saveMessage", exception.getMessage());
+		}
+		
+		redirectAttributes.addAttribute("employeeId",employeeId);
+		redirectAttributes.addAttribute("entitlementYear",entitlementYear);
+		
+		return "redirect:/entitlements";
+
 		
 	}
 	
@@ -230,10 +243,11 @@ public class EntitlementController {
 		
 		if(searchedEmployees.isEmpty()) {
 			model.addAttribute("message", "No matching employees.");
+		} else {
+			model.addAttribute("message", "Search successful, found " + searchedEmployees.size() + " employee(s). Use the Employee bar to select.");
 		}
 		
 		return "entitlement";
-		//这里不redirect，因为只是重新渲染出查到的页面
 			
 		}
 

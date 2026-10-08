@@ -1,13 +1,19 @@
 package com.group5.cats.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.group5.cats.model.AnnualEntitlement;
+import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeDesignation;
+import com.group5.cats.model.EmployeeRole;
+import com.group5.cats.model.EntitlementSummary;
 import com.group5.cats.repository.AnnualEntitlementRepository;
+import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
 
 @Service
@@ -15,15 +21,17 @@ public class EntitlementServiceImpl implements EntitlementService {
 	
 	private final AnnualEntitlementRepository annualEntitlementRepository;
 	private final EmployeeRepository employeeRepository;
+	private final CourseApplicationRepository courseApplicationRepository;
 	
 	private static final double ADMINISTRATIVE_DAYS = 50.0;
 	private static final double PROFESSIONAL_DAYS = 100.0;
 	private static final double DEFAULT_TRAINING_BUDGET = 20000.0;
 	
 	public EntitlementServiceImpl(AnnualEntitlementRepository annualEntitlementRepository,
-			EmployeeRepository employeeRepository) {
+			EmployeeRepository employeeRepository, CourseApplicationRepository courseApplicationRepository) {
 		this.annualEntitlementRepository = annualEntitlementRepository;
 		this.employeeRepository = employeeRepository;
+		this.courseApplicationRepository = courseApplicationRepository;
 	}
 	
 	private void validateInputs(
@@ -60,14 +68,12 @@ public class EntitlementServiceImpl implements EntitlementService {
 		}
 		
 		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
-		//这里参考了 demo 项目 EmployeeService 中，查询员工不存在时使用lambda orElseThrow 的写法。
 		
 		double daysLimit = getDefaultTrainingDays(employee.getDesignation());
 		
 		AnnualEntitlement entitlement = new AnnualEntitlement(
 				employee, 
 				entitlementYear,
-				//这里没有检查entitlementYear是过去还是未来，传入什么entitlementYear录入什么，因为创建的entitlement记录可以录入之前的也可以录入之后的
 				daysLimit,
 				DEFAULT_TRAINING_BUDGET);
 				
@@ -109,7 +115,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 			throw new IllegalArgumentException("trainingBudget must >= 0.");
 		}
 		
-		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist.")); 
+		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
 		
 		Optional<AnnualEntitlement> existing = annualEntitlementRepository
 				.findByEmployeeIdAndEntitlementYear(employeeId, entitlementYear);
@@ -133,6 +139,128 @@ public class EntitlementServiceImpl implements EntitlementService {
 		
 			}
 	
+	private List<CourseApplication> getOccupyingApplications(
+			Long employeeId, Integer entitlementYear) {
+		validateInputs(employeeId, entitlementYear);
+		
+		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
+		
+		List<CourseApplication> applications = courseApplicationRepository.findByEmployee(employee);
+		
+		List<CourseApplication> occupyingApplications = new ArrayList<>();
+		
+		for (CourseApplication application : applications) {
+			if (application.getFromDate() != null  && application.getFromDate().getYear() == entitlementYear) {
+				String status = application.getStatus();
+				if("APPLIED".equals(status) || "UPDATED".equals(status) || "APPROVED".equals(status) || "COMPLETED".equals(status) ) {
+					occupyingApplications.add(application);
+				}
+			}
+		}
+		
+		return occupyingApplications;
+	}
 	
+	@Override
+	public double getOccupiedTrainingDays(Long employeeId, Integer entitlementYear) {
+		List<CourseApplication> applications = getOccupyingApplications(employeeId, entitlementYear);
+		double occupiedDays= 0.0;
+		
+		for (CourseApplication application : applications) { 
+			occupiedDays += application.getTrainingDays();
+		}
+		
+		return occupiedDays;
+	}
+	
+	@Override
+	public double getOccupiedTrainingBudget(Long employeeId, Integer entitlementYear) {
+		List<CourseApplication> applications = getOccupyingApplications(employeeId, entitlementYear);
+		double occupiedBudget = 0.0;
+		
+		for (CourseApplication application : applications) { 
+			String category = application.getCategory();
+			if ("EXTERNAL".equals(category) || "CERTIFICATION".equals(category) ) {
+				occupiedBudget += application.getFee();
+			}
+		}
+		
+		return occupiedBudget;
+	}
+	
+	@Override
+	public Optional<EntitlementSummary> getEntitlementSummary(Long employeeId, Integer entitlementYear) {
+		
+		Optional<AnnualEntitlement>result = findEntitlement(employeeId, entitlementYear);
+		
+		if (result.isEmpty()) {
+			return Optional.empty();
+		}
+		
+		AnnualEntitlement entitlement = result.get();
+		
+		List<CourseApplication> applications =  getOccupyingApplications(employeeId, entitlementYear);
+		
+		double occupiedDays = 0.0;
+		double occupiedBudget = 0.0;
+		
+		for (CourseApplication application : applications) { 
+			occupiedDays += application.getTrainingDays();
+			String category = application.getCategory();
+			if ("EXTERNAL".equals(category) || "CERTIFICATION".equals(category) ) {
+				occupiedBudget += application.getFee();
+			}
+		}
+		
+		EntitlementSummary summary = new EntitlementSummary();
+		
+		summary.setEmployeeId(entitlement.getEmployee().getId());
+		summary.setEmployeeName(entitlement.getEmployee().getName());
+		summary.setEntitlementYear(entitlement.getEntitlementYear());
+		
+		summary.setOccupiedBudget(occupiedBudget);
+		summary.setOccupiedDays(occupiedDays);
+		
+		summary.setRemainingBudget(entitlement.getTrainingBudget() - occupiedBudget);
+		summary.setRemainingDays(entitlement.getTrainingDaysLimit() - occupiedDays);
+		
+		summary.setTrainingBudget(entitlement.getTrainingBudget());
+		summary.setTrainingDaysLimit(entitlement.getTrainingDaysLimit());
+		
+		
+		return Optional.of(summary);
+		
+	}
+	
+
+	@Override
+     public List<Employee> getQueryableEmployees(Employee currentUser) {
+		
+		if(currentUser.getRole() == EmployeeRole.ADMIN) {
+			return employeeRepository.findAll();
+		}
+		
+		List<Employee> toBeViewedEmployees = new ArrayList<>();
+		toBeViewedEmployees.add(currentUser);
+		
+		if(currentUser.getRole() == EmployeeRole.MANAGER) {
+			toBeViewedEmployees.addAll(employeeRepository.findBySupervisor_Id(currentUser.getId()));
+		}
+		
+		return toBeViewedEmployees;
+	}
+	
+	@Override
+	public void deleteEntitlement(
+			Long employeeId, Integer entitlementYear) {
+		
+		Optional<AnnualEntitlement>result = findEntitlement(employeeId, entitlementYear);
+
+		if(result.isEmpty()) {
+			throw new IllegalArgumentException("No entitlement record for this employee in this year.");
+		}
+		
+		annualEntitlementRepository.delete(result.get());
+	}
 
 }

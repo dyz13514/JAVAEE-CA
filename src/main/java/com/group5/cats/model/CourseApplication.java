@@ -32,12 +32,16 @@ public class CourseApplication {
     private String justification;
     private String dissemination;
 
+    
+
     private String status = "APPLIED";
 
     private String managerComment;
     private String experienceComments;
 
     private double trainingDays;
+
+    private Boolean halfDay;
 
     
 
@@ -154,6 +158,13 @@ public class CourseApplication {
 
     public void setTrainingDays(double trainingDays) {
         this.trainingDays = trainingDays;
+    }
+      public Boolean getHalfDay() {
+        return halfDay;
+    }
+
+    public void setHalfDay(Boolean halfDay) {
+        this.halfDay = halfDay;
     }
 
     

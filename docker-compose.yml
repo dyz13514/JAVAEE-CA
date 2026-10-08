@@ -1,0 +1,32 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root_dev_only
+      MYSQL_DATABASE: cats
+      MYSQL_USER: cats_app
+      MYSQL_PASSWORD: cats_dev_only
+    ports:
+      - "3307:3306"
+    volumes:
+      - cats-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/cats?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: cats_app
+      SPRING_DATASOURCE_PASSWORD: cats_dev_only
+    ports:
+      - "8080:8080"
+
+volumes:
+  cats-mysql-data:
