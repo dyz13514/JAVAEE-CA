@@ -55,7 +55,7 @@ public class EntitlementController {
 			@RequestParam(required = false) Long employeeId,
 			@RequestParam(required = false) Integer entitlementYear,
 			HttpSession session,
-			Model model)   //对于URL或其他形式传入参数如abc、超出类型范围的数字等无法转换成 Long、Integer时，Spring 在进入方法前拒绝，通常返回 400，无设置的 message
+			Model model)
 	{
 		
 		Employee currentUser = getCurrentUser(session);
@@ -63,7 +63,6 @@ public class EntitlementController {
 		if(currentUser == null) {
 			return "redirect:/employee/login";
 		}
-		//未登录，跳转到登录页
 		
 		List<Employee> toBeViewedEmployees = getQueryableEmployees(currentUser);
 		
@@ -73,7 +72,6 @@ public class EntitlementController {
 		} else {
 			selectedId = employeeId;
 		}
-		//已登录且请求未传 employeeId 时，默认查询自己
 		
 		Integer selectedYear;
 		if (entitlementYear == null) {
@@ -81,7 +79,6 @@ public class EntitlementController {
 		} else {
 			selectedYear = entitlementYear;
 		}
-		// 已登录且请求未传 entitlementYear 时，默认查询当前年份。
 		
 		
 
@@ -89,8 +86,7 @@ public class EntitlementController {
 		model.addAttribute("toBeViewedEmployees", toBeViewedEmployees);
 		model.addAttribute("selectedId", selectedId);
 		model.addAttribute("selectedYear", selectedYear);
-		model.addAttribute("canEdit", currentUser.getRole() == EmployeeRole.ADMIN);//传递true或false。html根据true或false检查是否展现编辑div模块
-		//向页面传递数据。传递可以被看到的所有toBeViewedEmployees和对应的id，year
+		model.addAttribute("canEdit", currentUser.getRole() == EmployeeRole.ADMIN);
 		
 		Employee selectedEmployee = null;
 		
@@ -105,19 +101,12 @@ public class EntitlementController {
 			model.addAttribute("message", "You are not authorised.");
 			return "entitlement";
 		}
-		//即通过id检查出selectedEmployee不在toBeViewedEmployees里。
-		//可能是员工存在但无权查询，也可能没有对应员工
-		//零或负数 ID 也会因没有匹配项而在这里被拒绝。
-		//总之会直接返回"entitlement"不执行之后的。
-		//此时只通过employee.getId()判断员工是否在可被查询的范围。没有验证年份，年份在后面findEntitlement调用到validateInputs验证
 		
 		
 		model.addAttribute("selectedEmployee", selectedEmployee);
-		//向页面传递数据。传递被选择查看的selectedEmployee
 		
 		try{
 		Optional<EntitlementSummary> result = entitlementService.getEntitlementSummary(selectedId, selectedYear);
-		//使用REST后统一装进dto summary，因此直接调用summary从里面取得数据
 		
 			if(result.isPresent()) {
 				
@@ -125,9 +114,6 @@ public class EntitlementController {
 		
 
 			model.addAttribute("entitlement", summary);
-			//这里就是之前我改为REST之前的痕迹。之前没有汇总数据到summary，用的是entitlement类。
-		    //然而现在使用REST同样有getEntitlementYear()、getTrainingDaysLimit()、getTrainingBudget()
-			//HTML里的${entitlement.entitlementYear} ${entitlement.trainingDaysLimit} ${entitlement.trainingBudget}，所以就不必把这里"entitlement"统一为"summary"，减少HTML的修改
 			
 			model.addAttribute("occupiedDays", summary.getOccupiedDays());
 			model.addAttribute("occupiedBudget", summary.getOccupiedBudget());
@@ -141,9 +127,6 @@ public class EntitlementController {
 	catch (IllegalArgumentException exception) {
 		model.addAttribute("message", exception.getMessage());
 	}
-		//try-catch 使用到getEntitlementSummary 调用 findEntitlement，进而调用 validateInputs。当validateInputs throw出异常由catch接住。
-		//前面程序已通过Id判断员工是否在可被查询的范围，这里if-else判断根据年份找没找到记录。
-		//没有记录本身不是异常，只显示 message。
 		
 		
 		return "entitlement";
@@ -178,16 +161,12 @@ public class EntitlementController {
 		} catch (IllegalArgumentException exception) {
 			redirectAttributes.addFlashAttribute("saveMessage", exception.getMessage());
 		}
-		//和之前showEntitlement()调用findEntitlement()因此调用validateInputs一样
-		//这里setEntitlement因此调用validateInputs，有抛出的exception需要catch
-		//使用addFlashAttribute不是addAttribute因为是在"redirect:/entitlements"显示，产生第二次请求的原因是 redirect:，需要用addFlashAttribute在第二次请求临时保存显示
 		
 		
 		redirectAttributes.addAttribute("employeeId",employeeId);
 		redirectAttributes.addAttribute("entitlementYear",entitlementYear);
 		
 		return "redirect:/entitlements";
-		//这里redirect，因为可能修改了数据库，保存后重新展示，同时避免反复刷新提交多个（suria Mentioned）
 		
 	}
 	
@@ -269,7 +248,6 @@ public class EntitlementController {
 		}
 		
 		return "entitlement";
-		//这里不redirect，因为只是重新渲染出查到的页面
 			
 		}
 

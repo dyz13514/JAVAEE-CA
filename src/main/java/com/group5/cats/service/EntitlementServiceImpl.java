@@ -68,14 +68,12 @@ public class EntitlementServiceImpl implements EntitlementService {
 		}
 		
 		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
-		//这里参考了 demo 项目 EmployeeService 中，查询员工不存在时使用lambda orElseThrow 的写法。
 		
 		double daysLimit = getDefaultTrainingDays(employee.getDesignation());
 		
 		AnnualEntitlement entitlement = new AnnualEntitlement(
 				employee, 
 				entitlementYear,
-				//这里没有检查entitlementYear是过去还是未来，传入什么entitlementYear录入什么，因为创建的entitlement记录可以录入之前的也可以录入之后的
 				daysLimit,
 				DEFAULT_TRAINING_BUDGET);
 				
@@ -118,7 +116,6 @@ public class EntitlementServiceImpl implements EntitlementService {
 		}
 		
 		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
-		//必须employee表中存在的id，才能为其创建或修改额度
 		
 		Optional<AnnualEntitlement> existing = annualEntitlementRepository
 				.findByEmployeeIdAndEntitlementYear(employeeId, entitlementYear);
@@ -215,7 +212,6 @@ public class EntitlementServiceImpl implements EntitlementService {
 			}
 		}
 		
-		//从这里开始将九项数据在这里计算并填入我们的dto: EntitlementSummary summary，并最后为调用者返回它
 		EntitlementSummary summary = new EntitlementSummary();
 		
 		summary.setEmployeeId(entitlement.getEmployee().getId());
@@ -233,7 +229,6 @@ public class EntitlementServiceImpl implements EntitlementService {
 		
 		
 		return Optional.of(summary);
-	    //使用Optional.of(summary)将summary包装为方法要求的返回类型
 		
 	}
 	
@@ -254,8 +249,6 @@ public class EntitlementServiceImpl implements EntitlementService {
 		
 		return toBeViewedEmployees;
 	}
-	//使用List，因为我们这一个方法就可以覆盖三个角色的查询额度。ADMIN查全部，MANAGER和REGULAR_STAFF至少能看到自己，而MANAGER除了自己的还在List加上自己当supervisor的下属
-	//原本只写在EntitlementController，现在用REST后写在这里，因为这是EntitlementController和EntitlementRestController都要用到的方法，因此统一放在service层
 	
 	@Override
 	public void deleteEntitlement(

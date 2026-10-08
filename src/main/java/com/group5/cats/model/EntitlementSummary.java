@@ -14,7 +14,6 @@ public class EntitlementSummary {
     private double occupiedBudget;
     private double remainingBudget;
     
-    //把页面需要的原记录的信息和本次计算的结果全部放在这一个对象里，也就是DTO-数据传输对象
     
 	public EntitlementSummary() {
 	}
@@ -91,7 +90,6 @@ public class EntitlementSummary {
 		this.remainingBudget = remainingBudget;
 	}
 	
-   //对应关系:Java：getEmployeeId() -> JSON：employeeId -> JavaScript：data.employeeId
 	
     
     
