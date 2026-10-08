@@ -45,26 +45,19 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
 
     @Override
     public String submitApplication(CourseApplication application, Employee employee) {
-
+        application.setEmployee(employee);
         String error = validateBasicRules(application);
+        if (error != null) {
+            return error;
+        }
         String overlapError = validateOverlap(application, employee, null);
         if (overlapError != null) {
             return overlapError;
         }
-        if (error != null) {
-            return error;
-        }
 
-        application.setEmployee(employee);
-        double days;
-        if (Boolean.TRUE.equals(application.getHalfDay())) {
-            days = 0.5;
-        } else {
-            days = countTrainingDays(application.getFromDate(), application.getToDate());
-        }
-        application.setTrainingDays(days);
+        application.setTrainingDays(computeTrainingDays(application));
 
-        String entitlementError = validateEntitlement(application, employee);
+        String entitlementError = validateEntitlement(application, employee, null);
         if (entitlementError != null) {
             return entitlementError;
         }
@@ -102,7 +95,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         return null;
     }
 
-    private String validateEntitlement(CourseApplication application, Employee employee) {
+    private String validateEntitlement(CourseApplication application, Employee employee, Long excludeId) {
         int year = application.getFromDate().getYear();
         Optional<AnnualEntitlement> entitlement = entitlementService.findEntitlement(employee.getId(), year);
         if (entitlement.isEmpty()) {
@@ -113,6 +106,9 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         double usedDays = 0;
         double usedFees = 0;
         for (CourseApplication existing : courseApplicationRepository.findByEmployee(employee)) {
+            if (excludeId != null && excludeId.equals(existing.getId())) {
+                continue;
+            }
             String status = existing.getStatus();
             if (existing.getFromDate() != null && existing.getFromDate().getYear() == year && (status.equals("APPROVED")
                     || status.equals("COMPLETED") || status.equals("APPLIED") || status.equals("UPDATED"))) {
@@ -207,22 +203,33 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (!"APPLIED".equals(application.getStatus()) && !"UPDATED".equals(application.getStatus())) {
             return "Only pending applications can be updated";
         }
-        String error = validateBasicRules(updatedData); 
+        String error = validateBasicRules(updatedData);
         if (error != null) {
-        	return error;
+            return error;
+        }
+        updatedData.setTrainingDays(computeTrainingDays(updatedData));
+        String entitlementError = validateEntitlement(updatedData, employee, id);
+        if (entitlementError != null) {
+            return entitlementError;
+        }
+        String overlapError = validateOverlap(updatedData, employee, id);
+        if (overlapError != null) {
+            return overlapError;
         }
         application.setCourseTitle(updatedData.getCourseTitle());
         application.setCategory(updatedData.getCategory());
-        application.setProvider(updatedData.getProvider());
         application.setFromDate(updatedData.getFromDate());
         application.setToDate(updatedData.getToDate());
+        application.setProvider(updatedData.getProvider());
         application.setFee(updatedData.getFee());
         application.setJustification(updatedData.getJustification());
         application.setDissemination(updatedData.getDissemination());
-        application.setTrainingDays(countTrainingDays(application.getFromDate(), application.getToDate()));
+        application.setHalfDay(updatedData.getHalfDay());
+        application.setTrainingDays(updatedData.getTrainingDays());
         application.setStatus("UPDATED");
         courseApplicationRepository.save(application);
-        return "Course application updated successfully";
+        return null;
+
     }
 
     @Override
@@ -301,6 +308,13 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         application.setManagerComment(comment);
         courseApplicationRepository.save(application);
         return "APPROVE".equals(decision) ? "Application approved" : "Application rejected";
+    }
+
+    private double computeTrainingDays(CourseApplication application) {
+        if (Boolean.TRUE.equals(application.getHalfDay())) {
+            return 0.5;
+        }
+        return countTrainingDays(application.getFromDate(), application.getToDate());
     }
 
     private double countTrainingDays(LocalDate from, LocalDate to) {

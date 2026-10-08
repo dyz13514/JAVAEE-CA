@@ -39,7 +39,7 @@ public class EmployeeController {
             return "redirect:/employee/apply";
         }
         redirectAttrs.addFlashAttribute("successMessage",
-                "Course application submitted successfully! Training days: "+ application.getTrainingDays());
+                "Course application submitted successfully! Training days: " + application.getTrainingDays());
         return "redirect:/employee/home";
     }
 
@@ -121,8 +121,12 @@ public class EmployeeController {
         if (employee == null) {
             return "redirect:/employee/login";
         }
-        String message = courseApplicationService.updateApplication(id, updatedData, employee);
-        redirectAttrs.addFlashAttribute("message", message);
+        String error = courseApplicationService.updateApplication(id, updatedData, employee);
+        if (error != null) {
+            redirectAttrs.addFlashAttribute("errorMessage", error);
+            return "redirect:/employee/history/" + id + "/edit";
+        }
+        redirectAttrs.addFlashAttribute("message", "Course application updated successfully");
         return "redirect:/employee/history";
     }
 
