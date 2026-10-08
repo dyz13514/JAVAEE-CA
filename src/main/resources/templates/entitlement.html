@@ -197,21 +197,21 @@
                 <div class="col-md-4">
                     <div class="metric-card budget">
                         <div class="metric-title"><i class="bi bi-wallet2 text-danger"></i> Training Budget Limit</div>
-                        <div class="metric-val" id="resultBudget" th:text="${entitlement == null ? '' : entitlement.trainingBudget}">0</div>
+                        <div class="metric-val">SG <span id="resultBudget" th:text="${entitlement == null ? '' : entitlement.trainingBudget}">0</span></div>
                         <div class="text-secondary small">Annual spending limit for fee-paying courses</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="metric-card budget">
                         <div class="metric-title"><i class="bi bi-credit-card text-secondary"></i> Occupied Budget</div>
-                        <div class="metric-val text-secondary" id="resultOccupiedBudget" th:text="${occupiedBudget}">0</div>
+                        <div class="metric-val text-secondary">SG <span id="resultOccupiedBudget" th:text="${occupiedBudget}">0</span></div>
                         <div class="text-secondary small">Occupied by External and Certification courses</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="metric-card budget">
                         <div class="metric-title"><i class="bi bi-piggy-bank text-success"></i> Remaining Budget</div>
-                        <div class="metric-val text-success" id="resultRemainingBudget" th:text="${remainingBudget}">0</div>
+                        <div class="metric-val text-success">SG <span id="resultRemainingBudget" th:text="${remainingBudget}">0</span></div>
                         <div class="text-secondary small">Remaining training expenditure allowance</div>
                     </div>
                 </div>
@@ -258,7 +258,7 @@
                     <input type="number" name="trainingDaysLimit" min="0" step="0.5" class="form-control form-control-sm" required>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small fw-semibold">Training Budget (S$) <span class="text-danger">*</span></label>
+                    <label class="form-label small fw-semibold">Training Budget (SG) <span class="text-danger">*</span></label>
                     <input type="number" name="trainingBudget" min="0" step="1" class="form-control form-control-sm" required>
                 </div>
                 <div class="col-12 d-flex justify-content-between align-items-center pt-2">
@@ -323,9 +323,9 @@
                 document.getElementById("resultDaysLimit").textContent = data.trainingDaysLimit;
                 document.getElementById("resultOccupiedDays").textContent = data.occupiedDays;
                 document.getElementById("resultRemainingDays").textContent = data.remainingDays;
-                document.getElementById("resultBudget").textContent = "S$ " + data.trainingBudget;
-                document.getElementById("resultOccupiedBudget").textContent = "S$ " + data.occupiedBudget;
-                document.getElementById("resultRemainingBudget").textContent = "S$ " + data.remainingBudget;
+                document.getElementById("resultBudget").textContent = data.trainingBudget;
+                document.getElementById("resultOccupiedBudget").textContent = data.occupiedBudget;
+                document.getElementById("resultRemainingBudget").textContent = data.remainingBudget;
 
                 queryMessage.textContent = "";
                 resultArea.style.display = "";
