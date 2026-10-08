@@ -203,6 +203,39 @@ public class EntitlementController {
 		
 	}
 	
+	@PostMapping("/admin/entitlements/create-defaults")
+	public String createPatchDefaultEntitlements(
+	        HttpSession session,
+	        RedirectAttributes redirectAttributes) {
+
+	    Employee currentUser = getCurrentUser(session);
+
+	    if (currentUser == null) {
+	        return "redirect:/admin/login";
+	    }
+
+	    if (currentUser.getRole() != EmployeeRole.ADMIN) {
+	        redirectAttributes.addFlashAttribute(
+	                "saveMessage",
+	                "Only administrators can create default entitlements.");
+
+	        return "redirect:/entitlements";
+	    }
+
+	    try {
+	        String message = entitlementService
+	                .createPatchDefaultEntitlementsForCurrentYear();
+
+	        redirectAttributes.addFlashAttribute("saveMessage", message);
+
+	    } catch (IllegalArgumentException exception) {
+	        redirectAttributes.addFlashAttribute(
+	                "saveMessage", exception.getMessage());
+	    }
+
+	    return "redirect:/entitlements";
+	}
+	
 	@GetMapping("/entitlements/search")
 	public String searchEmployees(
 			@RequestParam(required = false) Long queryEmployeeId,

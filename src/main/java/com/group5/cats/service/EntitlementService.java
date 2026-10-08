@@ -36,5 +36,7 @@ public interface EntitlementService{
 	void deleteEntitlement(
 			Long employeeId, Integer entitlementYear);
 	
+	String createPatchDefaultEntitlementsForCurrentYear();
+	
 
 }

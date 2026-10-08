@@ -229,7 +229,21 @@
                 <i class="bi bi-gear-fill text-warning fs-4"></i>
                 <h5 class="fw-bold text-dark mb-0">Administrator Entitlement Console</h5>
             </div>
-            
+			
+			<form th:action="@{/admin/entitlements/create-defaults}"
+			      method="post"
+			      class="mb-4">
+
+			    <p class="small text-secondary">
+			        Create All Default Entitlements will create default entitlements for all staff missing a record for the current year. Existing records are kept.
+			    </p>
+
+			    <button type="submit" class="btn btn-primary btn-sm">
+			        Create All Default Entitlements.
+			    </button>
+
+			</form>
+			
             <form id="entitlementSaveForm" th:action="@{/admin/entitlements}" method="post" class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label small fw-semibold">Employee ID <span class="text-danger">*</span></label>
