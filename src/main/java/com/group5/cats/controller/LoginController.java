@@ -20,6 +20,11 @@ public class LoginController {
         this.authService = authService;
     }
 
+    @GetMapping({"/", "/login"})
+    public String showLoginSelection() {
+        return "login";
+    }
+
     @GetMapping("/employee/login")
     public String showEmployeeLogin() {
         return "employee-login";
