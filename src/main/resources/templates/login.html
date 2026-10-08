@@ -7,27 +7,38 @@
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; }
-        .login-layout { display: grid; grid-template-columns: 45% 55%; width: 100%; max-width: 1600px; margin: 0 auto; min-height: 100vh; }
-        .artwork { margin: 0; padding: 0 64px 0 24px; height: 100vh; border-right: 1px solid #d9d9d9; }
-        .artwork img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: right center; }
-        .login-panel { padding: clamp(24px, 4vh, 48px) 24px 64px; text-align: center; }
-        h1 { max-width: 760px; margin: 0 auto; color: #0039a6; font-size: clamp(28px, 2.3vw, 44px); line-height: 1.2; font-weight: 700; }
-        h2 { width: min(100%, 280px); margin: 36px auto 28px; color: #808080; font-size: 14.4px; line-height: 1.2; text-align: left; }
-        .login-options { display: flex; flex-direction: column; gap: 28px; width: min(100%, 280px); margin: 0 auto; }
-        .login-link { display: flex; justify-content: center; align-items: center; min-height: 44px; padding: 6px 12px; border: 2px solid #0039a6; border-radius: 9px; color: #0039a6; background: #fff; font-size: clamp(20px, 1.3vw, 24px); line-height: 1.2; text-decoration: none; transition: background-color .15s, color .15s; }
+        .login-layout { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); width: 100%; min-height: 100vh; }
+        .login-layout::before { content: ""; position: absolute; left: 50%; top: 30px; bottom: 30px; width: 1px; background: #d0d0d0; pointer-events: none; }
+        .artwork { margin: 0; padding: 0 clamp(24px, 3vw, 60px); height: 100vh; }
+        .artwork img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
+        .login-panel { min-width: 0; padding: 32px clamp(24px, 2.1vw, 40px) 40px; text-align: center; }
+        h1 { margin: 0 auto; color: #0039a6; font-size: clamp(26px, 2.3vw, 44px); line-height: 1.2; font-weight: 700; }
+        .password-heading { width: min(100%, 416px); margin: clamp(40px, 7vh, 78px) auto 24px; padding-left: 16px; color: #808080; font-size: clamp(20px, 1.5vw, 28px); line-height: 1.2; text-align: left; }
+        .login-options { display: flex; flex-direction: column; gap: clamp(28px, 5vh, 56px); width: min(100%, 416px); margin: 0 auto; }
+        .login-link { display: flex; justify-content: center; align-items: center; min-height: 62px; padding: 8px 16px; border: 2px solid #0039a6; border-radius: 11px; color: #0039a6; background: #fff; font-size: clamp(24px, 2vw, 38px); line-height: 1.2; text-decoration: none; transition: background-color .15s, color .15s; }
         .login-link.primary { color: #fff; background: #0039a6; }
         .login-link:hover { background: #edf3ff; }
         .login-link.primary:hover { background: #002b80; border-color: #002b80; }
         .login-link:focus-visible { outline: 3px solid #f0a000; outline-offset: 5px; }
+        .information { margin-top: clamp(64px, 11.5vh, 128px); text-align: left; }
+        .information h2 { margin: 0 0 24px; color: #0039a6; font-size: clamp(26px, 2vw, 38px); line-height: 1.2; }
+        .information p { margin: 0 0 36px; padding-left: clamp(16px, 2.9vw, 56px); color: #808080; font-size: clamp(16px, 1.3vw, 25px); line-height: 1.25; overflow-wrap: break-word; }
+        .information section + section { margin-top: 20px; }
+        .information p:last-child { margin-bottom: 0; }
+        .contact-number { color: #0039a6; font-weight: 700; white-space: nowrap; }
         @media (max-width: 700px) {
             .login-layout { grid-template-columns: 1fr; }
+            .login-layout::before { display: none; }
             .artwork { height: 42vh; padding: 16px; border-right: 0; border-bottom: 1px solid #d9d9d9; }
             .artwork img { object-position: center; }
             .login-panel { padding: 24px 24px 48px; }
             h1 { font-size: 28px; }
-            h2 { margin: 24px auto; font-size: 12px; }
+            .password-heading { margin: 32px auto 24px; font-size: 20px; }
             .login-options { gap: 24px; }
             .login-link { font-size: 22px; }
+            .information { margin-top: 48px; }
+            .information h2 { font-size: 26px; }
+            .information p { padding-left: 16px; font-size: 16px; margin-bottom: 24px; }
         }
     </style>
 </head>
@@ -39,11 +50,23 @@
         </figure>
         <section class="login-panel" aria-labelledby="welcome-title">
             <h1 id="welcome-title">Welcome to Course Application<br>Tracking System(CATS)!&nbsp; !&nbsp; !</h1>
-            <h2>Password Login</h2>
+            <h2 class="password-heading">Password Login</h2>
             <nav class="login-options" aria-label="Choose your login">
                 <a class="login-link primary" href="/employee/login" th:href="@{/employee/login}">Employee/Manager</a>
                 <a class="login-link" href="/admin/login" th:href="@{/admin/login}">Admin</a>
             </nav>
+            <div class="information">
+                <section aria-labelledby="announcements-title">
+                    <h2 id="announcements-title">ANNOUNCEMENTS</h2>
+                    <p>08 Oct 2026 | v1.2.0 Update: Improved login performance and fixed minor bugs.</p>
+                </section>
+                <section aria-labelledby="instructions-title">
+                    <h2 id="instructions-title">INSTRUCTIONS</h2>
+                    <p>CATS (Course Application Tracking System) is an internal ISS system for employees to apply for courses, track course applications, and manage training records.</p>
+                    <p>Please log in with your assigned account. Accounts are provided by the administrator.</p>
+                    <p>If you forget your password, please call <span class="contact-number">+65 12345678</span> to contact the administrator to reset it.</p>
+                </section>
+            </div>
         </section>
     </main>
 </body>
