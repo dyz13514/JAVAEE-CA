@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Management</title>
+</head>
+<body>
+
+<h1>Employee Management</h1>
+
+<p th:if="${successMessage != null}"
+   th:text="${successMessage}">
+</p>
+
+<p th:if="${errorMessage != null}"
+   th:text="${errorMessage}">
+</p>
+
+<p>
+    <a th:href="@{/admin/home}">Back to Home</a>
+</p>
+
+<p>
+    <a th:href="@{/admin/employees/new}">Add Employee</a>
+</p>
+
+<p th:if="${#lists.isEmpty(employees)}">
+    No employees found.
+</p>
+
+<table border="1" th:if="${!#lists.isEmpty(employees)}">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Designation</th>
+        <th>Supervisor</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="employee : ${employees}">
+        <td th:text="${employee.id}"></td>
+        <td th:text="${employee.username}"></td>
+        <td th:text="${employee.name}"></td>
+        <td th:text="${employee.role}"></td>
+        <td th:text="${employee.designation}"></td>
+
+        <td th:text="${employee.supervisor == null
+                      ? 'Not assigned'
+                      : employee.supervisor.name}">
+        </td>
+
+        <td>
+            <a th:href="@{/admin/employees/{id}/edit(id=${employee.id})}">
+                Edit
+            </a>
+
+            <form th:action="@{/admin/employees/{id}/delete(id=${employee.id})}"
+                  method="post"
+                  onsubmit="return confirm('Are you sure you want to delete this employee?');">
+
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

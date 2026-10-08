@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Training Provider Management</title>
+</head>
+<body>
+
+<h1>Training Provider Management</h1>
+
+<p th:if="${successMessage != null}"
+   th:text="${successMessage}">
+</p>
+
+<p th:if="${errorMessage != null}"
+   th:text="${errorMessage}">
+</p>
+
+<p>
+    <a th:href="@{/employee/home}">Back to Home</a>
+</p>
+
+<p>
+    <a th:href="@{/admin/providers/new}">Add Training Provider</a>
+</p>
+
+<p th:if="${#lists.isEmpty(providers)}">
+    No training providers found.
+</p>
+
+<table border="1" th:if="${!#lists.isEmpty(providers)}">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="provider : ${providers}">
+        <td th:text="${provider.id}"></td>
+        <td th:text="${provider.name}"></td>
+
+        <td>
+            <a th:href="@{/admin/providers/{id}/edit(id=${provider.id})}">
+                Edit
+            </a>
+
+            <form th:action="@{/admin/providers/{id}/delete(id=${provider.id})}"
+                  method="post"
+                  onsubmit="return confirm('Are you sure you want to delete this training provider?');">
+
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

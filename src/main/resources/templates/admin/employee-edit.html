@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Employee</title>
+</head>
+<body>
+
+<h1>Edit Employee</h1>
+
+<p th:if="${errorMessage != null}"
+   th:text="${errorMessage}">
+</p>
+
+<p>
+    <a th:href="@{/admin/employees}">Back to Employee List</a>
+</p>
+
+<form th:action="@{/admin/employees/{id}/update(id=${employeeId})}"
+      th:object="${employeeForm}"
+      method="post">
+
+    <p>
+        <label for="username">Username:</label>
+        <input type="text"
+               id="username"
+               th:field="*{username}"
+               readonly>
+    </p>
+
+    <p>
+        <label for="name">Name:</label>
+        <input type="text"
+               id="name"
+               th:field="*{name}"
+               required>
+    </p>
+
+    <p>
+        <label for="password">New Password:</label>
+        <input type="password"
+               id="password"
+               th:field="*{password}"
+               autocomplete="new-password">
+    </p>
+
+    <p>Leave the password blank to keep the current password.</p>
+
+    <p>
+        <label for="role">Role:</label>
+        <select id="role" th:field="*{role}" required>
+            <option th:each="role : ${roles}"
+                    th:value="${role}"
+                    th:text="${role}">
+            </option>
+        </select>
+    </p>
+
+    <p>
+        <label for="designation">Designation:</label>
+        <select id="designation"
+                th:field="*{designation}"
+                required>
+
+            <option value="">-- Select Designation --</option>
+
+            <option th:each="designation : ${designations}"
+                    th:value="${designation}"
+                    th:text="${designation}">
+            </option>
+        </select>
+    </p>
+
+    <p>
+        <label for="supervisorId">Supervisor:</label>
+        <select id="supervisorId" th:field="*{supervisorId}">
+            <option value="">-- Not assigned --</option>
+
+            <option th:each="manager : ${managers}"
+                    th:value="${manager.id}"
+                    th:text="${manager.name}">
+            </option>
+        </select>
+    </p>
+
+    <p>
+        <button type="submit">Save Changes</button>
+    </p>
+
+</form>
+
+</body>
+</html>
