@@ -45,6 +45,8 @@
     box-sizing:border-box;
 }
 
+[hidden] { display:none!important; }
+
 html {
     min-height:100%;
     background:var(--canvas);
@@ -209,7 +211,7 @@ button:disabled {
     z-index:-1;
     border-radius:inherit;
     pointer-events:none;
-    background:radial-gradient(110px circle at var(--light-x,50%) var(--light-y,50%),#c3ddf380,transparent 80%);
+    background:radial-gradient(150px circle at var(--light-x,50%) var(--light-y,50%),#a8d4f6b0,transparent 80%);
     opacity:0;
     transition:opacity .2s;
 }
@@ -217,7 +219,7 @@ button:disabled {
 .app-sidebar nav a.active {
     font-weight:600;
     color:var(--blue);
-    background:linear-gradient(90deg,#deebf8b8,#eef4fa40);
+    background:linear-gradient(90deg,#cfe5fbe6,#eef4fa60);
 }
 
 .app-sidebar nav a.active .ui-icon {
@@ -226,7 +228,7 @@ button:disabled {
 
 .app-sidebar nav a.active::before {
     opacity:1;
-    box-shadow:0 0 0 4px #6296c31a,0 0 12px #5d92c080;
+    box-shadow:0 0 0 5px #529ee82b,0 0 10px #378edbd0,0 0 22px #5d92c09a;
 }
 
 .sidebar-footer {
@@ -417,7 +419,7 @@ button:disabled {
     border-radius:inherit;
     pointer-events:none;
     opacity:0;
-    background:radial-gradient(110px circle at var(--light-x,50%) var(--light-y,50%),#ffffff30,transparent 75%);
+    background:radial-gradient(140px circle at var(--light-x,50%) var(--light-y,50%),#ffffff5a,transparent 75%);
     transition:opacity .2s;
 }
 
@@ -546,7 +548,7 @@ input:not([type=checkbox]):not([type=hidden]),select,textarea,.form-control,.for
 input:focus,select:focus,textarea:focus,.form-control:focus,.form-select:focus {
     background:#fff;
     border-color:#6696bb;
-    box-shadow:0 0 0 3px #5a92ba14;
+    box-shadow:0 0 0 3px #5a92ba25,0 0 18px #6bb8e82b;
     outline:0;
 }
 
@@ -606,7 +608,7 @@ input[type=checkbox] {
     top:7%;
     width:900px;
     height:750px;
-    background:radial-gradient(ellipse,#b9dafa75,transparent 68%);
+    background:radial-gradient(ellipse,#a4d1f5ad,transparent 70%);
 }
 
 .login-light-trace {
@@ -614,15 +616,15 @@ input[type=checkbox] {
     left:-4%;
     top:74%;
     width:54%;
-    height:2px;
-    background:linear-gradient(90deg,#8ac5ea00,#70b9e6b0 22%,#b9def880 48%,#8ac5ea00);
+    height:3px;
+    background:linear-gradient(90deg,#8ac5ea00,#4da9e4 22%,#a4d7fab0 48%,#8ac5ea00);
 }
 
 .login-light-trace::before {
     content:'';
     position:absolute;
     inset:-22px 0;
-    background:radial-gradient(ellipse at 25% 50%,#8ac5ea30,transparent 65%);
+    background:radial-gradient(ellipse at 25% 50%,#64b4e65a,transparent 65%);
 }
 
 .login-header {
@@ -702,7 +704,7 @@ input[type=checkbox] {
     right:0;
     height:3px;
     background:#397ab6;
-    box-shadow:0 3px 12px #539ed550;
+    box-shadow:0 0 8px #3b96d9a0,0 5px 20px #539ed580;
 }
 
 .role-tabs a.active {
@@ -717,8 +719,8 @@ input[type=checkbox] {
     height:3px;
     pointer-events:none;
     transform-origin:left center;
-    background:linear-gradient(90deg,#3278b8,#6bb8e8);
-    box-shadow:0 3px 12px #539ed550;
+    background:linear-gradient(90deg,#2578c3,#6cc6fa);
+    box-shadow:0 0 8px #3b96d9a0,0 5px 20px #539ed580;
 }
 
 .role-tabs.enhanced .role-indicator {
@@ -731,7 +733,7 @@ input[type=checkbox] {
 
 .login-form input:focus {
     border-color:#76a8cd;
-    box-shadow:0 0 0 3px #5a92ba14,0 0 18px #6bb8e814;
+    box-shadow:0 0 0 3px #5a92ba25,0 0 24px #6bb8e850;
 }
 
 .login-form input:not([type=hidden]) {
@@ -754,6 +756,33 @@ input[type=checkbox] {
     font-size:13px;
     margin-top:22px;
 }
+
+.account-switch { font-size:14px; margin:22px 0 0; }
+.account-switch a { font-weight:500; }
+.registration-intro { margin:-8px 0 24px; font-size:14px; }
+.registration-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 20px; }
+.registration-grid .field { min-width:0; margin-bottom:20px; }
+.section-tabs { display:flex; flex-wrap:wrap; gap:24px; margin:-20px 0 36px; }
+.section-tabs a { display:inline-flex; align-items:center; gap:9px; padding:10px 0; color:var(--muted); }
+.section-tabs a.active { color:var(--blue); box-shadow:0 2px var(--blue),0 6px 12px -7px #4696d4; }
+.count-badge { display:inline-flex; align-items:center; justify-content:center; min-width:24px; padding:1px 6px; border-radius:12px; background:#e0edf9; color:var(--blue); font-size:12px; }
+.registration-request { padding:28px 0; border-bottom:1px solid var(--line); }
+.registration-heading { display:flex; align-items:center; gap:16px; margin-bottom:24px; }
+.registration-heading>.ui-icon { width:24px; height:24px; color:var(--blue); }
+.registration-heading h2 { margin:0; font-size:23px; }
+.registration-heading p { margin:4px 0 0; font-size:14px; }
+.registration-heading .status { margin-left:auto; }
+.request-date { display:inline-block; margin-left:20px; font-size:13px; }
+.registration-review { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; gap:20px; align-items:end; }
+.registration-review .field { margin:0; }
+.registration-review button { min-height:50px; }
+.registration-reject { margin-top:18px; }
+.registration-reject summary { display:inline-block; cursor:pointer; color:var(--red); font-size:14px; padding:8px 0; }
+.registration-reject summary:focus-visible { outline:3px solid #5b94bf; outline-offset:4px; }
+.registration-reject form { max-width:600px; margin-top:12px; }
+.registration-reject button { margin-top:16px; background:#f5e8eb; color:var(--red); }
+.registration-history { margin-top:32px; }
+.registration-history summary { cursor:pointer; padding:12px 0; font-weight:500; }
 
 .login-footer {
     display:flex;
@@ -1291,7 +1320,7 @@ body .page-main .metric-card:hover {
     }
     button:not(:disabled):hover,.btn:hover,.primary-button:hover {
         transform:translateY(-2px);
-        box-shadow:0 5px 18px #214e7820;
+        box-shadow:0 5px 22px #214e7833;
     }
     button:not(:disabled):hover::after,.btn:hover::after,.primary-button:hover::after {
         opacity:1;
@@ -1443,6 +1472,11 @@ body .page-main .metric-card:hover {
     .role-tabs {
         gap:16px;
     }
+    .registration-grid,.registration-review { grid-template-columns:1fr; }
+    .registration-heading { flex-wrap:wrap; }
+    .registration-heading .status { margin-left:40px; }
+    .request-date { display:block; margin-left:0; }
+    .section-tabs { margin:0 0 24px; gap:18px; }
     .login-light-trace {
         display:none;
     }

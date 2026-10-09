@@ -34,10 +34,10 @@ public class NotificationOutbox {
     @Column(nullable = false, length = 20)
     private DeliveryStatus deliveryStatus;
 
-    
+
     private int retryCount;
 
-    
+
     private java.time.LocalDateTime nextAttemptAt;
 
     @Column(columnDefinition = "TEXT")
@@ -49,7 +49,7 @@ public class NotificationOutbox {
     @Column(nullable = false)
     private java.time.LocalDateTime createdAt;
 
-    
+
     private java.time.LocalDateTime sentAt;
 
     public NotificationOutbox() {

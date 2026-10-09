@@ -19,6 +19,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Optional<Employee> login(String username, String password) {
         return employeeRepository.findByUsername(username)
-                .filter(employee -> employee.getPassword().equals(password));
+                .filter(employee -> PasswordSupport.matches(password, employee.getPassword()));
     }
 }

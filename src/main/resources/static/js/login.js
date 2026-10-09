@@ -17,6 +17,7 @@
 
     function alignIndicator(animate = false) {
         const active = choices.find(choice => choice.dataset.role === page.dataset.loginRole);
+        if (!active.offsetWidth) return;
         const width = active.offsetWidth;
         const x = active.offsetLeft;
         roleAnimation?.kill();
@@ -50,9 +51,10 @@
             ? 'Forgot your password? Contact your system maintainer.'
             : 'Forgot your password? Contact your administrator.';
         if (error) error.hidden = role !== initialRole;
+        page.querySelector('#registration-entry').hidden = role === 'admin';
         if (updateUrl) window.history.replaceState(null, '', selected.href);
         alignIndicator(animate);
-        const x = role === 'admin' ? 48 : 0;
+        const x = role === 'admin' ? 118 : 0;
         if (gsap) {
             gsap.to(ambient, { x, duration: reducedMotion.matches || !animate ? 0 : .28, ease: 'power2.out', overwrite: true });
             gsap.to(trace, { x: x / 3, opacity: role === 'admin' ? .65 : 1,
@@ -75,13 +77,50 @@
             setRole(target.dataset.role);
         });
     });
+
+    function setMode(mode, updateUrl = true, animate = true) {
+        const registering = mode === 'register';
+        const panel = page.querySelector(registering ? '#register-panel' : '#signin-panel');
+        page.dataset.accountMode = mode;
+        page.querySelector('#register-panel').hidden = !registering;
+        page.querySelector('#signin-panel').hidden = registering;
+        page.querySelector('.login-form').setAttribute('aria-labelledby', registering ? 'register-title' : 'login-title');
+        if (!registering) alignIndicator();
+        if (updateUrl) window.history.replaceState(null, '', registering ? '/register' : choices.find(choice => choice.dataset.role === page.dataset.loginRole).href);
+        if (gsap && animate && !reducedMotion.matches) {
+            gsap.fromTo(panel, { y: 10, opacity: .4 }, { y: 0, opacity: 1, duration: .25, ease: 'power3.out', clearProps: 'transform,opacity', overwrite: true });
+        }
+        if (updateUrl) panel.querySelector('h2').focus({ preventScroll: true });
+    }
+    page.querySelectorAll('a[data-account-mode]').forEach(link => link.addEventListener('click', event => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+        event.preventDefault();
+        setMode(link.dataset.accountMode);
+    }));
+    const registrationPassword = page.querySelector('#register-password');
+    const registrationConfirm = page.querySelector('#register-confirm');
+    function checkConfirmation() {
+        registrationConfirm.setCustomValidity(registrationConfirm.value && registrationConfirm.value !== registrationPassword.value ? 'Passwords do not match.' : '');
+    }
+    registrationPassword.addEventListener('input', checkConfirmation);
+    registrationConfirm.addEventListener('input', checkConfirmation);
     setRole(initialRole, false, false);
+    setMode(page.dataset.accountMode, false, false);
     new ResizeObserver(() => alignIndicator()).observe(tabs);
     document.fonts.ready.then(() => alignIndicator());
-    window.addEventListener('popstate', () => setRole(window.location.pathname.startsWith('/admin/') ? 'admin' : 'employee', false));
+    window.addEventListener('popstate', () => {
+        setRole(window.location.pathname.startsWith('/admin/') ? 'admin' : 'employee', false);
+        setMode(window.location.pathname === '/register' ? 'register' : 'login', false);
+    });
     reducedMotion.addEventListener('change', () => {
         setRole(page.dataset.loginRole, false, false);
-        if (gsap) gsap.set(ambient, { y: 0 });
+        if (gsap && reducedMotion.matches) {
+            const panels = page.querySelectorAll('#signin-panel, #register-panel, .login-intro, .login-form');
+            gsap.killTweensOf(panels);
+            gsap.set(panels, { clearProps: 'transform,opacity' });
+            gsap.killTweensOf(ambient);
+            gsap.set(ambient, { y: 0 });
+        }
     });
 
     if (gsap) {
@@ -95,7 +134,7 @@
         if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
             const moveLight = gsap.quickTo(ambient, 'y', { duration: .45, ease: 'power3.out' });
             page.addEventListener('pointermove', event => {
-                if (!reducedMotion.matches) moveLight((event.clientY / window.innerHeight - .5) * 12);
+                if (!reducedMotion.matches) moveLight((event.clientY / window.innerHeight - .5) * 28);
             });
             page.addEventListener('pointerleave', () => moveLight(0));
         }

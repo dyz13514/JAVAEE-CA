@@ -13,6 +13,7 @@ import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeDesignation;
 import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.service.EmployeeService;
+import com.group5.cats.service.RegistrationService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -20,9 +21,11 @@ import jakarta.servlet.http.HttpSession;
 public class AdminEmployeeController {
 
     private final EmployeeService employeeService;
+    private final RegistrationService registrationService;
 
-    public AdminEmployeeController(EmployeeService employeeService) {
+    public AdminEmployeeController(EmployeeService employeeService, RegistrationService registrationService) {
         this.employeeService = employeeService;
+        this.registrationService = registrationService;
     }
 
     @GetMapping("/admin/employees")
@@ -43,6 +46,7 @@ public class AdminEmployeeController {
                 "employees",
                 employeeService.findAllEmployees()
         );
+        model.addAttribute("pendingRegistrationCount", registrationService.pendingCount());
 
         return "admin/employees";
     }

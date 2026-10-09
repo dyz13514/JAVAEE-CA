@@ -14,7 +14,7 @@ class EmployeeEmailTests {
     void storesTrimmedEmailRejectsInvalidAddressAndPreservesLegacyBlankAccounts() {
         var employees = mock(EmployeeRepository.class);
         var service = new EmployeeServiceImpl(employees, mock(CourseApplicationRepository.class),
-                mock(AnnualEntitlementRepository.class), mock(NotificationOutboxRepository.class));
+                mock(AnnualEntitlementRepository.class), mock(NotificationOutboxRepository.class), mock(RegistrationRequestRepository.class));
         EmployeeForm form = new EmployeeForm();
         form.setName("Ben");
         form.setUsername("ben");
