@@ -5,6 +5,7 @@ import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
+import com.group5.cats.repository.PublicHolidayRepository;
 
 import java.util.List;
 import java.time.LocalDate;
@@ -19,28 +20,15 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     private final CourseApplicationRepository courseApplicationRepository;
     private final EmployeeRepository employeeRepository;
     private final EntitlementService entitlementService;
-    private static final Set<LocalDate> PUBLIC_HOLIDAYS_2026 = Set.of(
-            LocalDate.of(2026, 1, 1), // New Year's Day
-            LocalDate.of(2026, 2, 17), // Chinese New Year
-            LocalDate.of(2026, 2, 18), // Chinese New Year
-            LocalDate.of(2026, 3, 21), // Hari Raya Puasa
-            LocalDate.of(2026, 4, 3), // Good Friday
-            LocalDate.of(2026, 5, 1), // Labour Day
-            LocalDate.of(2026, 5, 27), // Hari Raya Haji
-            LocalDate.of(2026, 5, 31), // Vesak Day (Sunday)
-            LocalDate.of(2026, 6, 1), // Vesak Day observed (Monday)
-            LocalDate.of(2026, 8, 9), // National Day (Sunday)
-            LocalDate.of(2026, 8, 10), // National Day observed (Monday)
-            LocalDate.of(2026, 11, 8), // Deepavali (Sunday)
-            LocalDate.of(2026, 11, 9), // Deepavali observed (Monday)
-            LocalDate.of(2026, 12, 25) // Christmas Day
-    );
+    private final PublicHolidayRepository publicHolidayRepository;
+
 
     public CourseApplicationServiceImpl(CourseApplicationRepository courseApplicationRepository,
-            EmployeeRepository employeeRepository, EntitlementService entitlementService) {
+            EmployeeRepository employeeRepository, EntitlementService entitlementService, PublicHolidayRepository publicHolidayRepository) {
         this.courseApplicationRepository = courseApplicationRepository;
         this.employeeRepository = employeeRepository;
         this.entitlementService = entitlementService;
+        this.publicHolidayRepository = publicHolidayRepository;
     }
 
     @Override
@@ -86,11 +74,11 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (!from.isAfter(LocalDate.now())) {
             return "From date must start in the future";
         }
-        if (from.getDayOfWeek() == DayOfWeek.SATURDAY || from.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            return "'From' date must be a working day (Monday to Friday).";
+        if (from.getDayOfWeek() == DayOfWeek.SATURDAY || from.getDayOfWeek() == DayOfWeek.SUNDAY || isPublicHoliDays(from)) {
+            return "'From' date must be a working day.";
         }
-        if (to.getDayOfWeek() == DayOfWeek.SATURDAY || to.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            return "'To' date must be a working day (Monday to Friday).";
+        if (to.getDayOfWeek() == DayOfWeek.SATURDAY || to.getDayOfWeek() == DayOfWeek.SUNDAY || isPublicHoliDays(to)) {
+            return "'To' date must be a working day.";
         }
         return null;
     }
@@ -316,12 +304,17 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         return countTrainingDays(application.getFromDate(), application.getToDate());
     }
+    
+    private boolean isPublicHoliDays(LocalDate date) { 
+    	return publicHolidayRepository.findByHolidayDate(date).isPresent();
+    	
+    }
 
     private double countTrainingDays(LocalDate from, LocalDate to) {
         double days = 0;
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             DayOfWeek day = date.getDayOfWeek();
-            if (day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !PUBLIC_HOLIDAYS_2026.contains(date)) {
+            if (day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !isPublicHoliDays(date)) {
                 days += 1;
             }
         }
