@@ -343,13 +343,17 @@ class CourseApplicationServiceTests {
     }
 
     @Test
-    void applicantsOfEveryRoleNeedAnotherManagerAndCannotApproveThemselves() {
+    void staffAndManagersCanApplyButAdminsCannotAndSelfApprovalIsBlocked() {
         for (EmployeeRole role : EmployeeRole.values()) {
             employee.setRole(role);
             Course course = recordedCourse();
             CourseApplication data = validApplication();
             data.setCourseId(course.getId());
-            assertNull(service.submitApplication(data, employee));
+            if (role == EmployeeRole.ADMIN) {
+                assertTrue(service.submitApplication(data, employee).contains("Administrators"));
+            } else {
+                assertNull(service.submitApplication(data, employee));
+            }
         }
         employee.setRole(EmployeeRole.MANAGER);
         employee.setSupervisor(employee);

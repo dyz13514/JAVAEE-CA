@@ -30,6 +30,8 @@ import com.group5.cats.service.EntitlementService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 public class EmployeeController {
@@ -76,9 +78,12 @@ public class EmployeeController {
             return "redirect:/employee/login";
         }
 
+        if (employee.getRole() == EmployeeRole.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This role cannot use this application endpoint.");
+        }
         if (application.getCourseId() == null) {
             redirectAttrs.addFlashAttribute("errorMessage", "Please select a course from All courses.");
-            return "redirect:/courses";
+            return "redirect:/employee/courses";
         }
         String error = bindingResult.hasErrors()
                 ? "Please enter valid course dates, fee and half-day selection."
@@ -100,7 +105,7 @@ public class EmployeeController {
                         + application.getTrainingDays()
         );
 
-        return "redirect:/employee/home";
+        return "redirect:/employee/courses";
     }
 
     @GetMapping("/employee/home")
@@ -137,13 +142,16 @@ public class EmployeeController {
         if (employee == null) {
             return "redirect:/employee/login";
         }
-        if (courseId == null) return "redirect:/courses";
+        if (employee.getRole() == EmployeeRole.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Administrators manage courses but cannot apply.");
+        }
+        if (courseId == null) return "redirect:/employee/courses";
         CourseApplication application = new CourseApplication();
         if (courseId != null) {
             Course course = courseService.findCourseById(courseId);
             if (course == null) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Selected course no longer exists.");
-                return "redirect:/courses";
+                return "redirect:/employee/courses";
             }
             application.setCourseId(course.getId());
             application.setCourseTitle(course.getTitle());

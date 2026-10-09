@@ -36,6 +36,7 @@ public class CourseViewController {
         if (sessionUser == null) return "redirect:/employee/login";
         Employee user = employeeRepository.findById(sessionUser.getId()).orElse(null);
         if (user == null) return "redirect:/employee/login";
+        if (user.getRole() == EmployeeRole.ADMIN) others = true;
         model.addAttribute("canViewOthers", user.getRole() == EmployeeRole.MANAGER
                 || user.getRole() == EmployeeRole.ADMIN);
         model.addAttribute("others", others || (employeeId != null && !employeeId.equals(user.getId())));
@@ -49,7 +50,7 @@ public class CourseViewController {
                         employeeId == null ? user.getId() : employeeId);
                 List<CourseApplication> applications = applicationRepository.findByEmployee(selected);
                 model.addAttribute("selectedEmployee", selected);
-                model.addAttribute("ownCourses", selected.getId().equals(user.getId()));
+                model.addAttribute("ownCourses", user.getRole() != EmployeeRole.ADMIN && selected.getId().equals(user.getId()));
                 model.addAttribute("applications", applications);
             }
         } catch (SecurityException | IllegalArgumentException exception) {

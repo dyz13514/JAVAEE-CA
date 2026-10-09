@@ -50,6 +50,9 @@ public class TrainingCalendarController {
             return "redirect:/login";
         }
 
+        if (loggedInUser.getRole() == EmployeeRole.ADMIN && employeeId == null) {
+            return "redirect:/course-view";
+        }
         addNavigationDetails(loggedInUser, model);
 
         // Opening the calendar without an employee ID always shows your own.

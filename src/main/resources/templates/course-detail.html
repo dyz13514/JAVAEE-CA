@@ -4,8 +4,8 @@
     <th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
 <body>
 <th:block th:replace="~{fragments/layout :: shell('browse-courses')}"></th:block>
-<main class="page-main course-catalogue">
-    <p><a th:href="@{/courses}">← All courses</a></p>
+<main th:with="courseBaseUrl=${session.loggedInUser.role.name() == 'ADMIN' ? '/admin/courses' : '/employee/courses'}" class="page-main course-catalogue">
+    <p><a th:href="@{${courseBaseUrl}}" th:text="${canApply ? '← Apply for course' : '← Course management'}">Back to courses</a></p>
     <div class="page-heading"><div><h1 th:text="${course.title}"></h1>
         <p th:text="${course.provider.name}"></p></div></div>
     <section class="form-section">
@@ -20,8 +20,8 @@
         <p>Duration is fixed. Weekends and public holidays are excluded.</p>
         <p th:if="${#maps.isEmpty(availableDates)}">No available dates. Please check again after the administrator publishes a schedule.</p>
         <ul><li th:each="date : ${availableDates}" th:text="${date.key.toString() + ' → ' + date.value.toString()}"></li></ul>
-        <a class="primary-button" th:unless="${#maps.isEmpty(availableDates)}" th:href="@{/employee/apply(courseId=${course.id})}">Apply</a>
-        <p>Your assigned manager must approve your application.</p>
+        <a class="primary-button" th:if="${canApply and !#maps.isEmpty(availableDates)}" th:href="@{/employee/apply(courseId=${course.id})}">Apply</a>
+        <p th:if="${canApply}">Your assigned manager must approve your application.</p>
     </section>
     <section class="form-section" th:if="${session.loggedInUser.role.name() == 'ADMIN'}">
         <h2>Manage this course</h2>

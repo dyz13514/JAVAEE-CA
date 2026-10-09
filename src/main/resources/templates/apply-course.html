@@ -3,10 +3,10 @@
 <head><meta charset="UTF-8"><title>Course application - CATS</title>
 <th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
 <body><th:block th:replace="~{fragments/layout :: shell('apply')}"></th:block>
-<main class="page-main">
+<main th:with="courseBaseUrl=${session.loggedInUser.role.name() == 'ADMIN' ? '/admin/courses' : '/employee/courses'}" class="page-main">
 <h1 th:text="${courseApplication.id == null ? 'Apply for a course' : 'Edit application'}"></h1>
 <p th:if="${errorMessage}" th:text="${errorMessage}" class="notice error" role="alert"></p>
-<p><a th:href="@{/courses}">Back to All courses</a></p>
+<p><a th:href="@{${courseBaseUrl}}">Back to course selection</a></p>
 <form method="post" th:action="${formAction}" th:object="${courseApplication}" id="courseForm">
 <input type="hidden" th:field="*{courseId}">
 <section class="form-section"><h2 id="summaryTitle" th:text="*{courseTitle}"></h2>

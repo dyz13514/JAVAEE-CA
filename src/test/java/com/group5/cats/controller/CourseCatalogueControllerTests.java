@@ -26,14 +26,16 @@ class CourseCatalogueControllerTests {
         common = mock(CommonCourseService.class);
         mvc = MockMvcBuilders.standaloneSetup(
                 new AdminCourseController(courses, mock(TrainingProviderService.class)),
-                new AdminCommonCourseController(common, courses)).build();
+                new CourseBrowseController(courses, mock(TrainingProviderService.class), mock(CourseScheduleService.class)),
+                new AdminCommonCourseController(common, courses))
+                .setViewResolvers(new org.springframework.web.servlet.view.InternalResourceViewResolver("/templates/", ".html")).build();
         admin = new Employee();
         admin.setId(1L);
         admin.setRole(EmployeeRole.ADMIN);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/admin/courses", "/admin/common-courses"})
+    @ValueSource(strings = {"/admin/common-courses"})
     void bothCataloguesRequireAnAdmin(String path) throws Exception {
         mvc.perform(get(path)).andExpect(redirectedUrl("/admin/login"));
         Employee staff = new Employee();
@@ -46,10 +48,10 @@ class CourseCatalogueControllerTests {
     }
 
     @Test
-    void oldAdminCatalogueRedirectsToSharedCards() throws Exception {
+    void adminCatalogueDisplaysManagementCards() throws Exception {
         mvc.perform(get("/admin/courses").sessionAttr("loggedInUser", admin))
-                .andExpect(redirectedUrl("/courses"));
-        verifyNoInteractions(courses);
+                .andExpect(view().name("courses"))
+                .andExpect(model().attribute("canApply", false));
     }
 
     @Test

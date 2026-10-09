@@ -60,6 +60,9 @@ class PageRenderingTests {
             user.setRole(template.startsWith("admin/") || template.equals("entitlement")
                     ? EmployeeRole.ADMIN : template.equals("manager-approvals") || template.equals("manager-reports")
                     ? EmployeeRole.MANAGER : EmployeeRole.REGULAR_STAFF);
+            if ((template.equals("courses") || template.equals("course-detail")) && state.equals("approved")) {
+                user.setRole(EmployeeRole.ADMIN);
+            }
             session.setAttribute("loggedInUser", user);
             var response = mvc.perform(get("/preview").param("template", template).param("state", state)
                     .session(session).locale(Locale.ENGLISH)).andReturn().getResponse();
@@ -75,6 +78,16 @@ class PageRenderingTests {
             if (template.equals("application-detail")) {
                 assertEquals(state.equals("approved"), html.contains("/complete"));
                 assertEquals(!state.equals("approved"), html.contains("/withdraw"));
+            }
+            if (template.equals("courses")) {
+                assertTrue(html.indexOf("id=\"keyword\"") < html.indexOf("id=\"common-heading\""));
+                assertTrue(html.indexOf("id=\"common-heading\"") < html.indexOf("id=\"overview-heading\""));
+                assertTrue(html.contains(state.equals("approved") ? "Course management" : "Apply for course"));
+                assertTrue(html.contains(state.equals("approved") ? "/admin/courses" : "/employee/courses"));
+            }
+            if (template.equals("course-detail")) {
+                assertEquals(!state.equals("approved"), html.contains(">Apply</a>"));
+                assertEquals(state.equals("approved"), html.contains("Manage this course"));
             }
             if (template.equals("apply-course")) {
                 assertTrue(html.contains("name=\"courseId\""));
@@ -212,7 +225,7 @@ class PageRenderingTests {
             model.addAttribute("keyword", "");
             model.addAttribute("category", "");
             model.addAttribute("selectedProviderId", null);
-            model.addAttribute("canApply", true);
+            model.addAttribute("canApply", !(template.equals("course-detail") && state.equals("approved")));
             model.addAttribute("commonCourseIds", state.equals("empty") ? List.of() : List.of(1L));
             model.addAllAttributes(Map.of("providers", List.of(provider), "providerId", 1L,
                     "commonCourses", state.equals("empty") ? List.of() : List.of(commonCourse), "holidays", List.of(), "holidayId", 1L,

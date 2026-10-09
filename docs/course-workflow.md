@@ -4,15 +4,17 @@
 
 ## 使用流程
 
-1. 所有角色登录后进入 `/courses`。旧 `/admin/courses` 入口会跳转到这里。
-2. 上方为管理员选择的 Commonly Attended Courses；下方 Course overview 为全部课程。
-3. 点击卡片进入 `/courses/{id}`，查看介绍、机构、类别、参考费用、固定培训天数和可选课期。
-4. 点击 Apply，从已发布课期选择开始日期。服务器决定结束日期，不接受申请人自行缩短时长。
-5. Employee、Manager、Admin 均由各自分配的 Manager 审核。没有主管时禁止提交，禁止自我审批。
-6. `/course-view` 显示自己的申请及完整状态；Manager 可选择直属人员，Admin 可选择所有人员。
-7. 列表可跳转至月历。月历默认显示已批准课程，勾选 Include awaiting review 后也显示待审核申请。
+1. Employee 和 Manager 共用 `/employee/login`、`/employee/home` 和 `/employee/courses`，页面名称均为 **Apply for course**。
+2. Admin 使用 `/admin/courses`，页面名称为 **Course management**，只管理课程，不申请课程。
+3. 页面依次展示搜索栏、Commonly Attended Courses、All courses。搜索同时作用于两个课程区域。
+4. 卡片进入各自角色前缀下的 `/courses/{id}` 详情页。
+5. Employee 和 Manager 共用申请表 `/employee/apply`；Admin 访问或提交该申请入口均被拒绝。
+6. Employee 和 Manager 的申请由指定主管审核；没有主管不能提交，也不能自我审批。
+7. `/course-view` 为 Employee 显示个人申请，Manager 可切换个人/直属人员；Admin 默认进入人员列表，只查看管理范围内的培训情况。
+8. 月历默认显示已批准课程，也可以选择显示待审核申请。
 
-管理员从 All courses 新增课程，从详情页编辑或删除，从 Common course catalogue 选择常用课程。
+旧 `/courses` 和 `/courses/{id}` 链接自动转到当前角色的课程地址。
+管理员从 Course management 新增课程，从详情页编辑或删除，从 Common course catalogue 选择常用课程。
 Employee、Manager 没有管理按钮，管理接口也会检查管理员权限。
 
 ## 课期规则
@@ -47,8 +49,8 @@ Employee、Manager 没有管理按钮，管理接口也会检查管理员权限�
 | `src/main/java/com/group5/cats/service/CourseScheduleService.java`（新增） | 定义课期查询和结束日期计算方法 |
 | `src/main/java/com/group5/cats/service/CourseScheduleServiceImpl.java`（新增） | 过滤可申请日期，按工作日计算结束日期 |
 | `src/main/java/com/group5/cats/controller/AdminCourseController.java` | 旧列表入口跳转，编辑时回填课期信息 |
-| `src/main/java/com/group5/cats/controller/CourseBrowseController.java` | 三角色统一课程浏览和详情页 |
-| `src/main/java/com/group5/cats/controller/EmployeeController.java` | 开放三角色申请、提供课期选项、阻止无课程的新申请，以及保护个人申请详情/编辑入口 |
+| `src/main/java/com/group5/cats/controller/CourseBrowseController.java` | 按角色地址提供课程浏览和详情页 |
+| `src/main/java/com/group5/cats/controller/EmployeeController.java` | 开放 Employee、Manager 申请、提供课期选项、阻止无课程的新申请，以及保护个人申请详情/编辑入口 |
 | `src/main/java/com/group5/cats/service/CourseApplicationServiceImpl.java` | 核验课期、重算结束日期、主管检查、禁止自审、保留申请快照 |
 | `src/main/java/com/group5/cats/controller/CourseViewController.java`（新增） | 自己/他人的申请列表及角色范围检查 |
 | `src/main/java/com/group5/cats/service/TrainingCalendarService.java` | 增加查询待审核申请的方法 |
@@ -64,8 +66,8 @@ Employee、Manager 没有管理按钮，管理接口也会检查管理员权限�
 | `src/main/resources/templates/legacy-apply-course.html`（新增） | 无 Course 关联的历史申请兼容表单 |
 | `src/main/resources/templates/course-view.html`（新增） | 个人/他人课程列表、完整状态、月历链接 |
 | `src/main/resources/templates/training-calendar.html` | 返回课程列表、待审核开关及状态显示 |
-| `src/main/resources/templates/fragments/layout.html` | 三角色共用 All courses 与 Course view 导航 |
-| `src/main/resources/templates/admin/home.html` | 首页 All courses 指向共用卡片页 |
+| `src/main/resources/templates/fragments/layout.html` | 按角色区分 Apply for course / Course management，并提供 Course view 导航 |
+| `src/main/resources/templates/admin/home.html` | 首页 Course management 指向管理员课程页 |
 | `src/main/resources/static/css/cats.css` | 卡片悬停/焦点反馈、介绍换行、待审核日历颜色；继续使用原站点样式 |
 
 ## 测试文件
@@ -87,7 +89,7 @@ Employee、Manager 没有管理按钮，管理接口也会检查管理员权限�
 之前六门样例只有在“名称和机构匹配，且介绍与天数均未设置”时才补全一次。
 管理员已经编辑的课程不会被覆盖，手动清空的开课日期也不会在下次启动时重新添加。
 
-如果 Manager 或 Admin 提示缺少主管，请在员工管理里分配真实的上级 Manager；
+如果 Employee 或 Manager 提示缺少主管，请在员工管理里分配真实的上级 Manager；
 如果提示缺少培训额度，请使用已有 Training allowances 功能配置，不能通过改角色跳过审批或额度。
 
 验证使用模拟对象、真实 Thymeleaf 和独立 H2 数据库。没有向真实邮箱发送测试邮件，

@@ -6,7 +6,7 @@
 <main class="page-main calendar-page">
     <div class="page-heading"><div><h1>Course view</h1><p>Applications, review status and training dates.</p></div></div>
     <nav class="calendar-tabs" aria-label="Course views">
-        <a th:href="@{/course-view}" th:attr="aria-current=${!others ? 'page' : null}">My courses</a>
+        <a th:if="${session.loggedInUser.role.name() != 'ADMIN'}" th:href="@{/course-view}" th:attr="aria-current=${!others ? 'page' : null}">My courses</a>
         <a th:if="${canViewOthers}" th:href="@{/course-view(others=true)}" th:attr="aria-current=${others ? 'page' : null}">Other employees' courses</a>
     </nav>
     <p role="alert" th:if="${errorMessage}" th:text="${errorMessage}" class="notice error"></p>

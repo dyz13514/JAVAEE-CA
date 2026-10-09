@@ -83,8 +83,14 @@ class TrainingCalendarControllerTests {
 
     @ParameterizedTest
     @EnumSource(EmployeeRole.class)
-    void everyRoleStartsWithOwnCalendar(EmployeeRole role) throws Exception {
+    void staffAndManagerStartWithOwnCalendarWhileAdminGetsManagement(EmployeeRole role) throws Exception {
         staff.setRole(role);
+        if (role == EmployeeRole.ADMIN) {
+            mvc.perform(get("/training-calendar").sessionAttr("loggedInUser", staff))
+                    .andExpect(redirectedUrl("/course-view"));
+            verifyNoInteractions(applications);
+            return;
+        }
         LocalDate today = LocalDate.now();
         MvcResult result = mvc.perform(get("/training-calendar")
                 .sessionAttr("loggedInUser", staff))

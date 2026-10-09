@@ -66,7 +66,7 @@ class EmployeeControllerTests {
         mvc.perform(get("/employee/apply").param("courseId", "7"))
                 .andExpect(redirectedUrl("/employee/login"));
         mvc.perform(get("/employee/apply").param("courseId", "7").sessionAttr("loggedInUser", employee))
-                .andExpect(redirectedUrl("/courses"))
+                .andExpect(redirectedUrl("/employee/courses"))
                 .andExpect(flash().attributeExists("errorMessage"));
     }
 
@@ -156,7 +156,7 @@ class EmployeeControllerTests {
     void newManualRequestCannotBypassPublishedSchedules() throws Exception {
         mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
                 .param("courseTitle", "Unscheduled").param("fromDate", "2027-01-04"))
-                .andExpect(redirectedUrl("/courses"));
+                .andExpect(redirectedUrl("/employee/courses"));
         verifyNoInteractions(service);
     }
 
@@ -171,6 +171,32 @@ class EmployeeControllerTests {
                 .andExpect(status().isForbidden());
         mvc.perform(get("/employee/history/10/edit").sessionAttr("loggedInUser", employee))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCannotOpenOrSubmitApplicationEndpoint() throws Exception {
+        employee.setRole(EmployeeRole.ADMIN);
+        for (String path : List.of("/employee/apply")) {
+            mvc.perform(get(path).param("courseId", "7").sessionAttr("loggedInUser", employee))
+                    .andExpect(status().isForbidden());
+            mvc.perform(post(path).param("courseId", "7").sessionAttr("loggedInUser", employee))
+                    .andExpect(status().isForbidden());
+        }
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void managerAndEmployeeShareApplicationAndHomeAddresses() throws Exception {
+        for (EmployeeRole role : List.of(EmployeeRole.REGULAR_STAFF, EmployeeRole.MANAGER)) {
+            employee.setRole(role);
+            mvc.perform(get("/employee/apply").sessionAttr("loggedInUser", employee))
+                    .andExpect(redirectedUrl("/employee/courses"));
+            mvc.perform(post("/employee/apply").param("courseId", "7").sessionAttr("loggedInUser", employee))
+                    .andExpect(redirectedUrl("/employee/courses"));
+            mvc.perform(get("/employee/home").sessionAttr("loggedInUser", employee))
+                    .andExpect(view().name("employee-home"));
+        }
+        verify(service, times(2)).submitApplication(any(), eq(employee));
     }
 
 }

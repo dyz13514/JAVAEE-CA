@@ -24,14 +24,36 @@ class CourseBrowseControllerTests {
         mvc.perform(get("/courses")).andExpect(redirectedUrl("/employee/login"));
         verifyNoInteractions(service);
         Employee staff = new Employee(); staff.setRole(EmployeeRole.REGULAR_STAFF);
-        mvc.perform(get("/courses").param("commonOnly", "true").sessionAttr("loggedInUser", staff))
+        mvc.perform(get("/employee/courses").param("commonOnly", "true").sessionAttr("loggedInUser", staff))
                 .andExpect(model().attribute("courses", List.of(second)))
                 .andExpect(model().attribute("canApply", true))
                 .andExpect(model().attribute("featuredCourses", List.of(second)));
-        mvc.perform(get("/courses").sessionAttr("loggedInUser", staff))
+        mvc.perform(get("/employee/courses").sessionAttr("loggedInUser", staff))
                 .andExpect(model().attribute("courses", List.of(first, second)));
         staff.setRole(EmployeeRole.MANAGER);
-        mvc.perform(get("/courses").sessionAttr("loggedInUser", staff))
+        mvc.perform(get("/employee/courses").sessionAttr("loggedInUser", staff))
                 .andExpect(model().attribute("canApply", true));
     }
+    @Test
+    void roleSpecificUrlsAndDetailPermissionsAreConsistent() throws Exception {
+        CourseService service = mock(CourseService.class);
+        Course course = new Course();
+        course.setId(7L);
+        when(service.findCourseById(7L)).thenReturn(course);
+        var mvc = MockMvcBuilders.standaloneSetup(new CourseBrowseController(service,
+                mock(com.group5.cats.service.TrainingProviderService.class),
+                mock(com.group5.cats.service.CourseScheduleService.class)))
+                .setViewResolvers(new org.springframework.web.servlet.view.InternalResourceViewResolver("/templates/", ".html")).build();
+        for (EmployeeRole role : EmployeeRole.values()) {
+            Employee user = new Employee(); user.setRole(role);
+            String prefix = role == EmployeeRole.ADMIN ? "/admin" : "/employee";
+            mvc.perform(get("/courses").param("keyword", "Java").sessionAttr("loggedInUser", user))
+                    .andExpect(redirectedUrl(prefix + "/courses?keyword=Java"));
+            mvc.perform(get(prefix + "/courses/7").sessionAttr("loggedInUser", user))
+                    .andExpect(model().attribute("canApply", role != EmployeeRole.ADMIN));
+            mvc.perform(get("/courses/7").sessionAttr("loggedInUser", user))
+                    .andExpect(redirectedUrl(prefix + "/courses/7"));
+        }
+    }
+
 }

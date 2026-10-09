@@ -34,28 +34,6 @@ public class AdminCourseController {
         this.trainingProviderService = trainingProviderService;
     }
 
-    @GetMapping("/admin/courses")
-    public String showCourses(
-            @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "") String category,
-            @RequestParam(required = false) Long providerId,
-            @RequestParam(defaultValue = "false") boolean commonOnly,
-            HttpSession session, Model model) {
-
-        Employee loggedInUser =
-                (Employee) session.getAttribute("loggedInUser");
-
-        if (loggedInUser == null) {
-            return "redirect:/admin/login";
-        }
-
-        if (loggedInUser.getRole() != EmployeeRole.ADMIN) {
-            return "redirect:/employee/home";
-        }
-
-        return "redirect:/courses";
-    }
-
     @GetMapping("/admin/courses/new")
     public String showNewCourseForm(
             HttpSession session,
@@ -136,7 +114,7 @@ public class AdminCourseController {
                 "Course created successfully."
         );
 
-        return "redirect:/courses";
+        return "redirect:/admin/courses";
     }
 
     @GetMapping("/admin/courses/{id}/edit")
@@ -166,7 +144,7 @@ public class AdminCourseController {
                     "Course not found."
             );
 
-            return "redirect:/courses";
+            return "redirect:/admin/courses";
         }
 
         CourseForm courseForm = new CourseForm();
@@ -224,7 +202,7 @@ public class AdminCourseController {
                     "Course not found."
             );
 
-            return "redirect:/courses";
+            return "redirect:/admin/courses";
         }
 
         model.addAttribute("courseId", id);
@@ -258,7 +236,7 @@ public class AdminCourseController {
                 "Course updated successfully."
         );
 
-        return "redirect:/courses";
+        return "redirect:/admin/courses";
     }
 
     @PostMapping("/admin/courses/{id}/delete")
@@ -289,6 +267,6 @@ public class AdminCourseController {
             );
         }
 
-        return "redirect:/courses";
+        return "redirect:/admin/courses";
     }
 }

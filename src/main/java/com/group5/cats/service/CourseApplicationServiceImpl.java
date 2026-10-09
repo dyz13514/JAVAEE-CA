@@ -52,6 +52,9 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         // Session objects may predate changes to the employee or supervisor email address.
         application.setEmployee(employeeRepository.findById(employee.getId()).orElse(employee));
+        if (application.getEmployee().getRole() == EmployeeRole.ADMIN) {
+            return "Administrators manage courses and cannot submit course applications.";
+        }
         String supervisorError = validateSupervisor(application.getEmployee());
         if (supervisorError != null) return supervisorError;
         String error = selectCourse(application, null);
@@ -305,6 +308,9 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
             return "Only pending applications can be updated";
         }
         Employee currentEmployee = employeeRepository.findById(employee.getId()).orElse(employee);
+        if (currentEmployee.getRole() == EmployeeRole.ADMIN) {
+            return "Administrators cannot update personal course applications.";
+        }
         String supervisorError = validateSupervisor(currentEmployee);
         if (supervisorError != null) return supervisorError;
         String error = selectCourse(updatedData, application);
