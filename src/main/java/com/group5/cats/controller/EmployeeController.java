@@ -4,7 +4,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,10 +33,18 @@ public class EmployeeController {
         this.courseApplicationService = courseApplicationService;
     }
 
+    @InitBinder("courseApplication")
+    public void configureApplicationBinding(WebDataBinder binder) {
+        binder.setAllowedFields("courseTitle", "category", "provider", "fromDate", "toDate",
+                "fee", "justification", "dissemination", "halfDay");
+    }
+
     @PostMapping("/employee/apply")
     public String submitApplication(
-            @ModelAttribute CourseApplication application,
+            @ModelAttribute("courseApplication") CourseApplication application,
+            BindingResult bindingResult,
             HttpSession session,
+            Model model,
             RedirectAttributes redirectAttrs) {
 
         Employee employee =
@@ -43,15 +54,17 @@ public class EmployeeController {
             return "redirect:/employee/login";
         }
 
-        String error = courseApplicationService.submitApplication(
+        String error = bindingResult.hasErrors()
+                ? "Please enter valid course dates, fee and half-day selection."
+                : courseApplicationService.submitApplication(
                 application,
                 employee
         );
 
         if (error != null) {
-            redirectAttrs.addFlashAttribute("errorMessage", error);
-
-            return "redirect:/employee/apply";
+            model.addAttribute("errorMessage", error);
+            model.addAttribute("formAction", "/employee/apply");
+            return "apply-course";
         }
 
         redirectAttrs.addFlashAttribute(
@@ -190,8 +203,10 @@ public class EmployeeController {
     @PostMapping("/employee/history/{id}/edit")
     public String updateAppliaction(
             @PathVariable Long id,
-            @ModelAttribute CourseApplication updatedData,
+            @ModelAttribute("courseApplication") CourseApplication updatedData,
+            BindingResult bindingResult,
             HttpSession session,
+            Model model,
             RedirectAttributes redirectAttrs) {
 
         Employee employee =
@@ -201,15 +216,19 @@ public class EmployeeController {
             return "redirect:/employee/login";
         }
 
-        String error = courseApplicationService.updateApplication(
+        String error = bindingResult.hasErrors()
+                ? "Please enter valid course dates, fee and half-day selection."
+                : courseApplicationService.updateApplication(
                 id,
                 updatedData,
                 employee
         );
 
         if (error != null) {
-            redirectAttrs.addFlashAttribute("errorMessage", error);
-            return "redirect:/employee/history/" + id + "/edit";
+            updatedData.setId(id);
+            model.addAttribute("errorMessage", error);
+            model.addAttribute("formAction", "/employee/history/" + id + "/edit");
+            return "apply-course";
         }
 
         redirectAttrs.addFlashAttribute(

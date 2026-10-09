@@ -42,8 +42,8 @@ public class EntitlementServiceImpl implements EntitlementService {
 			throw new IllegalArgumentException("EmployeeId must be positive.");
 		}
 		
-		if(entitlementYear == null || entitlementYear <= 0) {
-			throw new IllegalArgumentException("EntitlementYear must be positive.");
+		if(entitlementYear == null || entitlementYear < 1 || entitlementYear > 9999) {
+			throw new IllegalArgumentException("EntitlementYear must be between 1 and 9999.");
 		}
 	}
 
@@ -108,12 +108,12 @@ public class EntitlementServiceImpl implements EntitlementService {
 			) {
 		validateInputs(employeeId, entitlementYear);
 		
-		if(trainingDaysLimit < 0) {
-			throw new IllegalArgumentException("TrainingDaysLimit must >= 0.");
+		if(!Double.isFinite(trainingDaysLimit) || trainingDaysLimit < 0) {
+			throw new IllegalArgumentException("TrainingDaysLimit must be a finite number greater than or equal to zero.");
 		}
 		
-		if(trainingBudget < 0) {
-			throw new IllegalArgumentException("trainingBudget must >= 0.");
+		if(!Double.isFinite(trainingBudget) || trainingBudget < 0) {
+			throw new IllegalArgumentException("TrainingBudget must be a finite number greater than or equal to zero.");
 		}
 		
 		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
