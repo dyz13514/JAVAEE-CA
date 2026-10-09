@@ -14,6 +14,7 @@ import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.AnnualEntitlementRepository;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
+import com.group5.cats.repository.NotificationOutboxRepository;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -21,15 +22,27 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final CourseApplicationRepository courseApplicationRepository;
     private final AnnualEntitlementRepository annualEntitlementRepository;
+    private final NotificationOutboxRepository notificationOutboxRepository;
 
     public EmployeeServiceImpl(
             EmployeeRepository employeeRepository,
             CourseApplicationRepository courseApplicationRepository,
-            AnnualEntitlementRepository annualEntitlementRepository) {
+            AnnualEntitlementRepository annualEntitlementRepository,
+            NotificationOutboxRepository notificationOutboxRepository) {
 
         this.employeeRepository = employeeRepository;
         this.courseApplicationRepository = courseApplicationRepository;
         this.annualEntitlementRepository = annualEntitlementRepository;
+        this.notificationOutboxRepository = notificationOutboxRepository;
+    }
+
+    private String validateEmail(String email) {
+        if (email == null || email.isBlank()) return null;
+        String value = email.strip();
+        if (value.length() > 254 || !value.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+            return "Please enter a valid email address (maximum 254 characters).";
+        }
+        return null;
     }
 
     @Override
@@ -54,6 +67,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                 || employeeForm.getUsername().isBlank()) {
             return "Username is required.";
         }
+
+        String emailError = validateEmail(employeeForm.getEmail());
+        if (emailError != null) return emailError;
 
         if (employeeForm.getName() == null
                 || employeeForm.getName().isBlank()) {
@@ -101,6 +117,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setUsername(username);
         employee.setName(employeeForm.getName().trim());
+        employee.setEmail(employeeForm.getEmail() == null || employeeForm.getEmail().isBlank()
+                ? null : employeeForm.getEmail().strip());
         employee.setPassword(employeeForm.getPassword());
         employee.setRole(employeeForm.getRole());
         employee.setDesignation(employeeForm.getDesignation());
@@ -120,6 +138,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employee == null) {
             return "Employee not found.";
         }
+
+        String emailError = validateEmail(employeeForm.getEmail());
+        if (emailError != null) return emailError;
 
         if (employeeForm.getName() == null
                 || employeeForm.getName().isBlank()) {
@@ -194,6 +215,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         employee.setName(employeeForm.getName().trim());
+        employee.setEmail(employeeForm.getEmail() == null || employeeForm.getEmail().isBlank()
+                ? null : employeeForm.getEmail().strip());
         employee.setRole(employeeForm.getRole());
         employee.setDesignation(employeeForm.getDesignation());
         employee.setSupervisor(supervisor);
@@ -241,6 +264,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (!courseApplicationRepository.findByEmployee(employee).isEmpty()) {
             return "This employee has course application records and cannot be deleted.";
+        }
+
+        if (notificationOutboxRepository.existsByRecipient_Id(id)) {
+            return "This employee has notification records and cannot be deleted.";
         }
 
         annualEntitlementRepository.deleteByEmployeeId(id);

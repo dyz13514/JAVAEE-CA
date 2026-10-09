@@ -26,6 +26,7 @@ class CourseApplicationServiceTests {
     private EntitlementService entitlements;
     private PublicHolidayRepository holidays;
     private CourseApplicationServiceImpl service;
+    private NotificationService notifications;
     private Employee employee;
 
     @BeforeEach
@@ -33,7 +34,8 @@ class CourseApplicationServiceTests {
         applications = mock(CourseApplicationRepository.class);
         entitlements = mock(EntitlementService.class);
         holidays = mock(PublicHolidayRepository.class);
-        service = new CourseApplicationServiceImpl(applications, mock(EmployeeRepository.class), entitlements, holidays);
+        notifications = mock(NotificationService.class);
+        service = new CourseApplicationServiceImpl(applications, mock(EmployeeRepository.class), entitlements, holidays, notifications);
         employee = new Employee();
         employee.setId(1L);
         when(applications.findByEmployee(employee)).thenReturn(List.of());
@@ -52,6 +54,36 @@ class CourseApplicationServiceTests {
         application.setToDate(from.plusDays(1));
         application.setFee(100);
         return application;
+    }
+
+    @Test
+    void successfulSubmissionCreatesNotificationButInvalidSubmissionDoesNot() {
+        CourseApplication application = validApplication();
+        assertNull(service.submitApplication(application, employee));
+        verify(notifications).createNotification(application, NotificationType.APPLICATION_SUBMITTED);
+        reset(notifications);
+        application.setCourseTitle(" ");
+        assertNotNull(service.submitApplication(application, employee));
+        verifyNoInteractions(notifications);
+    }
+
+    @Test
+    void onlyValidManagerDecisionCreatesNotification() {
+        for (String decision : List.of("APPROVE", "REJECT")) {
+            Employee manager = new Employee();
+            manager.setId(2L);
+            employee.setSupervisor(manager);
+            CourseApplication application = validApplication();
+            application.setEmployee(employee);
+            application.setStatus("APPLIED");
+            when(applications.findById(10L)).thenReturn(Optional.of(application));
+            assertNotNull(service.reviewApplication(10L, manager, decision, "Relevant training"));
+            verify(notifications).createNotification(application, decision.equals("APPROVE")
+                    ? NotificationType.APPLICATION_APPROVED : NotificationType.APPLICATION_REJECTED);
+            reset(notifications);
+            service.reviewApplication(10L, manager, decision, "Relevant training");
+            verifyNoInteractions(notifications);
+        }
     }
 
     private void allowSubmission(CourseApplication application) {

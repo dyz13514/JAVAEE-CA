@@ -50,6 +50,12 @@
     <p>Leave the password blank to keep the current password.</p>
 
     <p>
+        <label for="email">Email:</label>
+        <input type="email" id="email" th:field="*{email}" maxlength="254">
+        <small>Used for course application notifications. Existing accounts may leave this blank.</small>
+    </p>
+
+    <p>
         <label for="role">Role:</label>
         <select id="role" th:field="*{role}" required>
             <option th:each="role : ${roles}"

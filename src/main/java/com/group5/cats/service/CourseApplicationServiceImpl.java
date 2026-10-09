@@ -1,6 +1,8 @@
 package com.group5.cats.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.group5.cats.model.NotificationType;
 import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 import com.group5.cats.repository.CourseApplicationRepository;
@@ -21,22 +23,27 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     private final EmployeeRepository employeeRepository;
     private final EntitlementService entitlementService;
     private final PublicHolidayRepository publicHolidayRepository;
+    private final NotificationService notificationService;
 
 
     public CourseApplicationServiceImpl(CourseApplicationRepository courseApplicationRepository,
-            EmployeeRepository employeeRepository, EntitlementService entitlementService, PublicHolidayRepository publicHolidayRepository) {
+            EmployeeRepository employeeRepository, EntitlementService entitlementService, PublicHolidayRepository publicHolidayRepository,
+            NotificationService notificationService) {
         this.courseApplicationRepository = courseApplicationRepository;
         this.employeeRepository = employeeRepository;
         this.entitlementService = entitlementService;
         this.publicHolidayRepository = publicHolidayRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
+    @Transactional
     public String submitApplication(CourseApplication application, Employee employee) {
         if (application.getId() != null) {
             return "New applications must not contain an existing application ID.";
         }
-        application.setEmployee(employee);
+        // Session objects may predate changes to the employee or supervisor email address.
+        application.setEmployee(employeeRepository.findById(employee.getId()).orElse(employee));
         String error = validateBasicRules(application);
         if (error != null) {
             return error;
@@ -54,6 +61,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         application.setStatus("APPLIED");
         courseApplicationRepository.save(application);
+        notificationService.createNotification(application, NotificationType.APPLICATION_SUBMITTED);
         return null;
     }
 
@@ -317,6 +325,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     }
 
     @Override
+    @Transactional
     public String reviewApplication(Long id, Employee manager, String decision, String comment) {
         String error = validateText(comment, "Manager comment", true);
         if (error != null) return error;
@@ -341,6 +350,8 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         application.setStatus("APPROVE".equals(decision) ? "APPROVED" : "REJECTED");
         application.setManagerComment(comment.strip());
         courseApplicationRepository.save(application);
+        notificationService.createNotification(application, "APPROVE".equals(decision)
+                ? NotificationType.APPLICATION_APPROVED : NotificationType.APPLICATION_REJECTED);
         return "APPROVE".equals(decision) ? "Application approved" : "Application rejected";
     }
 

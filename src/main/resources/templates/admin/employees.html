@@ -29,6 +29,7 @@
         <th>ID</th>
         <th>Username</th>
         <th>Name</th>
+        <th>Email</th>
         <th>Role</th>
         <th>Designation</th>
         <th>Supervisor</th>
@@ -41,6 +42,7 @@
         <td th:text="${employee.id}"></td>
         <td th:text="${employee.username}"></td>
         <td th:text="${employee.name}"></td>
+        <td th:text="${employee.email == null ? 'Not configured' : employee.email}"></td>
         <td th:text="${employee.role.name() == 'REGULAR_STAFF' ? 'Staff' : #strings.capitalize(#strings.toLowerCase(employee.role.name()))}"></td>
         <td th:text="${employee.designation != null ? #strings.capitalize(#strings.toLowerCase(employee.designation.name())) : 'Not assigned'}"></td>
 

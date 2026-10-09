@@ -150,6 +150,7 @@ public class AdminEmployeeController {
 
         employeeForm.setUsername(employee.getUsername());
         employeeForm.setName(employee.getName());
+        employeeForm.setEmail(employee.getEmail());
         employeeForm.setRole(employee.getRole());
         employeeForm.setDesignation(employee.getDesignation());
 
