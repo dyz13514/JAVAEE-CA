@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Notifications - CATS</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('notifications')}"></th:block>
+<main class="page-main notification-page">
+    <div class="page-heading"><div><h1>Email notifications</h1><p>Check delivery status and view notification details.</p></div></div>
+    <form class="notification-filter" method="get" th:action="@{/admin/notifications}">
+        <div class="field"><label for="status">Delivery status</label><select id="status" name="status">
+            <option value="">All statuses</option>
+            <option th:each="status : ${statuses}" th:value="${status.name()}" th:selected="${selectedStatus == status.name()}" th:text="${#strings.capitalize(#strings.toLowerCase(status.name()))}"></option>
+        </select></div>
+        <button type="submit" class="primary-button">Filter</button>
+        <a th:href="@{/admin/notifications(status=${selectedStatus})}">Refresh</a>
+    </form>
+    <p class="field-hint">Sent means the mail server accepted the message. It does not confirm that the recipient read it.</p>
+    <p class="empty-state" th:if="${notifications.empty}">No email notifications found. Records appear when email is enabled and a course application is submitted or reviewed.</p>
+    <div class="table-scroll" th:unless="${notifications.empty}">
+        <table><thead><tr><th>ID</th><th>Recipient</th><th>Notification</th><th>Status</th><th>Attempts</th><th>Created</th><th>Details</th></tr></thead>
+        <tbody><tr th:each="notification : ${notifications.content}">
+            <td th:text="${notification.id}"></td>
+            <td th:text="${notification.recipientEmailSnapshot != null ? notification.recipientEmailSnapshot : 'Email not configured'}"></td>
+            <td th:text="${#strings.capitalize(#strings.toLowerCase(#strings.replace(notification.notificationType.name(), '_', ' ')))}"></td>
+            <td><span class="status" th:classappend="${'delivery-' + notification.deliveryStatus.name()}" th:text="${#strings.capitalize(#strings.toLowerCase(notification.deliveryStatus.name()))}"></span></td>
+            <td th:text="${notification.retryCount}"></td>
+            <td th:text="${#temporals.format(notification.createdAt, 'dd MMM yyyy, HH:mm')}"></td>
+            <td><details><summary>View</summary><div class="notification-details">
+                <strong th:text="${notification.subject}"></strong>
+                <p class="notification-body" th:text="${notification.body}"></p>
+                <p>Sent: <span th:text="${notification.sentAt == null ? 'Not sent' : #temporals.format(notification.sentAt, 'dd MMM yyyy, HH:mm')}"></span></p>
+                <p>Next attempt / lease expiry: <span th:text="${notification.nextAttemptAt == null ? 'None' : #temporals.format(notification.nextAttemptAt, 'dd MMM yyyy, HH:mm')}"></span></p>
+                <p th:if="${notification.lastError != null}">Last error: <span th:text="${notification.lastError}"></span></p>
+            </div></details></td>
+        </tr></tbody></table>
+    </div>
+    <nav class="notification-pagination" aria-label="Notification pages" th:if="${notifications.totalPages > 0}">
+        <a th:if="${notifications.hasPrevious()}" th:href="@{/admin/notifications(status=${selectedStatus},page=${notifications.number - 1})}">Previous</a>
+        <span th:text="${'Page ' + (notifications.number + 1) + ' of ' + notifications.totalPages + ' · ' + notifications.totalElements + ' records'}"></span>
+        <a th:if="${notifications.hasNext()}" th:href="@{/admin/notifications(status=${selectedStatus},page=${notifications.number + 1})}">Next</a>
+    </nav>
+</main>
+</body>
+</html>

@@ -32,7 +32,7 @@ class PageRenderingTests {
     @ParameterizedTest
     @ValueSource(strings = {"login", "admin/registrations", "employee-home",
             "apply-course", "my-history", "application-detail", "manager-approvals", "entitlement",
-            "admin/home", "admin/employees", "admin/employee-form", "admin/employee-edit",
+            "admin/home", "admin/notifications", "admin/employees", "admin/employee-form", "admin/employee-edit",
             "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses",
             "admin/common-course-form", "admin/common-course-edit", "admin/public-holidays",
             "admin/public-holiday-form", "admin/public-holiday-edit", "error/404"})
@@ -60,6 +60,11 @@ class PageRenderingTests {
             String html = response.getContentAsString(StandardCharsets.UTF_8);
             assertTrue(html.contains("/css/cats.css"), template);
             assertFalse(html.contains("REST asynchronous"), template);
+            if (template.equals("admin/notifications")) {
+                assertTrue(html.contains("Email notifications") || html.contains("Email Notifications"));
+                assertFalse(html.contains("<script>alert(1)</script>"));
+                if (!state.equals("empty")) assertTrue(html.contains("&lt;script&gt;"));
+            }
             if (template.equals("application-detail")) {
                 assertEquals(state.equals("approved"), html.contains("/complete"));
                 assertEquals(!state.equals("approved"), html.contains("/withdraw"));
@@ -123,6 +128,19 @@ class PageRenderingTests {
                 model.addAttribute("loginRole", "admin");
             }
             RegistrationRequest registration = new RegistrationRequest();
+            NotificationOutbox notification = new NotificationOutbox();
+            notification.setId(10L);
+            notification.setCreatedAt(java.time.LocalDateTime.now());
+            notification.setSubject("Course <script>alert(1)</script>");
+            notification.setBody("Manager reason: <script>alert(1)</script>");
+            notification.setRecipientEmailSnapshot("manager@example.test");
+            notification.setNotificationType(NotificationType.APPLICATION_SUBMITTED);
+            notification.setDeliveryStatus(state.equals("approved") ? DeliveryStatus.SENT : DeliveryStatus.FAILED);
+            notification.setLastError(state.equals("approved") ? null : "SMTP is not configured.");
+            model.addAttribute("notifications", new org.springframework.data.domain.PageImpl<>(
+                    state.equals("empty") ? List.of() : List.of(notification)));
+            model.addAttribute("statuses", DeliveryStatus.values());
+            model.addAttribute("selectedStatus", "");
             registration.setId(7L);
             registration.setName("New Staff");
             registration.setUsername("new.staff");

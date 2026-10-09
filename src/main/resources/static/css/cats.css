@@ -1661,3 +1661,15 @@ body .page-main .metric-card:hover {
     outline: 3px solid #5b94bf;
     outline-offset: 4px;
 }
+
+/* Administrator notification history: use the shared portal typography and controls. */
+.notification-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:16px; margin-bottom:16px; }
+.notification-filter .field { margin:0; min-width:180px; }
+.notification-pagination { display:flex; align-items:center; gap:20px; margin-top:20px; font-size:14px; }
+.notification-pagination span { color:var(--muted, #697586); }
+.notification-details { min-width:260px; max-width:440px; padding-top:12px; font-size:13px; overflow-wrap:anywhere; }
+.notification-body { white-space:pre-wrap; }
+.notification-page summary { cursor:pointer; color:var(--blue, #0039a6); }
+.delivery-PENDING, .delivery-PROCESSING { background:#fff6e5; color:#805c17; }
+.delivery-SENT { background:#edf7ef; color:#28613b; }
+.delivery-FAILED { background:#fff0f0; color:#9b2727; }

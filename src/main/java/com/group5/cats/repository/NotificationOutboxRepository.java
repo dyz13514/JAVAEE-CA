@@ -3,6 +3,7 @@ package com.group5.cats.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import com.group5.cats.model.DeliveryStatus;
 public interface NotificationOutboxRepository extends JpaRepository<NotificationOutbox, Long> {
     boolean existsByDeduplicationKey(String key);
     boolean existsByRecipient_Id(Long employeeId);
+    Page<NotificationOutbox> findByDeliveryStatus(DeliveryStatus status, Pageable pageable);
 
     @Query("select n.id from NotificationOutbox n where n.deliveryStatus in :statuses and n.nextAttemptAt <= :now order by n.id")
     List<Long> findDueIds(@Param("statuses") List<DeliveryStatus> statuses,

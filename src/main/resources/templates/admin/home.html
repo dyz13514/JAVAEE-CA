@@ -21,6 +21,11 @@
 </div>
 </div>
 <div class="management-links">
+<a class="management-link" th:href="@{/admin/notifications}">
+<svg th:replace="~{fragments/icons :: icon('history')}"></svg>
+<strong>Email notifications</strong>
+<span>Delivery history and failure details.</span>
+</a>
 <a class="management-link" th:href="@{/admin/employees}">
 <svg th:replace="~{fragments/icons :: icon('employees')}"></svg>
 <strong>Employees</strong>

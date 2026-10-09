@@ -31,6 +31,8 @@ Application changes and outbox insertion share a database transaction. SMTP runs
 
 ## Verify delivery
 
+Administrators can open **Email notifications** in the sidebar or visit `/admin/notifications`. The read-only page supports status filtering, 20-record pagination and expandable subject, body, sent time, next attempt/lease expiry and failure reason. Non-admin users cannot access it. The page remains available when delivery is disabled. No retry or send action is exposed.
+
 1. Configure emails for an employee and their supervisor.
 2. Submit a valid application. Confirm the page succeeds and a PENDING outbox record appears.
 3. Within the polling interval (default 10 seconds), check the local capture inbox and SENT status.
