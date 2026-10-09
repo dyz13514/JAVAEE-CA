@@ -252,7 +252,7 @@ button:disabled {
 }
 
 /* A single quick arrival for page content; branding and navigation stay still. */
-.page-main,.login-main {
+.page-main {
     animation:page-arrive 260ms cubic-bezier(.22,1,.36,1);
 }
 
@@ -584,10 +584,45 @@ input[type=checkbox] {
 }
 
 .login-page {
-    background:radial-gradient(ellipse at 100% 42%,#dceafa 0,transparent 52%),var(--canvas);
+    position:relative;
+    isolation:isolate;
+    background:var(--canvas);
     display:flex;
     flex-direction:column;
     min-height:100dvh;
+}
+
+.login-atmosphere {
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    overflow:hidden;
+    pointer-events:none;
+}
+
+.login-ambient {
+    position:absolute;
+    left:42%;
+    top:7%;
+    width:900px;
+    height:750px;
+    background:radial-gradient(ellipse,#b9dafa75,transparent 68%);
+}
+
+.login-light-trace {
+    position:absolute;
+    left:-4%;
+    top:74%;
+    width:54%;
+    height:2px;
+    background:linear-gradient(90deg,#8ac5ea00,#70b9e6b0 22%,#b9def880 48%,#8ac5ea00);
+}
+
+.login-light-trace::before {
+    content:'';
+    position:absolute;
+    inset:-22px 0;
+    background:radial-gradient(ellipse at 25% 50%,#8ac5ea30,transparent 65%);
 }
 
 .login-header {
@@ -606,8 +641,8 @@ input[type=checkbox] {
     display:grid;
     grid-template-columns:1.15fr 1fr;
     align-items:center;
-    gap:12vw;
-    padding:56px 9vw;
+    gap:9vw;
+    padding:56px 7vw;
 }
 
 .login-intro h1 {
@@ -627,7 +662,7 @@ input[type=checkbox] {
 
 .login-form {
     width:100%;
-    max-width:420px;
+    max-width:480px;
 }
 
 .login-form h2 {
@@ -636,24 +671,83 @@ input[type=checkbox] {
 }
 
 .role-tabs {
-    display:flex;
-    gap:28px;
+    position:relative;
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    gap:20px;
     margin-bottom:32px;
 }
 
 .role-tabs a {
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
     font-size:14px;
     color:var(--muted);
     padding:8px 0 12px;
+    transition:color .2s;
+}
+
+.role-tabs a .ui-icon {
+    width:19px;
+    height:19px;
+}
+
+.role-tabs a.active::after {
+    content:'';
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    height:3px;
+    background:#397ab6;
+    box-shadow:0 3px 12px #539ed550;
 }
 
 .role-tabs a.active {
     color:var(--blue);
-    box-shadow:0 2px var(--blue);
+}
+
+.role-indicator {
+    display:none;
+    position:absolute;
+    left:0;
+    bottom:0;
+    height:3px;
+    pointer-events:none;
+    transform-origin:left center;
+    background:linear-gradient(90deg,#3278b8,#6bb8e8);
+    box-shadow:0 3px 12px #539ed550;
+}
+
+.role-tabs.enhanced .role-indicator {
+    display:block;
+}
+
+.role-tabs.enhanced a.active::after {
+    display:none;
+}
+
+.login-form input:focus {
+    border-color:#76a8cd;
+    box-shadow:0 0 0 3px #5a92ba14,0 0 18px #6bb8e814;
+}
+
+.login-form input:not([type=hidden]) {
+    background:#ffffff70;
+    border-color:#d5e3ef;
+}
+
+.login-form input:not([type=hidden]):focus {
+    background:#fff;
+    border-color:#76a8cd;
 }
 
 .login-form .primary-button {
     width:100%;
+    background:linear-gradient(115deg,#214e78,#2f6a9d);
+    box-shadow:inset 0 1px 0 #ffffff24;
 }
 
 .login-help {
@@ -668,21 +762,6 @@ input[type=checkbox] {
     padding:28px 5.5vw;
     font-size:12px;
     color:var(--muted);
-}
-
-.login-options {
-    display:grid;
-    gap:16px;
-}
-
-.login-options a {
-    justify-content:flex-start;
-    padding:16px 22px;
-}
-
-.login-options .secondary {
-    color:var(--blue);
-    background:#e7eef680;
 }
 
 .management-links {
@@ -1362,7 +1441,16 @@ body .page-main .metric-card:hover {
         gap:8px;
     }
     .role-tabs {
-        gap:24px;
+        gap:16px;
+    }
+    .login-light-trace {
+        display:none;
+    }
+    .login-ambient {
+        left:0;
+        top:25%;
+        width:650px;
+        height:600px;
     }
     body .approval-card {
         padding:24px 0;

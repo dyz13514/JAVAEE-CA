@@ -1,34 +1,58 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Welcome - CATS</title>
-<th:block th:replace="~{fragments/layout :: assets}">
-</th:block>
+    <meta charset="UTF-8">
+    <title>Sign in - CATS</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+    <script defer th:src="@{/vendor/gsap.min.js}" src="/vendor/gsap.min.js"></script>
+    <script defer th:src="@{/js/login.js}" src="/js/login.js"></script>
 </head>
-<body class="login-page">
-<header class="login-header">
-<a class="wordmark" th:href="@{/login}">CATS</a>
-<span>NUS-ISS</span>
-</header>
-<main class="login-main">
-<section class="login-intro">
-<h1>Make room<br>for learning.</h1>
-<p>Course Application Tracking System</p>
-<p>Apply for training. Keep your progress in view.</p>
-</section>
-<section class="login-form" aria-labelledby="login-title">
-<h2 id="login-title">Welcome to CATS</h2>
-<nav class="login-options" aria-label="Choose your login">
-<a class="primary-button" th:href="@{/employee/login}">Employee / Manager</a>
-<a class="primary-button secondary" th:href="@{/admin/login}">Administrator</a>
-</nav>
-<p class="login-help">Sign in with your assigned account.</p>
-</section>
-</main>
-<footer class="login-footer">
-<span>NUS-ISS staff training</span>
-<span>Account access is provided by your administrator.</span>
-</footer>
+<body class="login-page" th:attr="data-login-role=${loginRole == 'admin' ? 'admin' : 'employee'}">
+    <div class="login-atmosphere" aria-hidden="true">
+        <div class="login-ambient"></div>
+        <div class="login-light-trace"></div>
+    </div>
+    <header class="login-header">
+        <a class="wordmark" th:href="@{/login}">CATS</a>
+        <span>NUS-ISS</span>
+    </header>
+    <main class="login-main">
+        <section class="login-intro">
+            <h1>Make room<br>for learning.</h1>
+            <p>Course Application Tracking System</p>
+        </section>
+        <section class="login-form" aria-labelledby="login-title">
+            <h2 id="login-title">Sign in</h2>
+            <nav class="role-tabs" aria-label="Login account type">
+                <a data-role="employee" th:href="@{/employee/login}" href="/employee/login"
+                   th:classappend="${loginRole != 'admin' ? 'active' : ''}"
+                   th:attr="aria-current=${loginRole != 'admin' ? 'true' : null}">
+                    <svg th:replace="~{fragments/icons :: icon('account')}"></svg>
+                    <span>Employee / Manager</span>
+                </a>
+                <a data-role="admin" th:href="@{/admin/login}" href="/admin/login"
+                   th:classappend="${loginRole == 'admin' ? 'active' : ''}"
+                   th:attr="aria-current=${loginRole == 'admin' ? 'true' : null}">
+                    <svg th:replace="~{fragments/icons :: icon('shield')}"></svg>
+                    <span>Administrator</span>
+                </a>
+                <span class="role-indicator" aria-hidden="true"></span>
+            </nav>
+            <div th:if="${errorMessage}" th:text="${errorMessage}" class="error" role="alert" id="login-error"></div>
+            <form id="login-form" th:action="${loginRole == 'admin' ? '/admin/login' : '/employee/login'}" method="post">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input id="username" name="username" autocomplete="username" required>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                </div>
+                <button class="primary-button" type="submit">Sign in</button>
+            </form>
+            <p class="login-help" th:text="${loginRole == 'admin' ? 'Forgot your password? Contact your system maintainer.' : 'Forgot your password? Contact your administrator.'}">Forgot your password? Contact your administrator.</p>
+        </section>
+    </main>
+    <footer class="login-footer"><span>NUS-ISS staff training</span><span>Account access is provided by your administrator.</span></footer>
 </body>
 </html>

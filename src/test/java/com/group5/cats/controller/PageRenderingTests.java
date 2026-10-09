@@ -30,7 +30,7 @@ import com.group5.cats.model.*;
 /** Exercises real Thymeleaf fragments and bindings, including populated and empty states. */
 class PageRenderingTests {
     @ParameterizedTest
-    @ValueSource(strings = {"login", "employee-login", "admin-login", "employee-home",
+    @ValueSource(strings = {"login", "employee-home",
             "apply-course", "my-history", "application-detail", "manager-approvals", "entitlement",
             "admin/home", "admin/employees", "admin/employee-form", "admin/employee-edit",
             "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses",
@@ -119,6 +119,9 @@ class PageRenderingTests {
                     "applications", state.equals("empty") ? List.of() : List.of(course),
                     "recentApplications", state.equals("empty") ? List.of() : List.of(course),
                     "currentUser", user, "entitlementYear", 2026));
+            if (template.equals("login") && state.equals("approved")) {
+                model.addAttribute("loginRole", "admin");
+            }
             if (!state.equals("empty")) {
                 model.addAttribute("allowance", allowance);
                 model.addAttribute("entitlement", allowance);

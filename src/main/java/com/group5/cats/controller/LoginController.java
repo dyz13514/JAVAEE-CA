@@ -3,6 +3,7 @@ package com.group5.cats.controller;
 import java.util.Optional;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,7 +31,7 @@ public class LoginController {
 
     @GetMapping("/employee/login")
     public String showEmployeeLogin() {
-        return "employee-login";
+        return "login";
     }
 
     @PostMapping("/employee/login")
@@ -70,8 +71,9 @@ public class LoginController {
     }
 
     @GetMapping("/admin/login")
-    public String showAdmin() {
-        return "admin-login";
+    public String showAdmin(Model model) {
+        model.addAttribute("loginRole", "admin");
+        return "login";
     }
 
     @PostMapping("/admin/login")
