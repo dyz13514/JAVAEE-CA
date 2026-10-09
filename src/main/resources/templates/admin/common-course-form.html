@@ -2,86 +2,30 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add Course</title>
-<th:block th:replace="~{fragments/layout :: assets}"></th:block>
+    <title>Add Commonly Attended Course</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
-<th:block th:replace="~{fragments/layout :: shell('courses')}"></th:block>
+<th:block th:replace="~{fragments/layout :: shell('common-courses')}"></th:block>
 <main class="page-main admin-content">
-
-<h1>Add Course</h1>
-
-<p role="alert" th:if="${errorMessage != null}"
-   th:text="${errorMessage}">
-</p>
-
-<p>
-    <a th:href="@{/admin/common-courses}">
-        Back to Course Catalogue
-    </a>
-</p>
-
-<p th:if="${#lists.isEmpty(providers)}">
-    Please add a training provider before creating a course.
-    <a th:href="@{/admin/providers/new}">Add Training Provider</a>
-</p>
-
-<form th:action="@{/admin/common-courses/save}"
-      th:object="${commonCourseForm}"
-      method="post">
-
-    <p>
-        <label for="title">Course Title:</label>
-        <input type="text"
-               id="title"
-               th:field="*{title}"
-               maxlength="255"
-               required>
-    </p>
-
-    <p>
-        <label for="category">Category:</label>
-        <select id="category" th:field="*{category}" required>
-            <option value="">-- Select Category --</option>
-            <option value="INTERNAL">Internal training</option>
-            <option value="EXTERNAL">External course</option>
-            <option value="CERTIFICATION">Certification</option>
-        </select>
-    </p>
-
-    <p>
-        <label for="providerId">Training Provider:</label>
-        <select id="providerId" th:field="*{providerId}" required>
-            <option value="">-- Select Training Provider --</option>
-
-            <option th:each="provider : ${providers}"
-                    th:value="${provider.id}"
-                    th:text="${provider.name}">
-            </option>
-        </select>
-    </p>
-
-    <p>
-        <label for="fee">Reference Fee (S$):</label>
-        <input type="number"
-               id="fee"
-               th:field="*{fee}"
-               min="0"
-               step="0.01"
-               required>
-    </p>
-
-    <p>Internal courses must have a fee of zero.</p>
-
-    <p>
-        <button type="submit"
-                th:disabled="${#lists.isEmpty(providers)}">
-            Save Course
-        </button>
-    </p>
-
-</form>
-
+    <h1>Add Commonly Attended Course</h1>
+    <p><a th:href="@{/admin/common-courses}">Back to Commonly Attended Course Catalogue</a></p>
+    <p>Select an existing course. Maintain its title, provider and reference fee in
+        <a th:href="@{/admin/courses}">Course Management</a>.</p>
+    <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
+    <p th:if="${#lists.isEmpty(courses)}">No courses available.
+        <a th:href="@{/admin/courses/new}">Add a course first</a>.</p>
+    <form th:action="@{/admin/common-courses/save}" th:object="${commonCourseForm}" method="post">
+        <p>
+            <label for="courseId">Course</label>
+            <select id="courseId" th:field="*{courseId}" required>
+                <option value="">-- Select Course --</option>
+                <option th:each="course : ${courses}" th:value="${course.id}"
+                        th:text="${course.title + ' — ' + course.provider.name + ' (ID: ' + course.id + ')'}"></option>
+            </select>
+        </p>
+        <button type="submit" th:disabled="${#lists.isEmpty(courses)}">Save Selection</button>
+    </form>
 </main>
 </body>
 </html>

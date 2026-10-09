@@ -1,9 +1,13 @@
 package com.group5.cats.service;
 
+import java.util.Objects;
+import com.group5.cats.model.EmployeeRole;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.group5.cats.model.NotificationType;
 import com.group5.cats.model.CourseApplication;
+import com.group5.cats.model.Course;
+import com.group5.cats.repository.CourseRepository;
 import com.group5.cats.model.Employee;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
@@ -24,16 +28,20 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     private final EntitlementService entitlementService;
     private final PublicHolidayRepository publicHolidayRepository;
     private final NotificationService notificationService;
-
+    private final CourseRepository courseRepository;
+    private final CourseScheduleService scheduleService;
 
     public CourseApplicationServiceImpl(CourseApplicationRepository courseApplicationRepository,
-            EmployeeRepository employeeRepository, EntitlementService entitlementService, PublicHolidayRepository publicHolidayRepository,
-            NotificationService notificationService) {
+            EmployeeRepository employeeRepository, EntitlementService entitlementService,
+            PublicHolidayRepository publicHolidayRepository, NotificationService notificationService,
+            CourseRepository courseRepository, CourseScheduleService scheduleService) {
         this.courseApplicationRepository = courseApplicationRepository;
         this.employeeRepository = employeeRepository;
         this.entitlementService = entitlementService;
         this.publicHolidayRepository = publicHolidayRepository;
         this.notificationService = notificationService;
+        this.courseRepository = courseRepository;
+        this.scheduleService = scheduleService;
     }
 
     @Override
@@ -44,7 +52,11 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         // Session objects may predate changes to the employee or supervisor email address.
         application.setEmployee(employeeRepository.findById(employee.getId()).orElse(employee));
-        String error = validateBasicRules(application);
+        String supervisorError = validateSupervisor(application.getEmployee());
+        if (supervisorError != null) return supervisorError;
+        String error = selectCourse(application, null);
+        if (error != null) return error;
+        error = validateBasicRules(application);
         if (error != null) {
             return error;
         }
@@ -62,6 +74,54 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         application.setStatus("APPLIED");
         courseApplicationRepository.save(application);
         notificationService.createNotification(application, NotificationType.APPLICATION_SUBMITTED);
+        return null;
+    }
+
+    private String selectCourse(CourseApplication data, CourseApplication existing) {
+        Long courseId = data.getCourseId();
+        if (courseId == null) {
+            if (existing != null && existing.getCourse() != null) {
+                return "Please select a recorded course and one of its available start dates.";
+            }
+            data.setCourse(null);
+            return null; // Legacy applications without a course link keep their original workflow.
+        }
+        if (courseId <= 0) {
+            return "Please select a valid course.";
+        }
+        Course course = courseRepository.findById(courseId).orElse(null);
+        if (course == null) {
+            return "Selected course no longer exists.";
+        }
+        boolean sameSchedule = existing != null && existing.getCourse() != null
+                && courseId.equals(existing.getCourse().getId())
+                && Objects.equals(data.getFromDate(), existing.getFromDate());
+        if (sameSchedule) {
+            // Published changes must not move an existing applicant to different dates.
+            data.setToDate(existing.getToDate());
+            data.setHalfDay(existing.getHalfDay());
+        } else {
+            if (course.getDurationDays() == null) {
+                return "This course has no published schedule. Please contact an administrator.";
+            }
+            LocalDate end = scheduleService.findAvailableDates(course).get(data.getFromDate());
+            if (end == null) return "Please choose one of this course's available start dates.";
+            data.setToDate(end);
+            data.setHalfDay(false);
+        }
+        data.setCourse(course);
+        if (existing != null && existing.getCourse() != null
+                && courseId.equals(existing.getCourse().getId())) {
+            // Editing dates or reasons should keep the original course snapshot.
+            data.setCourseTitle(existing.getCourseTitle());
+            data.setCategory(existing.getCategory());
+            data.setProvider(existing.getProvider());
+        } else {
+            data.setCourseTitle(course.getTitle());
+            data.setCategory(course.getCategory());
+            data.setProvider(course.getProvider().getName());
+        }
+        // Fee is the actual fee requested by the employee, not the reference fee.
         return null;
     }
 
@@ -103,7 +163,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
             if (!from.equals(to)) {
                 return "Half-day session must start and end on the same date.";
             }
-        } else if (!from.isBefore(to)) {
+        } else if (from.isAfter(to) || (from.equals(to) && application.getCourse() == null)) {
             return "Course end date must be after start date for a full-day course.";
         }
 
@@ -244,7 +304,12 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (!"APPLIED".equals(application.getStatus()) && !"UPDATED".equals(application.getStatus())) {
             return "Only pending applications can be updated";
         }
-        String error = validateBasicRules(updatedData);
+        Employee currentEmployee = employeeRepository.findById(employee.getId()).orElse(employee);
+        String supervisorError = validateSupervisor(currentEmployee);
+        if (supervisorError != null) return supervisorError;
+        String error = selectCourse(updatedData, application);
+        if (error != null) return error;
+        error = validateBasicRules(updatedData);
         if (error != null) {
             return error;
         }
@@ -257,6 +322,8 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (overlapError != null) {
             return overlapError;
         }
+        application.setCourse(updatedData.getCourse());
+        application.setCourseId(updatedData.getCourseId());
         application.setCourseTitle(updatedData.getCourseTitle());
         application.setCategory(updatedData.getCategory());
         application.setFromDate(updatedData.getFromDate());
@@ -335,6 +402,11 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         CourseApplication application = result.get();
         Employee owner = application.getEmployee();
+        Employee currentManager = employeeRepository.findById(manager.getId()).orElse(null);
+        if (currentManager == null || currentManager.getRole() != EmployeeRole.MANAGER
+                || owner.getId().equals(manager.getId())) {
+            return "Only the assigned manager may review this application. Self-approval is not allowed.";
+        }
         if (owner.getSupervisor() == null
                 || !owner.getSupervisor().getId().equals(manager.getId())) {
             return "You can only review your own subordinates' applications";
@@ -377,4 +449,13 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         return days;
     }
+    private String validateSupervisor(Employee employee) {
+        Employee supervisor = employee.getSupervisor();
+        if (supervisor == null || supervisor.getRole() != EmployeeRole.MANAGER
+                || employee.getId().equals(supervisor.getId())) {
+            return "Please ask an administrator to assign your manager before applying.";
+        }
+        return null;
+    }
+
 }

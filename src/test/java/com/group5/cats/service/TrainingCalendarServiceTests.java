@@ -160,4 +160,20 @@ class TrainingCalendarServiceTests {
         when(employees.findById(id)).thenReturn(Optional.of(employee));
         return employee;
     }
+    @Test
+    void pendingCalendarIncludesOnlyOverlappingPendingApplications() {
+        when(employees.findById(staff.getId())).thenReturn(Optional.of(staff));
+        CourseApplication pending = new CourseApplication();
+        pending.setStatus("APPLIED");
+        pending.setFromDate(LocalDate.of(2026, 9, 30));
+        pending.setToDate(LocalDate.of(2026, 10, 2));
+        CourseApplication rejected = new CourseApplication();
+        rejected.setStatus("REJECTED");
+        rejected.setFromDate(pending.getFromDate());
+        rejected.setToDate(pending.getToDate());
+        when(applications.findByEmployee(staff)).thenReturn(List.of(pending, rejected));
+        assertEquals(List.of(pending), service.findPendingApplicationsByMonth(staff, staff.getId(), 2026, 10));
+        assertTrue(service.findPendingApplicationsByMonth(staff, staff.getId(), 2026, 11).isEmpty());
+    }
+
 }

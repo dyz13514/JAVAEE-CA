@@ -41,9 +41,14 @@
 <strong>Training providers</strong>
 <span>Maintain provider details.</span>
 </a>
+<a class="management-link" th:href="@{/courses}">
+<svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
+<strong>All courses</strong>
+<span>Course titles, providers and reference fees.</span>
+</a>
 <a class="management-link" th:href="@{/admin/common-courses}">
 <svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
-<strong>Course catalogue</strong>
+<strong>Common course catalogue</strong>
 <span>Common courses and reference fees.</span>
 </a>
 <a class="management-link" th:href="@{/admin/public-holidays}">

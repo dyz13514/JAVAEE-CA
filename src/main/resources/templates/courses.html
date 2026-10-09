@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Courses - CATS</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('browse-courses')}"></th:block>
+<main class="page-main course-catalogue">
+    <div class="page-heading">
+        <div>
+            <p class="catalogue-eyebrow">LEARNING &amp; DEVELOPMENT</p>
+            <h1>All courses</h1>
+            <p>Find your next learning opportunity, from everyday skills to professional certifications.</p>
+        </div>
+    </div>
+    <p th:if="${session.loggedInUser.role.name() == 'ADMIN'}">
+        <a class="primary-button" th:href="@{/admin/courses/new}">Add course</a>
+        <a th:href="@{/admin/common-courses}">Manage commonly attended courses</a>
+    </p>
+    <p th:if="${successMessage != null}" th:text="${successMessage}" class="notice"></p>
+    <p th:if="${errorMessage != null}" th:text="${errorMessage}" class="notice error" role="alert"></p>
+
+    <section class="catalogue-section" aria-labelledby="common-heading">
+        <div class="catalogue-section-heading">
+            <div>
+                <h2 id="common-heading">Commonly Attended Courses</h2>
+                <p>Selected and maintained by your administrators.</p>
+            </div>
+            <a href="#course-overview">Explore all courses <span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="catalogue-empty" th:if="${#lists.isEmpty(featuredCourses)}">
+            <svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
+            <div><h3>The common course catalogue is coming together.</h3>
+                <p>Courses selected by an administrator will appear here. Explore all courses below in the meantime.</p></div>
+        </div>
+        <div class="catalogue-grid" th:unless="${#lists.isEmpty(featuredCourses)}">
+            <th:block th:each="course : ${featuredCourses}">
+                <article th:replace="~{fragments/course-card :: card(${course})}"></article>
+            </th:block>
+        </div>
+    </section>
+
+    <section class="catalogue-section" id="course-overview" aria-labelledby="overview-heading">
+        <div class="catalogue-section-heading">
+            <div><h2 id="overview-heading">Course overview</h2>
+                <p>All recorded courses, including those in the commonly attended catalogue.</p></div>
+            <span class="catalogue-result-count" th:text="${#lists.size(courses) + ' courses shown'}"></span>
+        </div>
+        <th:block th:replace="~{fragments/course-filter :: filter('/courses#course-overview')}"></th:block>
+        <div class="catalogue-empty" th:if="${#lists.isEmpty(courses)}" role="status">
+            <div><h3>No matching courses</h3>
+                <p>Try another search or <a th:href="@{/courses#course-overview}">reset the filters</a>.</p></div>
+        </div>
+        <div class="catalogue-grid" th:unless="${#lists.isEmpty(courses)}">
+            <th:block th:each="course : ${courses}">
+                <article th:replace="~{fragments/course-card :: card(${course})}"></article>
+            </th:block>
+        </div>
+        <p class="catalogue-note">Fees are reference amounts. Choose an available start date when applying. Course duration is fixed.</p>
+    </section>
+</main>
+</body>
+</html>

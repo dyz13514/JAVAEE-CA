@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<article th:fragment="card(course)" class="catalogue-card">
+    <div class="catalogue-cover" th:classappend="${'cover-' + course.category}" aria-hidden="true">
+        <svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
+    </div>
+    <div class="catalogue-card-body">
+        <div class="catalogue-card-labels">
+            <span th:text="${course.category == 'INTERNAL' ? 'Internal training' : (course.category == 'EXTERNAL' ? 'External course' : 'Certification')}"></span>
+            <span class="catalogue-common-badge" th:if="${#lists.contains(commonCourseIds, course.id)}">Commonly attended</span>
+        </div>
+        <h3><a class="course-detail-link" th:href="@{/courses/{id}(id=${course.id})}" th:text="${course.title}">Course title</a></h3>
+        <p class="catalogue-provider" th:text="${course.provider.name}">Training provider</p>
+        <div class="catalogue-card-footer">
+            <div><span class="catalogue-fee-label">Reference fee</span>
+                <strong th:text="${course.fee == 0 ? 'Free' : 'S$ ' + #numbers.formatDecimal(course.fee, 1, 2)}"></strong></div>
+            <a class="primary-button" th:if="${canApply}"
+               th:href="@{/courses/{id}(id=${course.id})}"
+               th:attr="aria-label=${'Apply for ' + course.title}">View course <span aria-hidden="true">→</span></a>
+        </div>
+    </div>
+</article>
+</body>
+</html>

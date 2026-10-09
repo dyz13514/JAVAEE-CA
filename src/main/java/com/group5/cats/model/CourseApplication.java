@@ -1,7 +1,10 @@
 package com.group5.cats.model;
 import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Transient;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,12 +22,33 @@ public class CourseApplication {
     @ManyToOne
     private Employee employee;
 
+    // Nullable for existing applications and manually entered courses.
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @Transient
+    private Long courseId;
+
+    public Course getCourse() { return course; }
+    public void setCourse(Course course) { this.course = course; }
+
+    public Long getCourseId() {
+        if (courseId != null) return courseId;
+        return course == null ? null : course.getId();
+    }
+
+    public void setCourseId(Long courseId) { this.courseId = courseId; }
+
+    // Snapshot fields: catalogue updates must not rewrite application history.
     private String courseTitle;
     private String category;      // INTERNAL / EXTERNAL / CERTIFICATION
 
     private String provider;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate fromDate;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate toDate;
 
     private double fee;

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Course application - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}">
+</th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('apply')}">
+</th:block>
+<main class="page-main">
+<div class="page-heading">
+<div>
+<h1 th:text="${courseApplication.id != null ? 'Edit application.' : 'Apply for a course.'}">Apply for a course.</h1>
+<p>Enter your course details and reason for training.</p>
+</div>
+</div>
+<div th:if="${errorMessage}" th:text="${errorMessage}" class="notice error" role="alert">
+</div>
+<div class="application-layout">
+<form th:action="${formAction}" th:object="${courseApplication}" method="post" id="courseForm">
+<section class="form-section" aria-labelledby="course-section">
+<h2 id="course-section">Course information</h2>
+<p><a th:href="@{/courses}">Browse all courses</a> ·
+<a th:href="@{/courses(commonOnly=true)}">Browse commonly attended courses</a></p>
+<div class="field">
+<label for="courseId">Choose a recorded course (optional)</label>
+<select id="courseId" th:field="*{courseId}">
+    <option value="">Enter course details manually</option>
+    <option th:each="course : ${courses}" th:value="${course.id}"
+            th:text="${course.title + ' — ' + course.provider.name}"
+            th:attr="data-title=${course.title},data-category=${course.category},data-provider=${course.provider.name},data-fee=${course.fee}"></option>
+</select>
+<small class="field-hint">Select a course to fill its details, or enter a course not yet recorded. Check the actual fee before submitting.</small>
+</div>
+<div class="field">
+<label for="courseTitle">Course title <span class="required-mark">*</span>
+</label>
+<input id="courseTitle" th:field="*{courseTitle}" placeholder="Course name" required>
+</div>
+<div class="form-grid">
+<div class="field">
+<label for="categorySelect">Category <span class="required-mark">*</span>
+</label>
+<select th:field="*{category}" id="categorySelect" required>
+<option value="">Select category</option>
+<option value="INTERNAL">Internal training</option>
+<option value="EXTERNAL">External course</option>
+<option value="CERTIFICATION">Professional certification</option>
+</select>
+</div>
+<div class="field">
+<label for="provider">Training provider</label>
+<input id="provider" th:field="*{provider}" placeholder="Provider name">
+</div>
+</div>
+</section>
+<section class="form-section" aria-labelledby="schedule-section">
+<h2 id="schedule-section">Dates &amp; fee</h2>
+<div class="form-grid">
+<div class="field">
+<label for="fromDateInput">From date <span class="required-mark">*</span>
+</label>
+<input type="date" th:field="*{fromDate}" id="fromDateInput" required>
+<small class="field-hint">Choose a future working day.</small>
+</div>
+<div class="field">
+<label for="toDateInput">To date <span class="required-mark">*</span>
+</label>
+<input type="date" th:field="*{toDate}" id="toDateInput" required>
+</div>
+</div>
+<div class="form-grid">
+<div class="field">
+<label for="feeInput">Course fee (S$)</label>
+<input type="number" th:field="*{fee}" id="feeInput" step="0.01" min="0" placeholder="0.00">
+<small class="field-hint">External courses and certifications use your annual budget.</small>
+</div>
+<div class="field checkbox-field" id="halfDayContainer">
+<label for="halfDayCheck">
+<input type="checkbox" th:field="*{halfDay}" id="halfDayCheck"> Half-day session</label>
+<small class="field-hint">Internal training only, on a single day.</small>
+</div>
+</div>
+</section>
+<section class="form-section" aria-labelledby="reason-section">
+<h2 id="reason-section">Reason &amp; knowledge sharing</h2>
+<div class="field">
+<label for="justification">Reason for training <span class="required-mark">*</span>
+</label>
+<textarea id="justification" th:field="*{justification}" rows="3" placeholder="How will this course support your work?" required>
+</textarea>
+</div>
+<div class="field">
+<label for="dissemination">Knowledge sharing plan (optional)</label>
+<textarea id="dissemination" th:field="*{dissemination}" rows="2" placeholder="How will you share what you learn?">
+</textarea>
+</div>
+</section>
+<div class="form-actions">
+<a class="text-link" th:href="@{/employee/history}">Cancel</a>
+<button type="submit" th:text="${courseApplication.id != null ? 'Save changes' : 'Submit application'}">Submit application</button>
+</div>
+</form>
+<aside class="application-summary" aria-labelledby="summary-heading">
+<h2 id="summary-heading">Your application</h2>
+<dl>
+<dt>Course</dt>
+<dd id="summaryTitle">—</dd>
+<dt>Category</dt>
+<dd id="summaryCategory">—</dd>
+<dt>Dates</dt>
+<dd id="summaryDates">—</dd>
+<dt>Fee</dt>
+<dd id="summaryFee">—</dd>
+</dl>
+<p class="footnote">Weekends and public holidays are excluded from training days.</p>
+</aside>
+</div>
+<script>
+const form = document.getElementById('courseForm');
+const categorySelect = document.getElementById('categorySelect');
+const halfDayCheck = document.getElementById('halfDayCheck');
+const feeInput = document.getElementById('feeInput');
+function updateApplication() {
+    const internal = categorySelect.value === 'INTERNAL';
+    halfDayCheck.disabled = !internal;
+    if (!internal) halfDayCheck.checked = false;
+    document.getElementById('halfDayContainer').classList.toggle('unavailable', !internal);
+    document.getElementById('summaryTitle').textContent = document.getElementById('courseTitle').value.trim() || '—';
+    document.getElementById('summaryCategory').textContent = categorySelect.value ? categorySelect.selectedOptions[0].textContent : '—';
+    const from = document.getElementById('fromDateInput').value, to = document.getElementById('toDateInput').value;
+    const formatDate = value => value ? new Date(value + 'T00:00:00').toLocaleDateString('en-SG', {day:'numeric',month:'short',year:'numeric'}) : '—';
+    document.getElementById('summaryDates').textContent = from || to ? formatDate(from) + ' – ' + formatDate(to) : '—';
+    document.getElementById('summaryFee').textContent = feeInput.value && Number.isFinite(Number(feeInput.value)) ? 'S$ ' + Number(feeInput.value).toLocaleString('en-SG', {minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+}
+const courseSelect = document.getElementById('courseId');
+function lockCourseDetails() {
+    const selected = courseSelect.value !== '';
+    document.getElementById('courseTitle').readOnly = selected;
+    document.getElementById('provider').readOnly = selected;
+    // Disabled controls are not posted; the server reads the selected course's category.
+    categorySelect.disabled = selected;
+}
+courseSelect.addEventListener('change', function () {
+    const option = courseSelect.selectedOptions[0];
+    if (courseSelect.value !== '') {
+        document.getElementById('courseTitle').value = option.dataset.title;
+        categorySelect.value = option.dataset.category;
+        document.getElementById('provider').value = option.dataset.provider;
+        feeInput.value = option.dataset.fee;
+    }
+    lockCourseDetails();
+    updateApplication();
+});
+lockCourseDetails();
+form.addEventListener('input', updateApplication);
+form.addEventListener('change', updateApplication);
+updateApplication();
+</script>
+</main>
+</body>
+</html>

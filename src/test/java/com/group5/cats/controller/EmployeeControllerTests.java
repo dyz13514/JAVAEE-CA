@@ -28,16 +28,46 @@ class EmployeeControllerTests {
     private CourseApplicationService service;
     private EntitlementService entitlementService;
     private MockMvc mvc;
+    private com.group5.cats.service.CourseService courses;
     private Employee employee;
 
     @BeforeEach
     void setUp() {
         service = mock(CourseApplicationService.class);
         entitlementService = mock(EntitlementService.class);
-        mvc = MockMvcBuilders.standaloneSetup(new EmployeeController(service, entitlementService)).build();
+        courses = mock(com.group5.cats.service.CourseService.class);
+        mvc = MockMvcBuilders.standaloneSetup(new EmployeeController(service, entitlementService, courses, mock(com.group5.cats.service.CourseScheduleService.class))).build();
         employee = new Employee();
         employee.setId(1L);
         employee.setRole(EmployeeRole.REGULAR_STAFF);
+    }
+
+    @Test
+    void courseLinkPrefillsANewApplicationWithoutSavingIt() throws Exception {
+        var course = new com.group5.cats.model.Course("Java", "EXTERNAL",
+                new com.group5.cats.model.TrainingProvider("NUS-ISS"), 250);
+        course.setId(7L);
+        when(courses.findCourseById(7L)).thenReturn(course);
+        mvc.perform(get("/employee/apply").param("courseId", "7").sessionAttr("loggedInUser", employee))
+                .andExpect(view().name("apply-course"))
+                .andExpect(result -> {
+                    CourseApplication data = (CourseApplication) result.getModelAndView().getModel().get("courseApplication");
+                    assertEquals(7L, data.getCourseId());
+                    assertEquals("Java", data.getCourseTitle());
+                    assertEquals("NUS-ISS", data.getProvider());
+                    assertEquals(250, data.getFee());
+                    assertNull(data.getId());
+                });
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void directApplicationLinkRequiresLoginAndHandlesDeletedCourse() throws Exception {
+        mvc.perform(get("/employee/apply").param("courseId", "7"))
+                .andExpect(redirectedUrl("/employee/login"));
+        mvc.perform(get("/employee/apply").param("courseId", "7").sessionAttr("loggedInUser", employee))
+                .andExpect(redirectedUrl("/courses"))
+                .andExpect(flash().attributeExists("errorMessage"));
     }
 
     @Test
@@ -76,7 +106,7 @@ class EmployeeControllerTests {
     @ParameterizedTest
     @ValueSource(strings = {"not-a-number", ""})
     void invalidFeeReturnsFormWithEnteredText(String fee) throws Exception {
-        mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
+        mvc.perform(post("/employee/apply").param("courseId", "7").sessionAttr("loggedInUser", employee)
                 .param("courseTitle", "My course").param("fee", fee))
                 .andExpect(status().isOk()).andExpect(view().name("apply-course"))
                 .andExpect(model().attributeExists("errorMessage"))
@@ -89,7 +119,7 @@ class EmployeeControllerTests {
     @Test
     void businessValidationKeepsSubmittedFields() throws Exception {
         when(service.submitApplication(any(), eq(employee))).thenReturn("Justification is required.");
-        mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
+        mvc.perform(post("/employee/apply").param("courseId", "7").sessionAttr("loggedInUser", employee)
                 .param("courseTitle", "My course").param("fee", "100"))
                 .andExpect(view().name("apply-course"))
                 .andExpect(model().attribute("errorMessage", "Justification is required."))
@@ -99,7 +129,7 @@ class EmployeeControllerTests {
 
     @Test
     void editBindingFailureKeepsEditAddressAndOriginalId() throws Exception {
-        mvc.perform(post("/employee/history/10/edit").sessionAttr("loggedInUser", employee)
+        mvc.perform(post("/employee/history/10/edit").param("courseId", "7").sessionAttr("loggedInUser", employee)
                 .param("courseTitle", "Updated title").param("fromDate", "invalid-date"))
                 .andExpect(status().isOk()).andExpect(view().name("apply-course"))
                 .andExpect(model().attribute("formAction", "/employee/history/10/edit"))
@@ -110,7 +140,7 @@ class EmployeeControllerTests {
 
     @Test
     void serverControlledFieldsCannotBeBoundFromRequest() throws Exception {
-        mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
+        mvc.perform(post("/employee/apply").param("courseId", "7").sessionAttr("loggedInUser", employee)
                 .param("courseTitle", "My course").param("id", "99")
                 .param("employee.id", "99").param("status", "APPROVED")
                 .param("trainingDays", "0").param("managerComment", "Approved"))
@@ -122,4 +152,25 @@ class EmployeeControllerTests {
         assertEquals("APPLIED", input.getValue().getStatus());
         assertNull(input.getValue().getManagerComment());
     }
+    @Test
+    void newManualRequestCannotBypassPublishedSchedules() throws Exception {
+        mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
+                .param("courseTitle", "Unscheduled").param("fromDate", "2027-01-04"))
+                .andExpect(redirectedUrl("/courses"));
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void anotherEmployeesApplicationCannotBeViewedOrEdited() throws Exception {
+        CourseApplication application = new CourseApplication();
+        Employee owner = new Employee();
+        owner.setId(9L);
+        application.setEmployee(owner);
+        when(service.findApplicationById(10L)).thenReturn(Optional.of(application));
+        mvc.perform(get("/employee/history/10").sessionAttr("loggedInUser", employee))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/employee/history/10/edit").sessionAttr("loggedInUser", employee))
+                .andExpect(status().isForbidden());
+    }
+
 }

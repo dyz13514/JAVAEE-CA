@@ -2,15 +2,15 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Course Catalogue</title>
+    <title>Commonly Attended Course Catalogue</title>
 <th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
-<th:block th:replace="~{fragments/layout :: shell('courses')}"></th:block>
+<th:block th:replace="~{fragments/layout :: shell('common-courses')}"></th:block>
 <main class="page-main admin-content">
 
-<div class="page-heading"><h1>Course Catalogue</h1><a class="primary-button" th:href="@{/admin/common-courses/new}">
-        Add Course
+<div class="page-heading"><h1>Commonly Attended Course Catalogue</h1><a class="primary-button" th:href="@{/admin/common-courses/new}">
+        Select Course
     </a></div>
 
 <p>
@@ -27,6 +27,7 @@
 
 <p>
     <a th:href="@{/admin/providers}">Training Provider Management</a>
+    <a th:href="@{/admin/courses}">All Courses</a>
 </p>
 
 <p th:if="${#lists.isEmpty(commonCourses)}">
@@ -37,6 +38,7 @@
     <thead>
     <tr>
         <th>ID</th>
+        <th>Course ID</th>
         <th>Title</th>
         <th>Category</th>
         <th>Training Provider</th>
@@ -48,21 +50,22 @@
     <tbody>
     <tr th:each="commonCourse : ${commonCourses}">
         <td th:text="${commonCourse.id}"></td>
-        <td th:text="${commonCourse.title}"></td>
-        <td th:text="${commonCourse.category == 'INTERNAL' ? 'Internal training' : (commonCourse.category == 'EXTERNAL' ? 'External course' : 'Certification')}"></td>
-        <td th:text="${commonCourse.provider.name}"></td>
-        <td th:text="${commonCourse.fee}"></td>
+        <td th:text="${commonCourse.course.id}"></td>
+        <td th:text="${commonCourse.course.title}"></td>
+        <td th:text="${commonCourse.course.category == 'INTERNAL' ? 'Internal training' : (commonCourse.course.category == 'EXTERNAL' ? 'External course' : 'Certification')}"></td>
+        <td th:text="${commonCourse.course.provider.name}"></td>
+        <td th:text="${commonCourse.course.fee}"></td>
 
         <td>
             <a th:href="@{/admin/common-courses/{id}/edit(id=${commonCourse.id})}">
-                Edit
+                Change Selection
             </a>
 
             <form th:action="@{/admin/common-courses/{id}/delete(id=${commonCourse.id})}"
                   method="post"
-                  onsubmit="return confirm('Are you sure you want to delete this commonly attended course?');">
+                  onsubmit="return confirm('Are you sure you want to remove this course from the commonly attended catalogue?');">
 
-                <button type="submit">Delete</button>
+                <button type="submit">Remove</button>
             </form>
         </td>
     </tr>

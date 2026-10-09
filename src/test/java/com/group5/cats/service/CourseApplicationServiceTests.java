@@ -24,10 +24,12 @@ import com.group5.cats.repository.*;
 class CourseApplicationServiceTests {
     private CourseApplicationRepository applications;
     private EntitlementService entitlements;
+    private CourseRepository courses;
     private PublicHolidayRepository holidays;
     private CourseApplicationServiceImpl service;
     private NotificationService notifications;
     private Employee employee;
+    private EmployeeRepository employees;
 
     @BeforeEach
     void setUp() {
@@ -35,13 +37,91 @@ class CourseApplicationServiceTests {
         entitlements = mock(EntitlementService.class);
         holidays = mock(PublicHolidayRepository.class);
         notifications = mock(NotificationService.class);
-        service = new CourseApplicationServiceImpl(applications, mock(EmployeeRepository.class), entitlements, holidays, notifications);
+        courses = mock(CourseRepository.class);
+        employees = mock(EmployeeRepository.class);
+        service = new CourseApplicationServiceImpl(applications, employees,
+                entitlements, holidays, notifications, courses, new CourseScheduleServiceImpl(holidays));
         employee = new Employee();
         employee.setId(1L);
+        Employee manager = new Employee();
+        manager.setId(2L);
+        manager.setRole(EmployeeRole.MANAGER);
+        employee.setSupervisor(manager);
         when(applications.findByEmployee(employee)).thenReturn(List.of());
         when(holidays.findByHolidayDate(any())).thenReturn(Optional.empty());
         when(entitlements.findEntitlement(eq(1L), anyInt())).thenAnswer(invocation ->
                 Optional.of(new AnnualEntitlement(employee, invocation.getArgument(1), 10, 2000)));
+    }
+
+    @Test
+    void selectingCourseUsesServerDetailsAndKeepsActualFee() {
+        Course course = recordedCourse();
+        CourseApplication data = validApplication();
+        data.setCourseId(course.getId());
+        data.setCourseTitle("Tampered title");
+        data.setProvider("Tampered provider");
+        data.setCategory("INTERNAL");
+        assertNull(service.submitApplication(data, employee));
+        assertSame(course, data.getCourse());
+        assertEquals("Recorded course", data.getCourseTitle());
+        verify(notifications).createNotification(data, NotificationType.APPLICATION_SUBMITTED);
+        assertEquals("Original provider", data.getProvider());
+        assertEquals("EXTERNAL", data.getCategory());
+        assertEquals(100, data.getFee());
+    }
+
+    @Test
+    void changingCatalogueDoesNotRewriteApplicationSnapshotOnEdit() {
+        Course course = recordedCourse();
+        CourseApplication saved = validApplication();
+        saved.setId(9L);
+        saved.setEmployee(employee);
+        saved.setCourse(course);
+        saved.setCourseTitle("Original title");
+        saved.setProvider("Original provider");
+        when(applications.findById(9L)).thenReturn(Optional.of(saved));
+        course.setTitle("Renamed course");
+        course.setCategory("CERTIFICATION");
+        course.getProvider().setName("Renamed provider");
+        course.setFee(999);
+        CourseApplication update = validApplication();
+        update.setCourseId(course.getId());
+        assertNull(service.updateApplication(9L, update, employee));
+        assertEquals("Original title", saved.getCourseTitle());
+        assertEquals("Original provider", saved.getProvider());
+        assertEquals("EXTERNAL", saved.getCategory());
+        assertEquals(100, saved.getFee());
+    }
+
+    @Test
+    void missingSelectedCourseCannotBeSubmitted() {
+        CourseApplication data = validApplication();
+        data.setCourseId(999L);
+        assertNotNull(service.submitApplication(data, employee));
+        verify(applications, never()).save(any());
+    }
+
+    @Test
+    void scheduledApplicationCannotSwitchToManualDates() {
+        CourseApplication saved = validApplication();
+        saved.setId(9L);
+        saved.setEmployee(employee);
+        saved.setCourse(recordedCourse());
+        when(applications.findById(9L)).thenReturn(Optional.of(saved));
+        CourseApplication manual = validApplication();
+        assertNotNull(service.updateApplication(9L, manual, employee));
+        assertNotNull(saved.getCourse());
+        verify(applications, never()).save(any());
+    }
+
+    private Course recordedCourse() {
+        TrainingProvider provider = new TrainingProvider("Original provider");
+        Course course = new Course("Recorded course", "EXTERNAL", provider, 500);
+        course.setId(10L);
+        when(courses.findById(10L)).thenReturn(Optional.of(course));
+        course.setDurationDays(3);
+        course.getStartDates().add(validApplication().getFromDate());
+        return course;
     }
 
     private CourseApplication validApplication() {
@@ -72,6 +152,8 @@ class CourseApplicationServiceTests {
         for (String decision : List.of("APPROVE", "REJECT")) {
             Employee manager = new Employee();
             manager.setId(2L);
+            manager.setRole(EmployeeRole.MANAGER);
+            when(employees.findById(2L)).thenReturn(Optional.of(manager));
             employee.setSupervisor(manager);
             CourseApplication application = validApplication();
             application.setEmployee(employee);
@@ -235,4 +317,48 @@ class CourseApplicationServiceTests {
         assertEquals("Learned Spring.", application.getExperienceComments());
         assertEquals("COMPLETED", application.getStatus());
     }
+    @Test
+    void scheduledApplicationIgnoresTamperedEndDateAndHalfDay() {
+        Course course = recordedCourse();
+        CourseApplication data = validApplication();
+        data.setCourseId(course.getId());
+        data.setToDate(data.getFromDate().plusDays(20));
+        data.setHalfDay(true);
+        assertNull(service.submitApplication(data, employee));
+        assertEquals(data.getFromDate().plusDays(2), data.getToDate());
+        assertEquals(3, data.getTrainingDays());
+        assertFalse(data.getHalfDay());
+    }
+
+    @Test
+    void unpublishedStartDateAndMissingManagerCannotBeSubmitted() {
+        Course course = recordedCourse();
+        CourseApplication data = validApplication();
+        data.setCourseId(course.getId());
+        data.setFromDate(data.getFromDate().plusDays(1));
+        assertNotNull(service.submitApplication(data, employee));
+        employee.setSupervisor(null);
+        assertTrue(service.submitApplication(validApplication(), employee).contains("assign your manager"));
+        verify(applications, never()).save(any());
+    }
+
+    @Test
+    void applicantsOfEveryRoleNeedAnotherManagerAndCannotApproveThemselves() {
+        for (EmployeeRole role : EmployeeRole.values()) {
+            employee.setRole(role);
+            Course course = recordedCourse();
+            CourseApplication data = validApplication();
+            data.setCourseId(course.getId());
+            assertNull(service.submitApplication(data, employee));
+        }
+        employee.setRole(EmployeeRole.MANAGER);
+        employee.setSupervisor(employee);
+        when(employees.findById(1L)).thenReturn(Optional.of(employee));
+        CourseApplication application = validApplication();
+        application.setEmployee(employee);
+        when(applications.findById(99L)).thenReturn(Optional.of(application));
+        assertTrue(service.reviewApplication(99L, employee, "APPROVE", "Self review").contains("Self-approval"));
+        assertEquals("APPLIED", application.getStatus());
+    }
+
 }

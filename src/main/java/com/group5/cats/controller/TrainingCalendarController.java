@@ -39,6 +39,7 @@ public class TrainingCalendarController {
             @RequestParam(value = "employeeId", required = false) Long employeeId,
             @RequestParam(value = "year", required = false) Integer year,
             @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(defaultValue = "false") boolean includePending,
             HttpSession session,
             HttpServletResponse response,
             Model model) {
@@ -102,6 +103,11 @@ public class TrainingCalendarController {
                             selectedMonth
                     );
 
+            applications = new ArrayList<>(applications);
+            if (includePending) {
+                applications.addAll(trainingCalendarService.findPendingApplicationsByMonth(
+                        loggedInUser, selectedEmployeeId, selectedYear, selectedMonth));
+            }
             LocalDate monthStart = LocalDate.of(
                     selectedYear,
                     selectedMonth,
@@ -126,6 +132,7 @@ public class TrainingCalendarController {
             );
         }
 
+        model.addAttribute("includePending", includePending);
         model.addAttribute("selectedYear", selectedYear);
         model.addAttribute("selectedMonth", selectedMonth);
         model.addAttribute("applications", applications);

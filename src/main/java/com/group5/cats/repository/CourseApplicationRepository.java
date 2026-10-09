@@ -13,6 +13,8 @@ import com.group5.cats.model.Employee;
 public interface CourseApplicationRepository
         extends JpaRepository<CourseApplication, Long> {
 
+    boolean existsByCourse_Id(Long courseId);
+
     List<CourseApplication> findByEmployee(Employee employee);
 
     List<CourseApplication> findByEmployeeIn(List<Employee> employees);

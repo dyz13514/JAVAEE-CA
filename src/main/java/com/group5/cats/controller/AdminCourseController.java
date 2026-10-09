@@ -1,39 +1,46 @@
 package com.group5.cats.controller;
 
+import java.time.LocalDate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.group5.cats.dto.CommonCourseForm;
-import com.group5.cats.model.CommonCourse;
+import com.group5.cats.dto.CourseForm;
+import com.group5.cats.model.Course;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeRole;
-import com.group5.cats.service.CommonCourseService;
 import com.group5.cats.service.CourseService;
+import com.group5.cats.service.TrainingProviderService;
 
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-public class AdminCommonCourseController {
+public class AdminCourseController {
 
-    private final CommonCourseService commonCourseService;
     private final CourseService courseService;
+    private final TrainingProviderService trainingProviderService;
 
-    public AdminCommonCourseController(
-            CommonCourseService commonCourseService,
-            CourseService courseService) {
+    public AdminCourseController(
+            CourseService courseService,
+            TrainingProviderService trainingProviderService) {
 
-        this.commonCourseService = commonCourseService;
         this.courseService = courseService;
+        this.trainingProviderService = trainingProviderService;
     }
 
-    @GetMapping("/admin/common-courses")
-    public String showCommonCourses(HttpSession session, Model model) {
+    @GetMapping("/admin/courses")
+    public String showCourses(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "") String category,
+            @RequestParam(required = false) Long providerId,
+            @RequestParam(defaultValue = "false") boolean commonOnly,
+            HttpSession session, Model model) {
 
         Employee loggedInUser =
                 (Employee) session.getAttribute("loggedInUser");
@@ -46,16 +53,11 @@ public class AdminCommonCourseController {
             return "redirect:/employee/home";
         }
 
-        model.addAttribute(
-                "commonCourses",
-                commonCourseService.findAllCommonCourses()
-        );
-
-        return "admin/common-courses";
+        return "redirect:/courses";
     }
 
-    @GetMapping("/admin/common-courses/new")
-    public String showNewCommonCourseForm(
+    @GetMapping("/admin/courses/new")
+    public String showNewCourseForm(
             HttpSession session,
             Model model) {
 
@@ -70,22 +72,22 @@ public class AdminCommonCourseController {
             return "redirect:/employee/home";
         }
 
-        CommonCourseForm commonCourseForm = new CommonCourseForm();
+        CourseForm courseForm = new CourseForm();
+        courseForm.setFee(0.0);
 
-
-        model.addAttribute("commonCourseForm", commonCourseForm);
+        model.addAttribute("courseForm", courseForm);
         model.addAttribute(
-                "courses",
-                courseService.findAllCourses()
+                "providers",
+                trainingProviderService.findAllProviders()
         );
 
-        return "admin/common-course-form";
+        return "admin/course-form";
     }
 
-    @PostMapping("/admin/common-courses/save")
-    public String saveCommonCourse(
-            @ModelAttribute("commonCourseForm")
-            CommonCourseForm commonCourseForm,
+    @PostMapping("/admin/courses/save")
+    public String saveCourse(
+            @ModelAttribute("courseForm")
+            CourseForm courseForm,
             BindingResult bindingResult,
             HttpSession session,
             Model model,
@@ -105,40 +107,40 @@ public class AdminCommonCourseController {
         if (bindingResult.hasErrors()) {
             model.addAttribute(
                     "errorMessage",
-                    "Please select a valid course."
+                    "Please enter valid values for the training provider and reference fee."
             );
             model.addAttribute(
-                    "courses",
-                    courseService.findAllCourses()
+                    "providers",
+                    trainingProviderService.findAllProviders()
             );
 
-            return "admin/common-course-form";
+            return "admin/course-form";
         }
 
-        String error = commonCourseService.createCommonCourse(
-                commonCourseForm
+        String error = courseService.createCourse(
+                courseForm
         );
 
         if (error != null) {
             model.addAttribute("errorMessage", error);
             model.addAttribute(
-                    "courses",
-                    courseService.findAllCourses()
+                    "providers",
+                    trainingProviderService.findAllProviders()
             );
 
-            return "admin/common-course-form";
+            return "admin/course-form";
         }
 
         redirectAttributes.addFlashAttribute(
                 "successMessage",
-                "Commonly attended course added to the catalogue."
+                "Course created successfully."
         );
 
-        return "redirect:/admin/common-courses";
+        return "redirect:/courses";
     }
 
-    @GetMapping("/admin/common-courses/{id}/edit")
-    public String showEditCommonCourseForm(
+    @GetMapping("/admin/courses/{id}/edit")
+    public String showEditCourseForm(
             @PathVariable("id") Long id,
             HttpSession session,
             Model model,
@@ -155,37 +157,48 @@ public class AdminCommonCourseController {
             return "redirect:/employee/home";
         }
 
-        CommonCourse commonCourse =
-                commonCourseService.findCommonCourseById(id);
+        Course course =
+                courseService.findCourseById(id);
 
-        if (commonCourse == null) {
+        if (course == null) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    "Commonly attended course not found."
+                    "Course not found."
             );
 
-            return "redirect:/admin/common-courses";
+            return "redirect:/courses";
         }
 
-        CommonCourseForm commonCourseForm = new CommonCourseForm();
+        CourseForm courseForm = new CourseForm();
 
-        commonCourseForm.setCourseId(commonCourse.getCourse().getId());
+        courseForm.setTitle(course.getTitle());
+        courseForm.setCategory(course.getCategory());
+        courseForm.setProviderId(course.getProvider().getId());
+        courseForm.setFee(course.getFee());
+        courseForm.setIntroduction(course.getIntroduction());
+        courseForm.setDurationDays(course.getDurationDays());
+        StringBuilder dates = new StringBuilder();
+        for (LocalDate date : course.getStartDates()) {
+            if (!dates.isEmpty()) dates.append("\n");
+            dates.append(date);
+        }
+        courseForm.setStartDates(dates.toString());
 
-        model.addAttribute("commonCourseId", commonCourse.getId());
-        model.addAttribute("commonCourseForm", commonCourseForm);
+        model.addAttribute("courseId", course.getId());
+        model.addAttribute("courseForm", courseForm);
         model.addAttribute(
-                "courses",
-                courseService.findAllCourses()
+                "providers",
+                trainingProviderService.findAllProviders()
         );
 
-        return "admin/common-course-edit";
+        return "admin/course-edit";
     }
 
-    @PostMapping("/admin/common-courses/{id}/update")
-    public String updateCommonCourse(
+    @PostMapping("/admin/courses/{id}/update")
+    public String updateCourse(
             @PathVariable("id") Long id,
-            @ModelAttribute("commonCourseForm")
-            CommonCourseForm commonCourseForm,
+            @ModelAttribute("courseForm")
+            CourseForm courseForm,
             BindingResult bindingResult,
             HttpSession session,
             Model model,
@@ -202,54 +215,54 @@ public class AdminCommonCourseController {
             return "redirect:/employee/home";
         }
 
-        CommonCourse commonCourse =
-                commonCourseService.findCommonCourseById(id);
+        Course course =
+                courseService.findCourseById(id);
 
-        if (commonCourse == null) {
+        if (course == null) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    "Commonly attended course not found."
+                    "Course not found."
             );
 
-            return "redirect:/admin/common-courses";
+            return "redirect:/courses";
         }
 
-        model.addAttribute("commonCourseId", id);
+        model.addAttribute("courseId", id);
         model.addAttribute(
-                "courses",
-                courseService.findAllCourses()
+                "providers",
+                trainingProviderService.findAllProviders()
         );
 
         if (bindingResult.hasErrors()) {
             model.addAttribute(
                     "errorMessage",
-                    "Please select a valid course."
+                    "Please enter valid values for the training provider and reference fee."
             );
 
-            return "admin/common-course-edit";
+            return "admin/course-edit";
         }
 
-        String error = commonCourseService.updateCommonCourse(
+        String error = courseService.updateCourse(
                 id,
-                commonCourseForm
+                courseForm
         );
 
         if (error != null) {
             model.addAttribute("errorMessage", error);
 
-            return "admin/common-course-edit";
+            return "admin/course-edit";
         }
 
         redirectAttributes.addFlashAttribute(
                 "successMessage",
-                "Commonly attended course updated successfully."
+                "Course updated successfully."
         );
 
-        return "redirect:/admin/common-courses";
+        return "redirect:/courses";
     }
 
-    @PostMapping("/admin/common-courses/{id}/delete")
-    public String deleteCommonCourse(
+    @PostMapping("/admin/courses/{id}/delete")
+    public String deleteCourse(
             @PathVariable("id") Long id,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
@@ -265,17 +278,17 @@ public class AdminCommonCourseController {
             return "redirect:/employee/home";
         }
 
-        String error = commonCourseService.deleteCommonCourse(id);
+        String error = courseService.deleteCourse(id);
 
         if (error != null) {
             redirectAttributes.addFlashAttribute("errorMessage", error);
         } else {
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Commonly attended course removed from the catalogue. The course is still available."
+                    "Course deleted successfully."
             );
         }
 
-        return "redirect:/admin/common-courses";
+        return "redirect:/courses";
     }
 }

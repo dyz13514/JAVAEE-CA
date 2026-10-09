@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Course view - CATS</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
+<body><th:block th:replace="~{fragments/layout :: shell('calendar')}"></th:block>
+<main class="page-main calendar-page">
+    <div class="page-heading"><div><h1>Course view</h1><p>Applications, review status and training dates.</p></div></div>
+    <nav class="calendar-tabs" aria-label="Course views">
+        <a th:href="@{/course-view}" th:attr="aria-current=${!others ? 'page' : null}">My courses</a>
+        <a th:if="${canViewOthers}" th:href="@{/course-view(others=true)}" th:attr="aria-current=${others ? 'page' : null}">Other employees' courses</a>
+    </nav>
+    <p role="alert" th:if="${errorMessage}" th:text="${errorMessage}" class="notice error"></p>
+    <section th:if="${selectedEmployee != null}">
+        <h2 th:text="${selectedEmployee.name}"></h2>
+        <p><a th:href="@{/training-calendar(employeeId=${selectedEmployee.id})}">Calendar view</a>
+            <a th:if="${ownCourses}" th:href="@{/employee/history}">Manage my applications</a></p>
+        <p th:if="${#lists.isEmpty(applications)}">No course applications yet.</p>
+        <div class="calendar-scroll" th:unless="${#lists.isEmpty(applications)}">
+            <table><thead><tr><th>Course</th><th>Provider</th><th>Start</th><th>End</th><th>Status</th></tr></thead>
+                <tbody><tr th:each="courseApplication : ${applications}">
+                    <td><a th:if="${ownCourses}" th:href="@{/employee/history/{id}(id=${courseApplication.id})}" th:text="${courseApplication.courseTitle}"></a>
+                        <span th:unless="${ownCourses}" th:text="${courseApplication.courseTitle}"></span></td>
+                    <td th:text="${courseApplication.provider}"></td><td th:text="${courseApplication.fromDate}"></td><td th:text="${courseApplication.toDate}"></td>
+                    <td><span th:replace="~{fragments/layout :: status(${courseApplication.status})}"></span></td>
+                </tr></tbody></table>
+        </div>
+    </section>
+    <section th:if="${selectedEmployee == null and errorMessage == null}">
+        <h2>Select an employee</h2>
+        <p th:if="${#lists.isEmpty(employees)}">No employees to display.</p>
+        <div class="calendar-scroll" th:unless="${#lists.isEmpty(employees)}"><table><thead><tr><th>Name</th><th>Username</th><th>Role</th></tr></thead>
+            <tbody><tr th:each="employee : ${employees}"><td><a th:href="@{/course-view(employeeId=${employee.id})}" th:text="${employee.name}"></a></td>
+                <td th:text="${employee.username}"></td><td th:text="${employee.role}"></td></tr></tbody></table></div>
+    </section>
+</main></body></html>

@@ -1,5 +1,6 @@
 package com.group5.cats.service;
 
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -110,4 +111,24 @@ public class TrainingCalendarServiceImpl
                         monthEnd
                 );
     }
+    @Override
+    public List<CourseApplication> findPendingApplicationsByMonth(
+            Employee currentUser, Long employeeId, Integer year, Integer month) {
+        Employee employee = findCalendarEmployee(currentUser, employeeId);
+        if (year == null || year < 1 || year > 9999 || month == null || month < 1 || month > 12) {
+            throw new IllegalArgumentException("Please select a valid year and month.");
+        }
+        LocalDate start = LocalDate.of(year, month, 1);
+        LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
+        List<CourseApplication> matches = new ArrayList<>();
+        for (CourseApplication application : courseApplicationRepository.findByEmployee(employee)) {
+            if (("APPLIED".equals(application.getStatus()) || "UPDATED".equals(application.getStatus()))
+                    && application.getFromDate() != null && application.getToDate() != null
+                    && !application.getFromDate().isAfter(end) && !application.getToDate().isBefore(start)) {
+                matches.add(application);
+            }
+        }
+        return matches;
+    }
+
 }

@@ -37,11 +37,11 @@ import com.group5.cats.model.*;
 class PageRenderingTests {
     @ParameterizedTest
     @ValueSource(strings = {"login", "admin/registrations", "employee-home",
-            "apply-course", "my-history", "application-detail", "manager-approvals", "entitlement",
+            "courses", "course-detail", "course-view", "apply-course", "legacy-apply-course", "my-history", "application-detail", "manager-approvals", "entitlement",
             "manager-reports",
             "admin/home", "admin/notifications", "admin/employees", "admin/employee-form", "admin/employee-edit",
             "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses",
-            "admin/common-course-form", "admin/common-course-edit", "admin/public-holidays",
+            "admin/courses", "admin/course-form", "admin/course-edit", "admin/common-course-form", "admin/common-course-edit", "admin/public-holidays",
             "admin/public-holiday-form", "admin/public-holiday-edit", "error/404"})
     void templatesRenderWithRealBindings(String template) throws Exception {
         var templateResolver = new ClassLoaderTemplateResolver();
@@ -77,9 +77,11 @@ class PageRenderingTests {
                 assertEquals(!state.equals("approved"), html.contains("/withdraw"));
             }
             if (template.equals("apply-course")) {
-                assertTrue(html.contains("name=\"courseTitle\""));
+                assertTrue(html.contains("name=\"courseId\""));
                 assertTrue(html.contains("action=\"/employee/apply\""));
                 assertTrue(html.contains("id=\"summaryTitle\""));
+                assertTrue(html.contains("value=\"2026-10-19\""));
+                assertTrue(html.contains("2026-10-21"), html);
             }
             if (template.equals("manager-reports")) {
                 assertTrue(html.contains("Team training reports"), template);
@@ -180,8 +182,40 @@ class PageRenderingTests {
                     "roles", EmployeeRole.values(), "designations", EmployeeDesignation.values(),
                     "managers", List.of(user), "employees", List.of(user),
                     "commonCourseForm", new CommonCourseForm(), "commonCourseId", 1L));
-            model.addAllAttributes(Map.of("providers", List.of(), "providerId", 1L,
-                    "commonCourses", List.of(), "holidays", List.of(), "holidayId", 1L,
+            TrainingProvider provider = new TrainingProvider("NUS-ISS");
+            provider.setId(1L);
+            Course recordedCourse = new Course("Cloud Architecture", "EXTERNAL", provider, 650);
+            recordedCourse.setId(1L);
+            recordedCourse.setIntroduction("Learn cloud architecture.");
+            recordedCourse.setDurationDays(3);
+            model.addAttribute("course", recordedCourse);
+            model.addAttribute("selectedCourse", recordedCourse);
+            model.addAttribute("availableDates", Map.of(LocalDate.of(2026, 10, 19), LocalDate.of(2026, 10, 21)));
+            model.addAttribute("canViewOthers", true);
+            model.addAttribute("others", state.equals("empty"));
+            model.addAttribute("ownCourses", true);
+            model.addAttribute("selectedEmployee", state.equals("empty") ? null : user);
+            CommonCourse commonCourse = new CommonCourse(recordedCourse);
+            commonCourse.setId(1L);
+            model.addAttribute("courses", state.equals("empty") ? List.of() : List.of(recordedCourse));
+            Course internalCourse = new Course("Workplace Communication", "INTERNAL", provider, 0);
+            internalCourse.setId(2L);
+            Course certificate = new Course("Project Management Certification", "CERTIFICATION", provider, 1200);
+            certificate.setId(3L);
+            model.addAttribute("featuredCourses", state.equals("empty") ? List.of() : List.of(recordedCourse));
+            if (template.equals("courses") && !state.equals("empty")) {
+                model.addAttribute("courses", List.of(recordedCourse, internalCourse, certificate));
+            }
+            model.addAttribute("courseForm", new com.group5.cats.dto.CourseForm());
+            model.addAttribute("courseId", 1L);
+            model.addAttribute("commonOnly", false);
+            model.addAttribute("keyword", "");
+            model.addAttribute("category", "");
+            model.addAttribute("selectedProviderId", null);
+            model.addAttribute("canApply", true);
+            model.addAttribute("commonCourseIds", state.equals("empty") ? List.of() : List.of(1L));
+            model.addAllAttributes(Map.of("providers", List.of(provider), "providerId", 1L,
+                    "commonCourses", state.equals("empty") ? List.of() : List.of(commonCourse), "holidays", List.of(), "holidayId", 1L,
                     "holidayDate", LocalDate.of(2026, 12, 25)));
             model.addAttribute("activeReport", state.equals("approved") ? "budget" : "attendance");
             model.addAttribute("employees", List.of(user));

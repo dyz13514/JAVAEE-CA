@@ -11,6 +11,9 @@ public interface TrainingCalendarService {
 
     Employee findCalendarEmployee(Employee currentUser, Long employeeId);
 
+    List<CourseApplication> findPendingApplicationsByMonth(
+            Employee currentUser, Long employeeId, Integer year, Integer month);
+
     List<CourseApplication> findApprovedApplicationsByMonth(
             Employee currentUser,
             Long employeeId,

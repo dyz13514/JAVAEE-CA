@@ -1,6 +1,12 @@
 package com.group5.cats.controller;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import com.group5.cats.service.CourseScheduleService;
 import java.util.Optional;
+import java.util.List;
+import com.group5.cats.model.Course;
+import com.group5.cats.service.CourseService;
 import java.time.LocalDate;
 import java.util.Comparator;
 
@@ -30,18 +36,28 @@ public class EmployeeController {
 
     private final CourseApplicationService courseApplicationService;
     private final EntitlementService entitlementService;
+    private final CourseService courseService;
+    private final CourseScheduleService scheduleService;
 
     public EmployeeController(
             CourseApplicationService courseApplicationService,
-            EntitlementService entitlementService) {
+            EntitlementService entitlementService, CourseService courseService,
+            CourseScheduleService scheduleService) {
 
         this.courseApplicationService = courseApplicationService;
         this.entitlementService = entitlementService;
+        this.courseService = courseService;
+        this.scheduleService = scheduleService;
+    }
+
+    @ModelAttribute("courses")
+    public List<Course> availableCourses() {
+        return courseService.findAllCourses();
     }
 
     @InitBinder("courseApplication")
     public void configureApplicationBinding(WebDataBinder binder) {
-        binder.setAllowedFields("courseTitle", "category", "provider", "fromDate", "toDate",
+        binder.setAllowedFields("courseId", "courseTitle", "category", "provider", "fromDate", "toDate",
                 "fee", "justification", "dissemination", "halfDay");
     }
 
@@ -60,6 +76,10 @@ public class EmployeeController {
             return "redirect:/employee/login";
         }
 
+        if (application.getCourseId() == null) {
+            redirectAttrs.addFlashAttribute("errorMessage", "Please select a course from All courses.");
+            return "redirect:/courses";
+        }
         String error = bindingResult.hasErrors()
                 ? "Please enter valid course dates, fee and half-day selection."
                 : courseApplicationService.submitApplication(
@@ -68,9 +88,10 @@ public class EmployeeController {
         );
 
         if (error != null) {
+            addSchedule(application, model);
             model.addAttribute("errorMessage", error);
             model.addAttribute("formAction", "/employee/apply");
-            return "apply-course";
+            return application.getCourseId() == null ? "legacy-apply-course" : "apply-course";
         }
 
         redirectAttrs.addFlashAttribute(
@@ -109,14 +130,30 @@ public class EmployeeController {
     }
 
     @GetMapping("/employee/apply")
-    public String showEmployeeApply(Model model) {
-
-        model.addAttribute(
-                "courseApplication",
-                new CourseApplication()
-        );
+    public String showEmployeeApply(
+            @RequestParam(value = "courseId", required = false) Long courseId,
+            HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Employee employee = (Employee) session.getAttribute("loggedInUser");
+        if (employee == null) {
+            return "redirect:/employee/login";
+        }
+        if (courseId == null) return "redirect:/courses";
+        CourseApplication application = new CourseApplication();
+        if (courseId != null) {
+            Course course = courseService.findCourseById(courseId);
+            if (course == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Selected course no longer exists.");
+                return "redirect:/courses";
+            }
+            application.setCourseId(course.getId());
+            application.setCourseTitle(course.getTitle());
+            application.setCategory(course.getCategory());
+            application.setProvider(course.getProvider().getName());
+            application.setFee(course.getFee());
+        }
+        addSchedule(application, model);
+        model.addAttribute("courseApplication", application);
         model.addAttribute("formAction", "/employee/apply");
-
         return "apply-course";
     }
 
@@ -144,7 +181,7 @@ public class EmployeeController {
     public String showApplicationDetial(
             @PathVariable Long id,
             Model model,
-            HttpServletResponse response) {
+            HttpServletResponse response, HttpSession session) {
 
         Optional<CourseApplication> result =
                 courseApplicationService.findApplicationById(id);
@@ -155,6 +192,13 @@ public class EmployeeController {
             return "error/404";
         }
 
+        Employee viewer = (Employee) session.getAttribute("loggedInUser");
+        if (viewer == null) return "redirect:/employee/login";
+        if (!result.get().getEmployee().getId().equals(viewer.getId())) {
+            response.setStatus(403);
+            return "error/404";
+        }
+        addSchedule(result.get(), model);
         model.addAttribute("courseApplication", result.get());
 
         return "application-detail";
@@ -206,13 +250,20 @@ public class EmployeeController {
             return "error/404";
         }
 
+        Employee viewer = (Employee) session.getAttribute("loggedInUser");
+        if (viewer == null) return "redirect:/employee/login";
+        if (!result.get().getEmployee().getId().equals(viewer.getId())) {
+            response.setStatus(403);
+            return "error/404";
+        }
+        addSchedule(result.get(), model);
         model.addAttribute("courseApplication", result.get());
         model.addAttribute(
                 "formAction",
                 "/employee/history/" + id + "/edit"
         );
 
-        return "apply-course";
+        return result.get().getCourseId() == null ? "legacy-apply-course" : "apply-course";
     }
 
     @PostMapping("/employee/history/{id}/edit")
@@ -241,9 +292,10 @@ public class EmployeeController {
 
         if (error != null) {
             updatedData.setId(id);
+            addSchedule(updatedData, model);
             model.addAttribute("errorMessage", error);
             model.addAttribute("formAction", "/employee/history/" + id + "/edit");
-            return "apply-course";
+            return updatedData.getCourseId() == null ? "legacy-apply-course" : "apply-course";
         }
 
         redirectAttrs.addFlashAttribute(
@@ -301,4 +353,18 @@ public class EmployeeController {
 
         return "redirect:/employee/history";
     }
+    private void addSchedule(CourseApplication application, Model model) {
+        if (application.getCourseId() == null) return;
+        Course course = courseService.findCourseById(application.getCourseId());
+        if (course == null) return;
+        if (application.getCourseTitle() == null) application.setCourseTitle(course.getTitle());
+        if (application.getProvider() == null) application.setProvider(course.getProvider().getName());
+        Map<LocalDate, LocalDate> dates = new LinkedHashMap<>(scheduleService.findAvailableDates(course));
+        if (application.getId() != null && application.getFromDate() != null && application.getToDate() != null) {
+            dates.put(application.getFromDate(), application.getToDate());
+        }
+        model.addAttribute("selectedCourse", course);
+        model.addAttribute("availableDates", dates);
+    }
+
 }

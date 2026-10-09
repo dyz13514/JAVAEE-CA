@@ -16,6 +16,7 @@
         <a th:href="@{${homeUrl}}">Back to Home</a>
     </div>
 
+    <p><a th:href="@{/course-view(employeeId=${calendarEmployee != null ? calendarEmployee.id : null})}">Course view — application list and status</a></p>
     <nav class="calendar-tabs" aria-label="Calendar views">
         <a th:href="@{/training-calendar(year=${selectedYear},month=${selectedMonth})}"
            th:attr="aria-current=${isOwnCalendar ? 'page' : null}">My Calendar</a>
@@ -57,6 +58,7 @@
                 <option value="12" th:selected="${selectedMonth == 12}">December</option>
             </select>
         </div>
+        <label><input type="checkbox" name="includePending" value="true" th:checked="${includePending}"> Include awaiting review</label>
         <button type="submit">View Calendar</button>
     </form>
 
@@ -86,8 +88,9 @@
                     <td th:each="day : ${week}" th:class="${day == null ? 'empty-day' : 'calendar-day'}">
                         <th:block th:if="${day != null}">
                             <div class="day-number" th:text="${day}"></div>
-                            <div th:each="courseApplication : ${applicationsByDay.get(day)}" class="course">
+                            <div th:each="courseApplication : ${applicationsByDay.get(day)}" class="course" th:classappend="${courseApplication.status != 'APPROVED' ? 'pending-course' : ''}">
                                 <p class="course-title" th:text="${courseApplication.courseTitle}">Course Title</p>
+                                <span th:replace="~{fragments/layout :: status(${courseApplication.status})}"></span>
                                 <p class="course-category" th:switch="${courseApplication.category}">
                                     <span th:case="'INTERNAL'">Internal Training</span>
                                     <span th:case="'EXTERNAL'">External Course</span>
