@@ -1746,3 +1746,15 @@ body .page-main .metric-card:hover {
 .course-catalogue .course-introduction { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .calendar-grid .pending-course { background: #fff5d9; border-left-color: #b67b16; }
+
+/* Application list search and pagination. */
+.application-search { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 24px 0; }
+.application-search > div:first-child { flex: 1 1 240px; }
+.application-search label { display: block; margin-bottom: 8px; }
+.application-search input, .application-search select { width: 100%; }
+.application-search .btn, .application-search > a { margin-bottom: 0; }
+.application-pagination { margin-top: 24px; }
+.application-pagination nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.application-pagination nav a, .application-pagination nav span { padding: 8px 12px; border: 1px solid #dce5ef; border-radius: 6px; }
+.application-pagination [aria-current="page"] { background: #24547d; color: white; }
+.application-pagination [aria-disabled="true"] { color: #758397; background: #f1f4f8; }

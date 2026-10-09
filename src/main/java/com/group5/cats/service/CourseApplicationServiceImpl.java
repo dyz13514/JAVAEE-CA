@@ -1,6 +1,10 @@
 package com.group5.cats.service;
 
 import java.util.Objects;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import com.group5.cats.dto.ApplicationSearch;
 import com.group5.cats.model.EmployeeRole;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +46,41 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         this.notificationService = notificationService;
         this.courseRepository = courseRepository;
         this.scheduleService = scheduleService;
+    }
+
+    @Override
+    public Page<CourseApplication> searchEmployeeApplications(Employee employee,
+            boolean currentYear, ApplicationSearch search) {
+        LocalDate yearStart = LocalDate.now().withDayOfYear(1);
+        Sort order = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest request = PageRequest.of(search.getPage() - 1, search.getSize(), order);
+        Page<CourseApplication> result = courseApplicationRepository.searchEmployeeApplications(
+                employee.getId(), currentYear, yearStart, yearStart.plusYears(1), search.getKeyword(), request);
+        // A bookmarked page may no longer exist after records or filters change.
+        if (search.getPage() > Math.max(1, result.getTotalPages())) {
+            search.setPage(Math.max(1, result.getTotalPages()));
+            request = PageRequest.of(search.getPage() - 1, search.getSize(), order);
+            result = courseApplicationRepository.searchEmployeeApplications(employee.getId(),
+                    currentYear, yearStart, yearStart.plusYears(1), search.getKeyword(), request);
+        }
+        return result;
+    }
+
+    @Override
+    public Page<CourseApplication> searchTeamApplications(Employee manager, ApplicationSearch search) {
+        if (manager.getRole() != EmployeeRole.MANAGER) {
+            throw new SecurityException("Only managers can view team applications.");
+        }
+        Sort order = Sort.by("employee.name", "employee.id").and(Sort.by(Sort.Direction.DESC, "id"));
+        PageRequest request = PageRequest.of(search.getPage() - 1, search.getSize(), order);
+        Page<CourseApplication> result = courseApplicationRepository.searchTeamApplications(
+                manager.getId(), search.getKeyword(), request);
+        if (search.getPage() > Math.max(1, result.getTotalPages())) {
+            search.setPage(Math.max(1, result.getTotalPages()));
+            request = PageRequest.of(search.getPage() - 1, search.getSize(), order);
+            result = courseApplicationRepository.searchTeamApplications(manager.getId(), search.getKeyword(), request);
+        }
+        return result;
     }
 
     @Override

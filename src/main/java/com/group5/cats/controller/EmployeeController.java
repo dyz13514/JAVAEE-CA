@@ -1,6 +1,9 @@
 package com.group5.cats.controller;
 
 import java.util.LinkedHashMap;
+import org.springframework.data.domain.Page;
+import com.group5.cats.dto.ApplicationSearch;
+import com.group5.cats.dto.ApplicationPagination;
 import java.util.Map;
 import com.group5.cats.service.CourseScheduleService;
 import java.util.Optional;
@@ -166,7 +169,8 @@ public class EmployeeController {
     }
 
     @GetMapping("/employee/history")
-    public String shwMyHistory(HttpSession session, Model model) {
+    public String showMyHistory(@ModelAttribute("search") ApplicationSearch search,
+            HttpSession session, Model model) {
 
         Employee employee =
                 (Employee) session.getAttribute("loggedInUser");
@@ -175,12 +179,10 @@ public class EmployeeController {
             return "redirect:/employee/login";
         }
 
-        model.addAttribute(
-                "applications",
-                courseApplicationService.findApplicationsByEmployee(
-                        employee
-                )
-        );
+        Page<CourseApplication> result = courseApplicationService.searchEmployeeApplications(employee, true, search);
+        model.addAttribute("applications", result.getContent());
+        model.addAttribute("pagination", new ApplicationPagination(result));
+        model.addAttribute("listUrl", "/employee/history");
 
         return "my-history";
     }

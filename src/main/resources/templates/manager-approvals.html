@@ -26,16 +26,15 @@
                 <h1 class="fw-bold text-dark mb-1">Team applications</h1>
                 <p class="text-secondary small mb-0">Review course requests from your team.</p>
             </div>
-            <div class="input-group" style="max-width: 320px;" th:unless="${#lists.isEmpty(applications)}">
 
-                <input type="text" id="approvalFilter" aria-label="Search team applications" class="form-control border-start-0 rounded-end-pill" placeholder="Search team member or course…">
-            </div>
         </div>
+
+        <div th:replace="~{fragments/pagination :: search}"></div>
 
         <div th:if="${#lists.isEmpty(applications)}" class="approval-card text-center py-5">
 
-            <h5 class="fw-bold text-dark mt-3">No applications awaiting review</h5>
-            <p class="text-secondary small mb-0">Your team has no pending course requests.</p>
+            <h5 class="fw-bold text-dark mt-3">No matching team applications</h5>
+            <p class="text-secondary small mb-0">Try another search or reset the filters.</p>
         </div>
 
         <div th:unless="${#lists.isEmpty(applications)}" id="approvalList">
@@ -76,6 +75,9 @@
                     <div class="col-lg-5 border-start-lg pt-3 pt-lg-0">
                         <div th:if="${app.status == 'APPLIED' or app.status == 'UPDATED'}">
                             <form method="post" th:action="@{/manager/review/{id}(id=${app.id})}">
+                                <input type="hidden" name="page" th:value="${pagination.page}">
+                                <input type="hidden" name="size" th:value="${search.size}">
+                                <input type="hidden" name="keyword" th:value="${search.keyword}">
                                 <label th:for="${'comment-' + app.id}" class="form-label small fw-semibold text-secondary">
                                      Decision comment <span class="text-danger">*</span>
                                 </label>
@@ -100,21 +102,9 @@
             </div>
         </div>
 
+        <div th:replace="~{fragments/pagination :: navigation}"></div>
     </div>
 
-    <script>
-        const filterInput = document.getElementById('approvalFilter');
-        if (filterInput) {
-            filterInput.addEventListener('input', function() {
-                const keyword = this.value.toLowerCase().trim();
-                const items = document.querySelectorAll('.application-item');
-                items.forEach(item => {
-                    const text = item.textContent.toLowerCase();
-                    item.style.display = text.includes(keyword) ? '' : 'none';
-                });
-            });
-        }
-    </script>
     <script src="/vendor/bootstrap.bundle.min.js"></script>
 </main>
 </body>

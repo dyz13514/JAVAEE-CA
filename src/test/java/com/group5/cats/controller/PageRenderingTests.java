@@ -70,6 +70,16 @@ class PageRenderingTests {
             String html = response.getContentAsString(StandardCharsets.UTF_8);
             assertTrue(html.contains("/css/cats.css"), template);
             assertFalse(html.contains("REST asynchronous"), template);
+            if (List.of("my-history", "manager-approvals", "course-view").contains(template)
+                    && !state.equals("empty")) {
+                assertTrue(html.contains("Results per page"), template);
+                assertTrue(html.contains("11–20 of 35 applications"), template);
+                assertTrue(html.contains("page=3&amp;size=10&amp;keyword=Cloud%20%26%20Java"), template);
+                assertFalse(html.contains("id=\"filterInput\""), template);
+                if (template.equals("course-view")) {
+                    assertTrue(html.contains("employeeId=" + user.getId()), template);
+                }
+            }
             if (template.equals("admin/notifications")) {
                 assertTrue(html.contains("Email notifications") || html.contains("Email Notifications"));
                 assertFalse(html.contains("<script>alert(1)</script>"));
@@ -207,6 +217,16 @@ class PageRenderingTests {
             model.addAttribute("canViewOthers", true);
             model.addAttribute("others", state.equals("empty"));
             model.addAttribute("ownCourses", true);
+            var search = new com.group5.cats.dto.ApplicationSearch();
+            search.setPage(2);
+            search.setKeyword("Cloud & Java");
+            model.addAttribute("search", search);
+            model.addAttribute("listUrl", template.equals("manager-approvals") ? "/manager/approvals"
+                    : template.equals("course-view") ? "/course-view" : "/employee/history");
+            var page = state.equals("empty") ? org.springframework.data.domain.Page.<CourseApplication>empty()
+                    : new org.springframework.data.domain.PageImpl<>(java.util.Collections.nCopies(10, course),
+                        org.springframework.data.domain.PageRequest.of(1, 10), 35);
+            model.addAttribute("pagination", new com.group5.cats.dto.ApplicationPagination(page));
             model.addAttribute("selectedEmployee", state.equals("empty") ? null : user);
             CommonCourse commonCourse = new CommonCourse(recordedCourse);
             commonCourse.setId(1L);
@@ -233,7 +253,7 @@ class PageRenderingTests {
             model.addAttribute("activeReport", state.equals("approved") ? "budget" : "attendance");
             model.addAttribute("employees", List.of(user));
             model.addAttribute("categories", CourseCategory.filterValues());
-            model.addAttribute("selectedEmployeeId", null);
+            model.addAttribute("selectedEmployeeId", template.equals("course-view") ? user.getId() : null);
             model.addAttribute("selectedCategory", CourseCategory.ALL);
             model.addAttribute("startDate", LocalDate.of(2026, 1, 1));
             model.addAttribute("endDate", LocalDate.of(2026, 12, 31));

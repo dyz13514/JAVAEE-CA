@@ -1,10 +1,14 @@
 package com.group5.cats.service;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import com.group5.cats.dto.ApplicationSearch;
 import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 
 public interface CourseApplicationService {
+Page<CourseApplication> searchEmployeeApplications(Employee employee, boolean currentYear, ApplicationSearch search);
+Page<CourseApplication> searchTeamApplications(Employee manager, ApplicationSearch search);
 String submitApplication(CourseApplication application, Employee applicant);
 List<CourseApplication> findApplicationsByEmployee(Employee employee);
 Optional<CourseApplication> findApplicationById(Long id);

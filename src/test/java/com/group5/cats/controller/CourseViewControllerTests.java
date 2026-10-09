@@ -17,6 +17,9 @@ class CourseViewControllerTests {
     void roleMatrixAlsoProtectsDirectEmployeeUrls() throws Exception {
         EmployeeRepository employees = mock(EmployeeRepository.class);
         CourseApplicationRepository applications = mock(CourseApplicationRepository.class);
+        var applicationService = mock(com.group5.cats.service.CourseApplicationService.class);
+        when(applicationService.searchEmployeeApplications(any(), eq(false), any()))
+                .thenReturn(org.springframework.data.domain.Page.empty());
         Employee manager = employee(1L, EmployeeRole.MANAGER, null);
         Employee staff = employee(2L, EmployeeRole.REGULAR_STAFF, manager);
         Employee outsider = employee(3L, EmployeeRole.REGULAR_STAFF, null);
@@ -28,8 +31,9 @@ class CourseViewControllerTests {
         when(employees.findAll()).thenReturn(List.of(manager, staff, outsider, admin));
         CourseApplication pending = new CourseApplication();
         pending.setStatus("APPLIED");
-        when(applications.findByEmployee(staff)).thenReturn(List.of(pending));
-        var mvc = MockMvcBuilders.standaloneSetup(new CourseViewController(employees, applications,
+        when(applicationService.searchEmployeeApplications(eq(staff), eq(false), any()))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(pending)));
+        var mvc = MockMvcBuilders.standaloneSetup(new CourseViewController(employees, applicationService,
                 new TrainingCalendarServiceImpl(applications, employees)))
                 .setViewResolvers(new InternalResourceViewResolver("/templates/", ".html")).build();
         mvc.perform(get("/course-view")).andExpect(redirectedUrl("/employee/login"));

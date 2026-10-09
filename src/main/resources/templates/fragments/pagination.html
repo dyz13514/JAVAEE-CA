@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<form th:fragment="search" class="application-search" method="get" th:action="@{${listUrl}}">
+    <input th:if="${selectedEmployeeId != null}" type="hidden" name="employeeId" th:value="${selectedEmployeeId}">
+    <div>
+        <label for="application-keyword">Search applications</label>
+        <input id="application-keyword" type="search" name="keyword" th:value="${search.keyword}"
+               th:placeholder="${listUrl == '/manager/approvals' ? 'Team member, course, category, provider or status' : 'Course, category, provider or status'}">
+    </div>
+    <div>
+        <label for="application-size">Results per page</label>
+        <select id="application-size" name="size">
+            <option th:each="value : ${ {10, 20, 25} }" th:value="${value}"
+                    th:selected="${search.size == value}" th:text="${value}"></option>
+        </select>
+    </div>
+    <!-- Omitting page starts every new search at page 1. -->
+    <button type="submit" class="btn btn-primary">Search</button>
+    <a th:href="@{${listUrl}(size=${search.size},employeeId=${selectedEmployeeId})}">Reset</a>
+</form>
+
+<div th:fragment="navigation" class="application-pagination" th:if="${pagination != null}">
+    <p aria-live="polite" th:text="${pagination.firstResult + '–' + pagination.lastResult
+        + ' of ' + pagination.totalElements + ' applications'}"></p>
+    <nav th:if="${pagination.totalPages > 1}" aria-label="Application result pages">
+        <a th:if="${pagination.previous}" th:href="@{${listUrl}(page=1,size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}">First</a>
+        <span th:unless="${pagination.previous}" aria-disabled="true">First</span>
+        <a th:if="${pagination.previous}" th:href="@{${listUrl}(page=${pagination.page - 1},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}">Previous</a>
+        <span th:unless="${pagination.previous}" aria-disabled="true">Previous</span>
+        <th:block th:each="number : ${#numbers.sequence(pagination.firstPageLink, pagination.lastPageLink)}">
+            <span th:if="${number == pagination.page}" aria-current="page" th:text="${number}"></span>
+            <a th:unless="${number == pagination.page}" th:text="${number}"
+               th:href="@{${listUrl}(page=${number},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}"></a>
+        </th:block>
+        <a th:if="${pagination.next}" th:href="@{${listUrl}(page=${pagination.page + 1},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}">Next</a>
+        <span th:unless="${pagination.next}" aria-disabled="true">Next</span>
+        <a th:if="${pagination.next}" th:href="@{${listUrl}(page=${pagination.totalPages},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}">Last</a>
+        <span th:unless="${pagination.next}" aria-disabled="true">Last</span>
+    </nav>
+</div>
+</body>
+</html>
