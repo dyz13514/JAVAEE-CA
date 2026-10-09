@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.group5.cats.model.AnnualEntitlement;
+import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EntitlementSummary;
 
@@ -30,7 +31,14 @@ public interface EntitlementService{
 	
 	Optional<EntitlementSummary> getEntitlementSummary(
 			Long employeeId, Integer entitlementYear);
-	
+
+	/**
+	 * Applications that occupy the employee's entitlement for the year, using the
+	 * same status and category rules as the summary figures.
+	 */
+	List<CourseApplication> findOccupyingApplications(
+			Long employeeId, Integer entitlementYear);
+
 	List<Employee> getQueryableEmployees(Employee currentUser);
 	
 	void deleteEntitlement(

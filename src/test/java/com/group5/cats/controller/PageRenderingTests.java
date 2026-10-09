@@ -23,7 +23,13 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import com.group5.cats.dto.AttendanceReport;
+import com.group5.cats.dto.AttendanceReportRow;
+import com.group5.cats.dto.BudgetReport;
+import com.group5.cats.dto.BudgetReportRow;
 import com.group5.cats.dto.CommonCourseForm;
+import com.group5.cats.dto.CourseCategory;
+import com.group5.cats.dto.CourseFeeDetail;
 import com.group5.cats.dto.EmployeeForm;
 import com.group5.cats.model.*;
 
@@ -32,6 +38,7 @@ class PageRenderingTests {
     @ParameterizedTest
     @ValueSource(strings = {"login", "admin/registrations", "employee-home",
             "apply-course", "my-history", "application-detail", "manager-approvals", "entitlement",
+            "manager-reports",
             "admin/home", "admin/notifications", "admin/employees", "admin/employee-form", "admin/employee-edit",
             "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses",
             "admin/common-course-form", "admin/common-course-edit", "admin/public-holidays",
@@ -51,7 +58,7 @@ class PageRenderingTests {
             var session = new MockHttpSession();
             Employee user = employee();
             user.setRole(template.startsWith("admin/") || template.equals("entitlement")
-                    ? EmployeeRole.ADMIN : template.equals("manager-approvals")
+                    ? EmployeeRole.ADMIN : template.equals("manager-approvals") || template.equals("manager-reports")
                     ? EmployeeRole.MANAGER : EmployeeRole.REGULAR_STAFF);
             session.setAttribute("loggedInUser", user);
             var response = mvc.perform(get("/preview").param("template", template).param("state", state)
@@ -73,6 +80,19 @@ class PageRenderingTests {
                 assertTrue(html.contains("name=\"courseTitle\""));
                 assertTrue(html.contains("action=\"/employee/apply\""));
                 assertTrue(html.contains("id=\"summaryTitle\""));
+            }
+            if (template.equals("manager-reports")) {
+                assertTrue(html.contains("Team training reports"), template);
+                // The budget tab is rendered for the approved state, the attendance tab otherwise.
+                if (state.equals("approved")) {
+                    assertTrue(html.contains("Course fee claims and budget utilisation"), template);
+                    assertTrue(html.contains("/manager/reports/budget.csv"), template);
+                    assertTrue(html.contains("Cloud Architecture Essentials"), template);
+                    assertTrue(html.contains("No entitlement record for"), template);
+                } else {
+                    assertTrue(html.contains("/manager/reports/attendance.csv"), template);
+                    assertFalse(html.contains("Course fee claims and budget utilisation"), template);
+                }
             }
             String previewDir = System.getProperty("cats.previewDir");
             if (previewDir != null) {
@@ -163,7 +183,73 @@ class PageRenderingTests {
             model.addAllAttributes(Map.of("providers", List.of(), "providerId", 1L,
                     "commonCourses", List.of(), "holidays", List.of(), "holidayId", 1L,
                     "holidayDate", LocalDate.of(2026, 12, 25)));
+            model.addAttribute("activeReport", state.equals("approved") ? "budget" : "attendance");
+            model.addAttribute("employees", List.of(user));
+            model.addAttribute("categories", CourseCategory.filterValues());
+            model.addAttribute("selectedEmployeeId", null);
+            model.addAttribute("selectedCategory", CourseCategory.ALL);
+            model.addAttribute("startDate", LocalDate.of(2026, 1, 1));
+            model.addAttribute("endDate", LocalDate.of(2026, 12, 31));
+            model.addAttribute("selectedYear", 2026);
+            model.addAttribute("attendanceReport", attendanceReport(user, state.equals("empty")));
+            model.addAttribute("budgetReport", budgetReport(user, allowance, state.equals("empty")));
             return template;
+        }
+
+        private AttendanceReport attendanceReport(Employee user, boolean empty) {
+            AttendanceReport report = new AttendanceReport();
+            report.setFromDate(LocalDate.of(2026, 1, 1));
+            report.setToDate(LocalDate.of(2026, 12, 31));
+            report.setCategory(CourseCategory.ALL);
+            if (empty) {
+                report.setRows(List.of());
+                return report;
+            }
+            AttendanceReportRow row = new AttendanceReportRow();
+            row.setEmployeeName(user.getName());
+            row.setCourseTitle("Cloud Architecture Essentials");
+            row.setCategory(CourseCategory.EXTERNAL);
+            row.setFromDate(LocalDate.of(2026, 10, 19));
+            row.setToDate(LocalDate.of(2026, 10, 21));
+            row.setTrainingDays(3);
+            row.setStatus("APPROVED");
+            row.setFee(650);
+            report.setRows(List.of(row));
+            return report;
+        }
+
+        private BudgetReport budgetReport(Employee user, EntitlementSummary allowance, boolean empty) {
+            BudgetReport report = new BudgetReport();
+            report.setYear(2026);
+            if (empty) {
+                report.setRows(List.of());
+                return report;
+            }
+            BudgetReportRow configured = new BudgetReportRow();
+            configured.setEmployeeName(user.getName());
+            configured.setEntitlementYear(2026);
+            configured.setHasEntitlement(true);
+            configured.setTrainingBudget(allowance.getTrainingBudget());
+            configured.setClaimedFees(allowance.getOccupiedBudget());
+            configured.setRemainingBudget(allowance.getRemainingBudget());
+            configured.setUtilisationPercent(38.33);
+            CourseFeeDetail detail = new CourseFeeDetail();
+            detail.setCourseTitle("Cloud Architecture Essentials");
+            detail.setCategory("EXTERNAL");
+            detail.setFromDate(LocalDate.of(2026, 10, 19));
+            detail.setToDate(LocalDate.of(2026, 10, 21));
+            detail.setStatus("APPROVED");
+            detail.setFee(650);
+            detail.setCountsTowardsBudget(true);
+            configured.setDetails(List.of(detail));
+
+            BudgetReportRow notConfigured = new BudgetReportRow();
+            notConfigured.setEmployeeName("New Starter");
+            notConfigured.setEntitlementYear(2026);
+            notConfigured.setHasEntitlement(false);
+
+            report.setRows(List.of(configured, notConfigured));
+            return report;
         }
     }
 }

@@ -140,7 +140,8 @@ public class EntitlementServiceImpl implements EntitlementService {
 		
 			}
 	
-	private List<CourseApplication> getOccupyingApplications(
+	@Override
+	public List<CourseApplication> findOccupyingApplications(
 			Long employeeId, Integer entitlementYear) {
 		validateInputs(employeeId, entitlementYear);
 		
@@ -164,7 +165,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 	
 	@Override
 	public double getOccupiedTrainingDays(Long employeeId, Integer entitlementYear) {
-		List<CourseApplication> applications = getOccupyingApplications(employeeId, entitlementYear);
+		List<CourseApplication> applications = findOccupyingApplications(employeeId, entitlementYear);
 		double occupiedDays= 0.0;
 		
 		for (CourseApplication application : applications) { 
@@ -176,7 +177,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 	
 	@Override
 	public double getOccupiedTrainingBudget(Long employeeId, Integer entitlementYear) {
-		List<CourseApplication> applications = getOccupyingApplications(employeeId, entitlementYear);
+		List<CourseApplication> applications = findOccupyingApplications(employeeId, entitlementYear);
 		double occupiedBudget = 0.0;
 		
 		for (CourseApplication application : applications) { 
@@ -200,7 +201,7 @@ public class EntitlementServiceImpl implements EntitlementService {
 		
 		AnnualEntitlement entitlement = result.get();
 		
-		List<CourseApplication> applications =  getOccupyingApplications(employeeId, entitlementYear);
+		List<CourseApplication> applications =  findOccupyingApplications(employeeId, entitlementYear);
 		
 		double occupiedDays = 0.0;
 		double occupiedBudget = 0.0;

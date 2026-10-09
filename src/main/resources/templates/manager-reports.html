@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Team Reports - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('reports')}"></th:block>
+<main class="page-main report-page">
+
+<div class="page-heading">
+<div>
+<h1>Team training reports</h1>
+<p>Attendance and course fee claims for your direct reports.</p>
+</div>
+</div>
+
+<nav class="section-tabs" aria-label="Report views">
+<a th:classappend="${activeReport == 'attendance' ? 'active' : ''}" th:attr="aria-current=${activeReport == 'attendance' ? 'page' : null}"
+   th:href="@{/manager/reports(report='attendance')}">Course attendance</a>
+<a th:classappend="${activeReport == 'budget' ? 'active' : ''}" th:attr="aria-current=${activeReport == 'budget' ? 'page' : null}"
+   th:href="@{/manager/reports(report='budget')}">Course fee claims</a>
+</nav>
+
+<p class="notice error" role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
+
+<section th:if="${activeReport == 'attendance'}" aria-labelledby="attendance-heading">
+<h2 id="attendance-heading">Course attendance</h2>
+<form class="report-filter" method="get" th:action="@{/manager/reports}">
+    <input type="hidden" name="report" value="attendance">
+    <div class="field">
+        <label for="attendanceEmployee">Employee</label>
+        <select id="attendanceEmployee" name="employeeId">
+            <option value="" th:selected="${selectedEmployeeId == null}">All direct reports</option>
+            <option th:each="employee : ${employees}" th:value="${employee.id}"
+                    th:selected="${selectedEmployeeId != null and selectedEmployeeId == employee.id}"
+                    th:text="${employee.name}"></option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="attendanceCategory">Course category</label>
+        <select id="attendanceCategory" name="category">
+            <option th:each="option : ${categories}" th:value="${option}"
+                    th:selected="${option == selectedCategory}"
+                    th:text="${option == 'ALL' ? 'All categories' : (option == 'INTERNAL' ? 'Internal training' : (option == 'EXTERNAL' ? 'External course' : 'Professional certification'))}"></option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="attendanceStart">Start date</label>
+        <input type="date" id="attendanceStart" name="startDate"
+               th:value="${startDate != null ? #temporals.format(startDate,'yyyy-MM-dd') : ''}">
+    </div>
+    <div class="field">
+        <label for="attendanceEnd">End date</label>
+        <input type="date" id="attendanceEnd" name="endDate"
+               th:value="${endDate != null ? #temporals.format(endDate,'yyyy-MM-dd') : ''}">
+    </div>
+    <button type="submit" class="primary-button">Apply filters</button>
+    <a class="text-link" th:href="@{/manager/reports/attendance.csv(employeeId=${selectedEmployeeId},category=${selectedCategory},startDate=${startDate != null ? #temporals.format(startDate,'yyyy-MM-dd') : ''},endDate=${endDate != null ? #temporals.format(endDate,'yyyy-MM-dd') : ''})}">Export CSV</a>
+</form>
+
+<th:block th:if="${attendanceReport != null}">
+<div class="report-summary">
+    <div><span class="report-summary-label">Attendance records</span><strong th:text="${attendanceReport.recordCount}">0</strong></div>
+    <div><span class="report-summary-label">Training days</span><strong th:text="${#numbers.formatDecimal(attendanceReport.totalTrainingDays,1,1)}">0.0</strong></div>
+    <div><span class="report-summary-label">Course fees</span><strong th:text="${'S$ ' + #numbers.formatDecimal(attendanceReport.totalFee,1,'COMMA',2,'POINT')}">S$ 0.00</strong></div>
+    <div><span class="report-summary-label">Budget-relevant fees</span><strong th:text="${'S$ ' + #numbers.formatDecimal(attendanceReport.budgetRelevantFee,1,'COMMA',2,'POINT')}">S$ 0.00</strong></div>
+</div>
+<p class="empty-state" th:if="${#lists.isEmpty(attendanceReport.rows)}">No approved or completed courses overlap the selected reporting period and category.</p>
+<div class="table-scroll" th:unless="${#lists.isEmpty(attendanceReport.rows)}">
+    <table>
+        <thead>
+        <tr>
+            <th scope="col">Employee</th>
+            <th scope="col">Course</th>
+            <th scope="col">Category</th>
+            <th scope="col">Start</th>
+            <th scope="col">End</th>
+            <th scope="col" class="numeric">Training days</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="numeric">Course fee</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${attendanceReport.rows}">
+            <td th:text="${row.employeeName}"></td>
+            <td th:text="${row.courseTitle}"></td>
+            <td th:text="${row.categoryLabel}"></td>
+            <td th:text="${#temporals.format(row.fromDate,'yyyy-MM-dd')}"></td>
+            <td th:text="${#temporals.format(row.toDate,'yyyy-MM-dd')}"></td>
+            <td class="numeric" th:text="${#numbers.formatDecimal(row.trainingDays,1,1)}"></td>
+            <td><span th:replace="~{fragments/layout :: status(${row.status})}"></span></td>
+            <td class="numeric" th:text="${'S$ ' + #numbers.formatDecimal(row.fee,1,'COMMA',2,'POINT')}"></td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <th scope="row" colspan="5" th:text="${attendanceReport.recordCount + ' record(s)'}">0 record(s)</th>
+            <th scope="row" class="numeric" th:text="${#numbers.formatDecimal(attendanceReport.totalTrainingDays,1,1)}">0.0</th>
+            <th scope="row"></th>
+            <th scope="row" class="numeric" th:text="${'S$ ' + #numbers.formatDecimal(attendanceReport.totalFee,1,'COMMA',2,'POINT')}">S$ 0.00</th>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+<p class="footnote">Confirmed attendance only: approved and completed applications. Pending, rejected, withdrawn and cancelled
+    applications are excluded. A course appears when its training period overlaps the selected dates, so courses that start
+    before or end after the period are included. Dates are shown as YYYY-MM-DD.</p>
+</th:block>
+</section>
+
+<section th:if="${activeReport == 'budget'}" aria-labelledby="budget-heading">
+<h2 id="budget-heading">Course fee claims and budget utilisation</h2>
+<form class="report-filter" method="get" th:action="@{/manager/reports}">
+    <input type="hidden" name="report" value="budget">
+    <div class="field">
+        <label for="budgetEmployee">Employee</label>
+        <select id="budgetEmployee" name="employeeId">
+            <option value="" th:selected="${selectedEmployeeId == null}">All direct reports</option>
+            <option th:each="employee : ${employees}" th:value="${employee.id}"
+                    th:selected="${selectedEmployeeId != null and selectedEmployeeId == employee.id}"
+                    th:text="${employee.name}"></option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="budgetYear">Reporting year</label>
+        <input type="number" id="budgetYear" name="year" min="1" max="9999" th:value="${selectedYear}">
+    </div>
+    <button type="submit" class="primary-button">Apply filters</button>
+    <a class="text-link" th:href="@{/manager/reports/budget.csv(employeeId=${selectedEmployeeId},year=${selectedYear})}">Export CSV</a>
+</form>
+
+<th:block th:if="${budgetReport != null}">
+<div class="report-summary">
+    <div><span class="report-summary-label">Employees</span><strong th:text="${budgetReport.employeeCount}">0</strong></div>
+    <div><span class="report-summary-label">Annual budget</span><strong th:text="${'S$ ' + #numbers.formatDecimal(budgetReport.totalTrainingBudget,1,'COMMA',2,'POINT')}">S$ 0.00</strong></div>
+    <div><span class="report-summary-label">Course fee claims</span><strong th:text="${'S$ ' + #numbers.formatDecimal(budgetReport.totalClaimedFees,1,'COMMA',2,'POINT')}">S$ 0.00</strong></div>
+    <div><span class="report-summary-label">Remaining budget</span><strong th:text="${'S$ ' + #numbers.formatDecimal(budgetReport.totalRemainingBudget,1,'COMMA',2,'POINT')}">S$ 0.00</strong></div>
+    <div><span class="report-summary-label">Utilisation</span><strong th:text="${#numbers.formatDecimal(budgetReport.overallUtilisationPercent,1,1) + '%'}">0.0%</strong></div>
+</div>
+<p class="empty-state" th:if="${#lists.isEmpty(budgetReport.rows)}">You have no direct reports to report on.</p>
+<div class="table-scroll" th:unless="${#lists.isEmpty(budgetReport.rows)}">
+    <table>
+        <thead>
+        <tr>
+            <th scope="col">Employee</th>
+            <th scope="col" class="numeric">Annual budget</th>
+            <th scope="col" class="numeric">Course fee claims</th>
+            <th scope="col" class="numeric">Remaining budget</th>
+            <th scope="col" class="numeric">Utilisation</th>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="row : ${budgetReport.rows}">
+        <tr>
+            <td th:text="${row.employeeName}"></td>
+            <th:block th:if="${row.hasEntitlement}">
+                <td class="numeric" th:text="${'S$ ' + #numbers.formatDecimal(row.trainingBudget,1,'COMMA',2,'POINT')}"></td>
+                <td class="numeric" th:text="${'S$ ' + #numbers.formatDecimal(row.claimedFees,1,'COMMA',2,'POINT')}"></td>
+                <td class="numeric" th:text="${'S$ ' + #numbers.formatDecimal(row.remainingBudget,1,'COMMA',2,'POINT')}"></td>
+                <td class="numeric" th:text="${#numbers.formatDecimal(row.utilisationPercent,1,1) + '%'}"></td>
+            </th:block>
+            <th:block th:unless="${row.hasEntitlement}">
+                <td colspan="4" class="report-missing">No entitlement record for
+                    <span th:text="${row.entitlementYear}"></span>. Ask an administrator to set the annual allowance.</td>
+            </th:block>
+        </tr>
+        <tr class="report-detail" th:if="${row.hasEntitlement and not #lists.isEmpty(row.details)}">
+            <td colspan="5">
+                <table>
+                    <thead>
+                    <tr>
+                        <th scope="col">Course</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Period</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="numeric">Fee</th>
+                        <th scope="col">Counts toward budget</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="detail : ${row.details}">
+                        <td th:text="${detail.courseTitle}"></td>
+                        <td th:text="${detail.categoryLabel}"></td>
+                        <td th:text="${#temporals.format(detail.fromDate,'yyyy-MM-dd') + ' to ' + #temporals.format(detail.toDate,'yyyy-MM-dd')}"></td>
+                        <td><span th:replace="~{fragments/layout :: status(${detail.status})}"></span></td>
+                        <td class="numeric" th:text="${'S$ ' + #numbers.formatDecimal(detail.fee,1,'COMMA',2,'POINT')}"></td>
+                        <td th:text="${detail.countsTowardsBudget ? 'Yes' : 'No'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        </th:block>
+        </tbody>
+    </table>
+</div>
+<p class="footnote">Course fee claims are the course fees committed or approved in the reporting year, calculated with the same
+    rule as the annual entitlement page: external courses and certifications count toward the annual budget, internal training
+    does not. These are application fees, not confirmed reimbursements. The budget and utilisation figures cover the whole
+    entitlement year, so they are never combined with a filtered period.</p>
+</th:block>
+</section>
+
+</main>
+</body>
+</html>

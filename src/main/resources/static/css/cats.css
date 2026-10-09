@@ -1673,3 +1673,22 @@ body .page-main .metric-card:hover {
 .delivery-PENDING, .delivery-PROCESSING { background:#fff6e5; color:#805c17; }
 .delivery-SENT { background:#edf7ef; color:#28613b; }
 .delivery-FAILED { background:#fff0f0; color:#9b2727; }
+
+/* Manager reporting: shared portal typography, filters and tables. */
+.report-page h2 { margin:0 0 20px; }
+.report-page .report-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:16px; margin-bottom:20px; }
+.report-page .report-filter .field { margin:0; min-width:180px; }
+.report-page .report-filter .text-link { padding-bottom:12px; }
+.report-page .report-summary { display:flex; flex-wrap:wrap; gap:20px 56px; margin:8px 0 32px; }
+.report-page .report-summary-label { display:block; color:var(--muted, #697586); font-size:13px; }
+.report-page .report-summary strong { font-size:26px; font-weight:500; font-variant-numeric:tabular-nums; }
+.report-page tfoot th { background:#edf2f7; font-weight:500; }
+.report-page .report-missing { color:var(--muted, #697586); font-size:14px; }
+.report-page .report-detail > td { padding:0 0 4px 24px; background:#f7f9fc; }
+.report-page .report-detail table { margin:12px 0; font-size:14px; }
+.report-page .report-detail th, .report-page .report-detail td { padding:8px 12px; }
+@media(max-width:760px) {
+    .report-page .report-summary { gap:16px 32px; }
+    .report-page .report-summary strong { font-size:22px; }
+    .report-page .report-detail > td { padding-left:8px; }
+}
