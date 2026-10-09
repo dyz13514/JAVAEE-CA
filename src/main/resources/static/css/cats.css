@@ -114,12 +114,17 @@ button:disabled {
 }
 
 .app-header {
+    position:sticky;
+    top:0;
+    z-index:10;
     height:96px;
     display:flex;
     align-items:center;
     justify-content:space-between;
     padding:0 44px;
     gap:24px;
+    background:rgba(247,249,252,.94);
+    backdrop-filter:blur(8px);
 }
 
 .wordmark {
@@ -127,6 +132,10 @@ button:disabled {
     font-weight:700;
     letter-spacing:-1px;
     line-height:1;
+    color:var(--ink);
+}
+
+.wordmark:hover {
     color:var(--ink);
 }
 
@@ -204,6 +213,26 @@ button:disabled {
     padding:32px 48px 72px 16px;
     max-width:1600px;
     min-width:0;
+}
+
+/* A single quick arrival for page content; branding and navigation stay still. */
+.page-main,.login-main {
+    animation:page-arrive 260ms cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes page-arrive {
+    from {
+        opacity:0;
+        transform:translateY(10px);
+    }
+    80% {
+        opacity:1;
+        transform:translateY(-.5px);
+    }
+    to {
+        opacity:1;
+        transform:translateY(0);
+    }
 }
 
 .page-heading {
