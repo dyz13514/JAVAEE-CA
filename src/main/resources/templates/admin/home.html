@@ -22,22 +22,27 @@
 </div>
 <div class="management-links">
 <a class="management-link" th:href="@{/admin/employees}">
+<svg th:replace="~{fragments/icons :: icon('employees')}"></svg>
 <strong>Employees</strong>
 <span>Accounts, roles and supervisors.</span>
 </a>
-<a class="management-link" th:href="@{/entitlements}">
+<a class="management-link allowance-link" th:href="@{/entitlements}">
+<svg th:replace="~{fragments/icons :: icon('calendar')}"></svg>
 <strong>Training allowances</strong>
 <span>Annual training days and budgets.</span>
 </a>
 <a class="management-link" th:href="@{/admin/providers}">
+<svg th:replace="~{fragments/icons :: icon('providers')}"></svg>
 <strong>Training providers</strong>
 <span>Maintain provider details.</span>
 </a>
 <a class="management-link" th:href="@{/admin/common-courses}">
+<svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
 <strong>Course catalogue</strong>
 <span>Common courses and reference fees.</span>
 </a>
 <a class="management-link" th:href="@{/admin/public-holidays}">
+<svg th:replace="~{fragments/icons :: icon('holidays')}"></svg>
 <strong>Public holidays</strong>
 <span>Maintain holidays by year.</span>
 </a>

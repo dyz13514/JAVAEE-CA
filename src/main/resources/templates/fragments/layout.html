@@ -15,18 +15,18 @@
     </header>
     <aside class="app-sidebar">
         <nav aria-label="Main navigation">
-            <a th:classappend="${active == 'home' ? 'active' : ''}" th:attr="aria-current=${active == 'home' ? 'page' : null}" th:href="${admin ? '/admin/home' : '/employee/home'}">Overview</a>
+            <a th:classappend="${active == 'home' ? 'active' : ''}" th:attr="aria-current=${active == 'home' ? 'page' : null}" th:href="${admin ? '/admin/home' : '/employee/home'}"><svg th:replace="~{fragments/icons :: icon('overview')}"></svg><span>Overview</span></a>
             <th:block th:unless="${admin}">
-                <a th:if="${user != null and user.role.name() == 'REGULAR_STAFF'}" th:classappend="${active == 'apply' ? 'active' : ''}" th:attr="aria-current=${active == 'apply' ? 'page' : null}" th:href="@{/employee/apply}">Apply for course</a>
-                <a th:classappend="${active == 'history' ? 'active' : ''}" th:attr="aria-current=${active == 'history' ? 'page' : null}" th:href="@{/employee/history}">My applications</a>
-                <a th:if="${user != null and user.role.name() == 'MANAGER'}" th:classappend="${active == 'approvals' ? 'active' : ''}" th:attr="aria-current=${active == 'approvals' ? 'page' : null}" th:href="@{/manager/approvals}">Team applications</a>
+                <a th:if="${user != null and user.role.name() == 'REGULAR_STAFF'}" th:classappend="${active == 'apply' ? 'active' : ''}" th:attr="aria-current=${active == 'apply' ? 'page' : null}" th:href="@{/employee/apply}"><svg th:replace="~{fragments/icons :: icon('apply')}"></svg><span>Apply for course</span></a>
+                <a th:classappend="${active == 'history' ? 'active' : ''}" th:attr="aria-current=${active == 'history' ? 'page' : null}" th:href="@{/employee/history}"><svg th:replace="~{fragments/icons :: icon('history')}"></svg><span>My applications</span></a>
+                <a th:if="${user != null and user.role.name() == 'MANAGER'}" th:classappend="${active == 'approvals' ? 'active' : ''}" th:attr="aria-current=${active == 'approvals' ? 'page' : null}" th:href="@{/manager/approvals}"><svg th:replace="~{fragments/icons :: icon('review')}"></svg><span>Team applications</span></a>
             </th:block>
-            <a th:if="${admin}" th:classappend="${active == 'employees' ? 'active' : ''}" th:attr="aria-current=${active == 'employees' ? 'page' : null}" th:href="@{/admin/employees}">Employees</a>
-            <a th:classappend="${active == 'entitlement' ? 'active' : ''}" th:attr="aria-current=${active == 'entitlement' ? 'page' : null}" th:href="@{/entitlements}" th:text="${admin ? 'Training allowances' : 'Annual entitlement'}">Annual entitlement</a>
+            <a th:if="${admin}" th:classappend="${active == 'employees' ? 'active' : ''}" th:attr="aria-current=${active == 'employees' ? 'page' : null}" th:href="@{/admin/employees}"><svg th:replace="~{fragments/icons :: icon('employees')}"></svg><span>Employees</span></a>
+            <a th:classappend="${active == 'entitlement' ? 'active' : ''}" th:attr="aria-current=${active == 'entitlement' ? 'page' : null}" th:href="@{/entitlements}"><svg th:replace="~{fragments/icons :: icon('calendar')}"></svg><span th:text="${admin ? 'Training allowances' : 'Annual entitlement'}">Annual entitlement</span></a>
             <th:block th:if="${admin}">
-                <a th:classappend="${active == 'providers' ? 'active' : ''}" th:attr="aria-current=${active == 'providers' ? 'page' : null}" th:href="@{/admin/providers}">Training providers</a>
-                <a th:classappend="${active == 'courses' ? 'active' : ''}" th:attr="aria-current=${active == 'courses' ? 'page' : null}" th:href="@{/admin/common-courses}">Course catalogue</a>
-                <a th:classappend="${active == 'holidays' ? 'active' : ''}" th:attr="aria-current=${active == 'holidays' ? 'page' : null}" th:href="@{/admin/public-holidays}">Public holidays</a>
+                <a th:classappend="${active == 'providers' ? 'active' : ''}" th:attr="aria-current=${active == 'providers' ? 'page' : null}" th:href="@{/admin/providers}"><svg th:replace="~{fragments/icons :: icon('providers')}"></svg><span>Training providers</span></a>
+                <a th:classappend="${active == 'courses' ? 'active' : ''}" th:attr="aria-current=${active == 'courses' ? 'page' : null}" th:href="@{/admin/common-courses}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Course catalogue</span></a>
+                <a th:classappend="${active == 'holidays' ? 'active' : ''}" th:attr="aria-current=${active == 'holidays' ? 'page' : null}" th:href="@{/admin/public-holidays}"><svg th:replace="~{fragments/icons :: icon('holidays')}"></svg><span>Public holidays</span></a>
             </th:block>
         </nav>
         <div class="sidebar-footer"><strong>NUS-ISS</strong><span>Staff training portal</span></div>

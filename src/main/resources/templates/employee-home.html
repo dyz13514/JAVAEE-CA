@@ -19,8 +19,8 @@
 <h1>Your training, in view.</h1>
 <p>Your annual allowance and course applications.</p>
 </div>
-<a th:if="${session.loggedInUser.role.name() == 'REGULAR_STAFF'}" th:href="@{/employee/apply}" class="primary-button">Apply for course</a>
-<a th:if="${session.loggedInUser.role.name() == 'MANAGER'}" th:href="@{/manager/approvals}" class="primary-button">Review team applications</a>
+<a th:if="${session.loggedInUser.role.name() == 'REGULAR_STAFF'}" th:href="@{/employee/apply}" class="primary-button"><svg th:replace="~{fragments/icons :: icon('apply')}"></svg>Apply for course</a>
+<a th:if="${session.loggedInUser.role.name() == 'MANAGER'}" th:href="@{/manager/approvals}" class="primary-button"><svg th:replace="~{fragments/icons :: icon('review')}"></svg>Review team applications</a>
 </div>
 <section aria-labelledby="allowance-title">
 <div class="section-heading">
@@ -31,7 +31,7 @@
 </div>
 <div class="allowances" th:if="${allowance != null}">
 <div>
-<p class="allowance-label">Training days remaining</p>
+<p class="allowance-label"><svg th:replace="~{fragments/icons :: icon('calendar')}"></svg>Training days remaining</p>
 <div class="allowance-value">
 <strong th:text="${#numbers.formatDecimal(allowance.remainingDays,1,1)}">
 </strong>
@@ -43,8 +43,8 @@
 <small th:text="${#numbers.formatDecimal(allowance.occupiedDays,1,1) + ' days occupied'}">
 </small>
 </div>
-<div>
-<p class="allowance-label">Budget remaining</p>
+<div class="allowance-budget">
+<p class="allowance-label"><svg th:replace="~{fragments/icons :: icon('wallet')}"></svg>Budget remaining</p>
 <div class="allowance-value">
 <strong th:text="${'S$ ' + #numbers.formatDecimal(allowance.remainingBudget,1,'COMMA',2,'POINT')}">
 </strong>
