@@ -7,7 +7,7 @@
     <script defer th:src="@{/vendor/gsap.min.js}" src="/vendor/gsap.min.js"></script>
     <script defer th:src="@{/js/login.js}" src="/js/login.js"></script>
 </head>
-<body class="login-page" th:attr="data-login-role=${loginRole == 'admin' ? 'admin' : 'employee'}">
+<body class="login-page" th:attr="data-login-role=${loginRole == 'admin' ? 'admin' : 'employee'},data-account-mode=${accountMode == 'register' ? 'register' : 'login'}">
     <div class="login-atmosphere" aria-hidden="true">
         <div class="login-ambient"></div>
         <div class="login-light-trace"></div>
@@ -22,7 +22,8 @@
             <p>Course Application Tracking System</p>
         </section>
         <section class="login-form" aria-labelledby="login-title">
-            <h2 id="login-title">Sign in</h2>
+            <div id="signin-panel" th:hidden="${accountMode == 'register'}">
+            <h2 id="login-title" tabindex="-1">Sign in</h2>
             <nav class="role-tabs" aria-label="Login account type">
                 <a data-role="employee" th:href="@{/employee/login}" href="/employee/login"
                    th:classappend="${loginRole != 'admin' ? 'active' : ''}"
@@ -38,6 +39,7 @@
                 </a>
                 <span class="role-indicator" aria-hidden="true"></span>
             </nav>
+            <div th:if="${successMessage}" th:text="${successMessage}" class="notice" role="status"></div>
             <div th:if="${errorMessage}" th:text="${errorMessage}" class="error" role="alert" id="login-error"></div>
             <form id="login-form" th:action="${loginRole == 'admin' ? '/admin/login' : '/employee/login'}" method="post">
                 <div class="field">
@@ -50,7 +52,25 @@
                 </div>
                 <button class="primary-button" type="submit">Sign in</button>
             </form>
+            <p class="account-switch" id="registration-entry" th:hidden="${loginRole == 'admin'}">New to CATS? <a th:href="@{/register}" href="/register" data-account-mode="register">Create an account</a></p>
             <p class="login-help" th:text="${loginRole == 'admin' ? 'Forgot your password? Contact your system maintainer.' : 'Forgot your password? Contact your administrator.'}">Forgot your password? Contact your administrator.</p>
+            </div>
+            <div id="register-panel" th:hidden="${accountMode != 'register'}">
+                <h2 id="register-title" tabindex="-1">Create an account</h2>
+                <p class="registration-intro">Your administrator will review your request before you can sign in.</p>
+                <div class="error" role="alert" th:if="${registrationError}" th:text="${registrationError}"></div>
+                <form id="registration-form" th:action="@{/register}" action="/register" method="post">
+                    <input type="hidden" name="registrationToken" th:value="${registrationToken}">
+                    <div class="registration-grid">
+                        <div class="field"><label for="register-name">Full name</label><input id="register-name" name="name" autocomplete="name" required maxlength="100" th:value="${registrationForm != null ? registrationForm.name : ''}"></div>
+                        <div class="field"><label for="register-username">Username</label><input id="register-username" name="username" autocomplete="username" required minlength="3" maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9._\-]{2,39}" th:value="${registrationForm != null ? registrationForm.username : ''}"><small class="field-hint">3–40 letters, numbers, dots, underscores or hyphens.</small></div>
+                        <div class="field"><label for="register-password">Password</label><input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="72"><small class="field-hint">At least 8 characters.</small></div>
+                        <div class="field"><label for="register-confirm">Confirm password</label><input id="register-confirm" name="confirmPassword" type="password" autocomplete="new-password" required minlength="8" maxlength="72"></div>
+                    </div>
+                    <button type="submit" class="primary-button">Submit registration</button>
+                </form>
+                <p class="account-switch">Already have an account? <a th:href="@{/employee/login}" href="/employee/login" data-account-mode="login">Sign in</a></p>
+            </div>
         </section>
     </main>
     <footer class="login-footer"><span>NUS-ISS staff training</span><span>Account access is provided by your administrator.</span></footer>

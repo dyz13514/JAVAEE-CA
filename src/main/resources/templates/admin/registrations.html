@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"><title>Registrations - CATS</title><th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('employees')}"></th:block>
+<main class="page-main">
+    <div class="page-heading"><div><h1>Employee Management</h1><p>Review new accounts and assign their training details.</p></div><a class="primary-button" th:href="@{/admin/employees/new}">Add Employee</a></div>
+    <nav class="section-tabs" aria-label="Employee management"><a th:href="@{/admin/employees}">Employees</a><a class="active" aria-current="page" th:href="@{/admin/registrations}">Pending registrations <span class="count-badge" th:text="${pendingRegistrationCount}">0</span></a></nav>
+    <div class="notice" role="status" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="error" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <p class="empty-state" th:if="${#lists.isEmpty(registrations)}">No registrations awaiting review.</p>
+    <article class="registration-request" th:each="registration : ${registrations}">
+        <div class="registration-heading"><svg th:replace="~{fragments/icons :: icon('account')}"></svg><div><h2 th:text="${registration.name}">Name</h2><p><span th:text="${registration.username}">Username</span> <span class="request-date" th:text="${#temporals.format(registration.submittedAt,'dd MMM yyyy, HH:mm')}"></span></p></div><span class="status status-APPLIED">Awaiting review</span></div>
+        <form class="registration-review" method="post" th:action="@{/admin/registrations/{id}/approve(id=${registration.id})}">
+            <input type="hidden" name="registrationToken" th:value="${registrationToken}">
+            <div class="field"><label th:for="${'designation-' + registration.id}">Designation</label><select name="designation" th:id="${'designation-' + registration.id}" required><option value="">Select designation</option><option th:each="designation : ${designations}" th:value="${designation}" th:text="${#strings.capitalize(#strings.toLowerCase(designation.name()))}"></option></select></div>
+            <div class="field"><label th:for="${'supervisor-' + registration.id}">Supervisor</label><select name="supervisorId" th:id="${'supervisor-' + registration.id}" required><option value="">Select supervisor</option><option th:each="manager : ${managers}" th:value="${manager.id}" th:text="${manager.name}"></option></select></div>
+            <button type="submit" class="primary-button"><svg th:replace="~{fragments/icons :: icon('review')}"></svg>Approve account</button>
+        </form>
+        <p class="field-hint">Approval creates a staff account and its annual training allowance.</p>
+        <details class="registration-reject"><summary>Reject request</summary><form method="post" th:action="@{/admin/registrations/{id}/reject(id=${registration.id})}"><input type="hidden" name="registrationToken" th:value="${registrationToken}"><label th:for="${'reason-' + registration.id}">Reason</label><textarea name="reason" th:id="${'reason-' + registration.id}" rows="2" required maxlength="300"></textarea><button type="submit" class="btn-outline-danger">Reject registration</button></form></details>
+    </article>
+    <details class="registration-history" th:unless="${#lists.isEmpty(registrationHistory)}"><summary>Recent reviews</summary><div class="table-scroll"><table><thead><tr><th>Name</th><th>Username</th><th>Reviewed</th><th>Status</th><th>Reason</th></tr></thead><tbody><tr th:each="review : ${registrationHistory}"><td th:text="${review.name}"></td><td th:text="${review.username}"></td><td th:text="${#temporals.format(review.reviewedAt,'dd MMM yyyy, HH:mm')}"></td><td><span th:replace="~{fragments/layout :: status(${review.status})}"></span></td><td th:text="${review.reviewReason != null ? review.reviewReason : 'Account created'}"></td></tr></tbody></table></div></details>
+</main>
+</body>
+</html>

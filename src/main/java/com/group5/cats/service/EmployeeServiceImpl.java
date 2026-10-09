@@ -14,6 +14,7 @@ import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.AnnualEntitlementRepository;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
+import com.group5.cats.repository.RegistrationRequestRepository;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -21,15 +22,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final CourseApplicationRepository courseApplicationRepository;
     private final AnnualEntitlementRepository annualEntitlementRepository;
+    private final RegistrationRequestRepository registrationRequestRepository;
 
     public EmployeeServiceImpl(
             EmployeeRepository employeeRepository,
             CourseApplicationRepository courseApplicationRepository,
-            AnnualEntitlementRepository annualEntitlementRepository) {
+            AnnualEntitlementRepository annualEntitlementRepository,
+            RegistrationRequestRepository registrationRequestRepository) {
 
         this.employeeRepository = employeeRepository;
         this.courseApplicationRepository = courseApplicationRepository;
         this.annualEntitlementRepository = annualEntitlementRepository;
+        this.registrationRequestRepository = registrationRequestRepository;
     }
 
     @Override
@@ -69,6 +73,10 @@ public class EmployeeServiceImpl implements EmployeeService {
             return "Role is required.";
         }
 
+        if (employeeForm.getPassword().getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            return "Password must be no more than 72 bytes.";
+        }
+
         if (employeeForm.getDesignation() == null) {
             return "Designation is required.";
         }
@@ -101,7 +109,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setUsername(username);
         employee.setName(employeeForm.getName().trim());
-        employee.setPassword(employeeForm.getPassword());
+        employee.setPassword(PasswordSupport.encode(employeeForm.getPassword()));
         employee.setRole(employeeForm.getRole());
         employee.setDesignation(employeeForm.getDesignation());
         employee.setSupervisor(supervisor);
@@ -114,6 +122,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public String updateEmployee(Long id, EmployeeForm employeeForm) {
+
+        if (employeeForm.getPassword() != null
+                && employeeForm.getPassword().getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            return "Password must be no more than 72 bytes.";
+        }
 
         Employee employee = employeeRepository.findById(id).orElse(null);
 
@@ -200,7 +213,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (employeeForm.getPassword() != null
                 && !employeeForm.getPassword().isBlank()) {
-            employee.setPassword(employeeForm.getPassword());
+            employee.setPassword(PasswordSupport.encode(employeeForm.getPassword()));
         }
 
         employeeRepository.save(employee);
@@ -243,6 +256,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             return "This employee has course application records and cannot be deleted.";
         }
 
+        registrationRequestRepository.detachReviewer(id);
         annualEntitlementRepository.deleteByEmployeeId(id);
 
         annualEntitlementRepository.flush();

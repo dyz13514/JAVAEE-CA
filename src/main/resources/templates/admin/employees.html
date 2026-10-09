@@ -10,6 +10,10 @@
 <main class="page-main admin-content">
 
 <div class="page-heading"><h1>Employee Management</h1><a class="primary-button" th:href="@{/admin/employees/new}">Add Employee</a></div>
+<nav class="section-tabs" aria-label="Employee management">
+    <a class="active" aria-current="page" th:href="@{/admin/employees}">Employees</a>
+    <a th:href="@{/admin/registrations}">Pending registrations <span class="count-badge" th:if="${pendingRegistrationCount != null}" th:text="${pendingRegistrationCount}">0</span></a>
+</nav>
 
 <p role="status" th:if="${successMessage != null}"
    th:text="${successMessage}">

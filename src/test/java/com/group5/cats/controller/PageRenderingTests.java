@@ -30,7 +30,7 @@ import com.group5.cats.model.*;
 /** Exercises real Thymeleaf fragments and bindings, including populated and empty states. */
 class PageRenderingTests {
     @ParameterizedTest
-    @ValueSource(strings = {"login", "employee-home",
+    @ValueSource(strings = {"login", "admin/registrations", "employee-home",
             "apply-course", "my-history", "application-detail", "manager-approvals", "entitlement",
             "admin/home", "admin/employees", "admin/employee-form", "admin/employee-edit",
             "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses",
@@ -122,6 +122,15 @@ class PageRenderingTests {
             if (template.equals("login") && state.equals("approved")) {
                 model.addAttribute("loginRole", "admin");
             }
+            RegistrationRequest registration = new RegistrationRequest();
+            registration.setId(7L);
+            registration.setName("New Staff");
+            registration.setUsername("new.staff");
+            registration.setSubmittedAt(java.time.LocalDateTime.now());
+            model.addAttribute("registrations", state.equals("empty") ? List.of() : List.of(registration));
+            model.addAttribute("registrationHistory", List.of());
+            model.addAttribute("pendingRegistrationCount", state.equals("empty") ? 0 : 1);
+            if (template.equals("login") && state.equals("empty")) model.addAttribute("accountMode", "register");
             if (!state.equals("empty")) {
                 model.addAttribute("allowance", allowance);
                 model.addAttribute("entitlement", allowance);
