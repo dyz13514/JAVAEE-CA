@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Training Calendar</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('calendar')}"></th:block>
+<main class="page-main calendar-page">
+    <div class="page-heading">
+        <div>
+            <h1>Training Calendar</h1>
+            <p>Approved training, one month at a time.</p>
+        </div>
+        <a th:href="@{${homeUrl}}">Back to Home</a>
+    </div>
+
+    <nav class="calendar-tabs" aria-label="Calendar views">
+        <a th:href="@{/training-calendar(year=${selectedYear},month=${selectedMonth})}"
+           th:attr="aria-current=${isOwnCalendar ? 'page' : null}">My Calendar</a>
+        <a th:if="${canViewOthers}" th:href="@{/training-calendar/employees}"
+           th:attr="aria-current=${!isOwnCalendar ? 'page' : null}">Others' Calendars</a>
+    </nav>
+
+    <div class="calendar-owner" th:if="${calendarEmployee != null}">
+        <div>
+            <h2 th:text="${isOwnCalendar ? 'My Calendar' : calendarEmployee.name + ' — Calendar'}">My Calendar</h2>
+            <p th:text="${calendarEmployee.name + ' · ' + calendarEmployee.username}"></p>
+        </div>
+        <a th:if="${canViewOthers and !isOwnCalendar}"
+           th:href="@{/training-calendar/employees}">Back to Employee List</a>
+    </div>
+
+    <form th:action="@{/training-calendar}" th:if="${calendarEmployee != null}"
+          method="get" class="calendar-filter">
+        <input type="hidden" name="employeeId" th:value="${calendarEmployee.id}">
+        <div>
+            <label for="year">Year</label>
+            <input type="number" id="year" name="year" th:value="${selectedYear}"
+                   min="1" max="9999" required>
+        </div>
+        <div>
+            <label for="month">Month</label>
+            <select id="month" name="month" required>
+                <option value="1" th:selected="${selectedMonth == 1}">January</option>
+                <option value="2" th:selected="${selectedMonth == 2}">February</option>
+                <option value="3" th:selected="${selectedMonth == 3}">March</option>
+                <option value="4" th:selected="${selectedMonth == 4}">April</option>
+                <option value="5" th:selected="${selectedMonth == 5}">May</option>
+                <option value="6" th:selected="${selectedMonth == 6}">June</option>
+                <option value="7" th:selected="${selectedMonth == 7}">July</option>
+                <option value="8" th:selected="${selectedMonth == 8}">August</option>
+                <option value="9" th:selected="${selectedMonth == 9}">September</option>
+                <option value="10" th:selected="${selectedMonth == 10}">October</option>
+                <option value="11" th:selected="${selectedMonth == 11}">November</option>
+                <option value="12" th:selected="${selectedMonth == 12}">December</option>
+            </select>
+        </div>
+        <button type="submit">View Calendar</button>
+    </form>
+
+    <p th:if="${errorMessage != null}" th:text="${errorMessage}"
+       class="notice error" role="alert"></p>
+
+    <section th:if="${errorMessage == null}" aria-labelledby="calendar-month">
+        <div class="section-heading calendar-month-heading">
+            <h2 id="calendar-month" th:text="${selectedYear + ' / ' + selectedMonth}">Selected Month</h2>
+            <span class="calendar-legend">Approved courses</span>
+        </div>
+        <div class="calendar-scroll" tabindex="0" role="region" aria-label="Monthly training calendar">
+            <table class="calendar-grid" aria-labelledby="calendar-month">
+                <thead>
+                <tr>
+                    <th scope="col">Monday</th>
+                    <th scope="col">Tuesday</th>
+                    <th scope="col">Wednesday</th>
+                    <th scope="col">Thursday</th>
+                    <th scope="col">Friday</th>
+                    <th scope="col">Saturday</th>
+                    <th scope="col">Sunday</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="week : ${calendarWeeks}">
+                    <td th:each="day : ${week}" th:class="${day == null ? 'empty-day' : 'calendar-day'}">
+                        <th:block th:if="${day != null}">
+                            <div class="day-number" th:text="${day}"></div>
+                            <div th:each="courseApplication : ${applicationsByDay.get(day)}" class="course">
+                                <p class="course-title" th:text="${courseApplication.courseTitle}">Course Title</p>
+                                <p class="course-category" th:switch="${courseApplication.category}">
+                                    <span th:case="'INTERNAL'">Internal Training</span>
+                                    <span th:case="'EXTERNAL'">External Course</span>
+                                    <span th:case="'CERTIFICATION'">Professional Certification</span>
+                                    <span th:case="*" th:text="${courseApplication.category}"></span>
+                                </p>
+                            </div>
+                        </th:block>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="calendar-empty" th:if="${#lists.isEmpty(applications)}" role="status">
+            No approved courses found for this employee in this month.
+        </p>
+        <p class="calendar-note">Each course is shown on every date within its course period.
+            Courses overlapping the selected month are included.</p>
+    </section>
+</main>
+</body>
+</html>

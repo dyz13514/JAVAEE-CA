@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Calendars</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('calendar')}"></th:block>
+<main class="page-main calendar-page">
+    <div class="page-heading">
+        <div>
+            <h1>Training Calendar</h1>
+            <p>Find an employee and view their approved training.</p>
+        </div>
+        <a th:href="@{${homeUrl}}">Back to Home</a>
+    </div>
+
+    <nav class="calendar-tabs" aria-label="Calendar views">
+        <a th:href="@{/training-calendar}">My Calendar</a>
+        <a th:if="${canViewOthers}" th:href="@{/training-calendar/employees}"
+           aria-current="page">Others' Calendars</a>
+    </nav>
+
+    <p th:if="${errorMessage != null}" th:text="${errorMessage}"
+       class="notice error" role="alert"></p>
+
+    <section th:if="${errorMessage == null}" aria-labelledby="calendar-employees-heading">
+        <div class="calendar-owner">
+            <div>
+                <h2 id="calendar-employees-heading"
+                    th:text="${currentUser.role.name() == 'ADMIN' ? 'All Employees' : 'My Direct Reports'}">Employees</h2>
+                <p>Select an employee's name to view their training calendar.</p>
+            </div>
+            <span class="calendar-count" th:text="${#lists.size(employees) + ' employees'}"></span>
+        </div>
+
+        <p class="calendar-empty" th:if="${#lists.isEmpty(employees)}">No employees found.</p>
+
+        <div class="table-scroll" th:if="${!#lists.isEmpty(employees)}"
+             tabindex="0" role="region" aria-label="Employee calendars">
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Designation</th>
+                    <th scope="col">Supervisor</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="employee : ${employees}">
+                    <td><a th:href="@{/training-calendar(employeeId=${employee.id})}"
+                           th:text="${employee.name}"></a></td>
+                    <td th:text="${employee.username}"></td>
+                    <td th:text="${employee.role.name() == 'REGULAR_STAFF' ? 'Staff' : #strings.capitalize(#strings.toLowerCase(employee.role.name()))}"></td>
+                    <td th:text="${employee.designation != null ? #strings.capitalize(#strings.toLowerCase(employee.designation.name())) : 'Not assigned'}"></td>
+                    <td th:text="${employee.supervisor != null ? employee.supervisor.name : 'Not assigned'}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -28,6 +28,7 @@
                 <a th:classappend="${active == 'courses' ? 'active' : ''}" th:attr="aria-current=${active == 'courses' ? 'page' : null}" th:href="@{/admin/common-courses}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Course catalogue</span></a>
                 <a th:classappend="${active == 'holidays' ? 'active' : ''}" th:attr="aria-current=${active == 'holidays' ? 'page' : null}" th:href="@{/admin/public-holidays}"><svg th:replace="~{fragments/icons :: icon('holidays')}"></svg><span>Public holidays</span></a>
             </th:block>
+            <a th:classappend="${active == 'calendar' ? 'active' : ''}" th:attr="aria-current=${active == 'calendar' ? 'page' : null}" th:href="@{/training-calendar}"><svg th:replace="~{fragments/icons :: icon('calendar')}"></svg><span>Training Calendar</span></a>
         </nav>
         <div class="sidebar-footer"><strong>NUS-ISS</strong><span>Staff training portal</span></div>
     </aside>
