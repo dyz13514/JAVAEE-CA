@@ -1,27 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Public Holiday Management</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
+<th:block th:replace="~{fragments/layout :: shell('holidays')}"></th:block>
+<main class="page-main admin-content">
 
-<h1>Public Holiday Management</h1>
+<div class="page-heading"><h1>Public Holiday Management</h1><a class="primary-button" th:href="@{/admin/public-holidays/new}">Add Public Holiday</a></div>
 
-<p th:if="${successMessage != null}"
+<p role="status" th:if="${successMessage != null}"
    th:text="${successMessage}">
 </p>
 
-<p th:if="${errorMessage != null}"
+<p role="alert" th:if="${errorMessage != null}"
    th:text="${errorMessage}">
-</p>
-
-<p>
-    <a th:href="@{/employee/home}">Back to Home</a>
-</p>
-
-<p>
-    <a th:href="@{/admin/public-holidays/new}">Add Public Holiday</a>
 </p>
 
 <form th:action="@{/admin/public-holidays}" method="get">
@@ -47,11 +42,11 @@
     <span th:text="${selectedYear}"></span>
 </p>
 
-<p th:if="${errorMessage == null and #lists.isEmpty(holidays)}">
+<p role="alert" th:if="${errorMessage == null and #lists.isEmpty(holidays)}">
     No public holidays found for this year.
 </p>
 
-<table border="1" th:if="${!#lists.isEmpty(holidays)}">
+<div class="table-scroll"><table th:if="${!#lists.isEmpty(holidays)}">
     <thead>
     <tr>
         <th>ID</th>
@@ -81,7 +76,8 @@
         </td>
     </tr>
     </tbody>
-</table>
+</table></div>
 
+</main>
 </body>
 </html>

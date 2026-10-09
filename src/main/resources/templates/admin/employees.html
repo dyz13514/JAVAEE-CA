@@ -1,34 +1,29 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Employee Management</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
+<th:block th:replace="~{fragments/layout :: shell('employees')}"></th:block>
+<main class="page-main admin-content">
 
-<h1>Employee Management</h1>
+<div class="page-heading"><h1>Employee Management</h1><a class="primary-button" th:href="@{/admin/employees/new}">Add Employee</a></div>
 
-<p th:if="${successMessage != null}"
+<p role="status" th:if="${successMessage != null}"
    th:text="${successMessage}">
 </p>
 
-<p th:if="${errorMessage != null}"
+<p role="alert" th:if="${errorMessage != null}"
    th:text="${errorMessage}">
-</p>
-
-<p>
-    <a th:href="@{/admin/home}">Back to Home</a>
-</p>
-
-<p>
-    <a th:href="@{/admin/employees/new}">Add Employee</a>
 </p>
 
 <p th:if="${#lists.isEmpty(employees)}">
     No employees found.
 </p>
 
-<table border="1" th:if="${!#lists.isEmpty(employees)}">
+<div class="table-scroll"><table th:if="${!#lists.isEmpty(employees)}">
     <thead>
     <tr>
         <th>ID</th>
@@ -46,8 +41,8 @@
         <td th:text="${employee.id}"></td>
         <td th:text="${employee.username}"></td>
         <td th:text="${employee.name}"></td>
-        <td th:text="${employee.role}"></td>
-        <td th:text="${employee.designation}"></td>
+        <td th:text="${employee.role.name() == 'REGULAR_STAFF' ? 'Staff' : #strings.capitalize(#strings.toLowerCase(employee.role.name()))}"></td>
+        <td th:text="${employee.designation != null ? #strings.capitalize(#strings.toLowerCase(employee.designation.name())) : 'Not assigned'}"></td>
 
         <td th:text="${employee.supervisor == null
                       ? 'Not assigned'
@@ -68,7 +63,8 @@
         </td>
     </tr>
     </tbody>
-</table>
+</table></div>
 
+</main>
 </body>
 </html>

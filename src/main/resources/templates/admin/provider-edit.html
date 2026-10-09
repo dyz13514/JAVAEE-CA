@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Edit Training Provider</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
+<th:block th:replace="~{fragments/layout :: shell('providers')}"></th:block>
+<main class="page-main admin-content">
 
 <h1>Edit Training Provider</h1>
 
-<p th:if="${errorMessage != null}"
+<p role="alert" th:if="${errorMessage != null}"
    th:text="${errorMessage}">
 </p>
 
@@ -35,5 +38,6 @@
 
 </form>
 
+</main>
 </body>
 </html>

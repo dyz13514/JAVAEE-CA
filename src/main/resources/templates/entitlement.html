@@ -2,129 +2,34 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Annual Entitlement - CATS</title>
-    <!-- Bootstrap 5 CSS & Icons -->
+
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      href="/vendor/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
-    <style>
-      :root {
-        --nus-blue: #003d7c;
-        --nus-orange: #ef7c00;
-        --bg-body: #f8fafc;
-      }
-      body {
-        background-color: var(--bg-body);
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        min-height: 100vh;
-      }
-      .navbar-custom {
-        background: #ffffff;
-        border-bottom: 1px solid #e2e8f0;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-      }
-      .filter-panel {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 1.25rem;
-        padding: 1.75rem;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-        margin-bottom: 1.75rem;
-      }
-      .metric-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.03);
-        transition:
-          transform 0.25s ease,
-          box-shadow 0.25s ease;
-        position: relative;
-        overflow: hidden;
-      }
-      .metric-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 61, 124, 0.08);
-      }
-      .metric-card.days {
-        border-top: 4px solid var(--nus-blue);
-      }
-      .metric-card.budget {
-        border-top: 4px solid var(--nus-orange);
-      }
-      .metric-title {
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        font-weight: 700;
-        color: #64748b;
-        letter-spacing: 0.5px;
-      }
-      .metric-val {
-        font-size: 1.85rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0.25rem 0;
-      }
-      .admin-zone {
-        background: #fdfbf7;
-        border: 1.5px dashed #fbd38d;
-        border-radius: 1.25rem;
-        padding: 1.75rem;
-        margin-top: 2rem;
-      }
-    </style>
-  </head>
+
+  <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
   <body>
-    <!-- Top Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-3">
-      <div class="container">
-        <a
-          class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2"
-          th:href="@{/employee/home}"
-        >
-          <i class="bi bi-mortarboard-fill text-warning"></i> NUS-ISS CATS
-        </a>
-        <div class="d-flex align-items-center gap-3">
-          <span class="text-secondary small">
-            Signed in as: <strong th:text="${currentUser.name}">User</strong>
-            <span class="badge bg-secondary ms-1" th:text="${currentUser.role}"
-              >ROLE</span
-            >
-          </span>
-          <a
-            th:href="@{/employee/home}"
-            class="btn btn-outline-secondary btn-sm rounded-pill px-3"
-          >
-            <i class="bi bi-house-door"></i> Dashboard
-          </a>
-        </div>
-      </div>
-    </nav>
+<th:block th:replace="~{fragments/layout :: shell('entitlement')}"></th:block>
+<main class="page-main">
 
     <div class="container py-4">
-      <!-- Page Heading -->
+
       <div class="mb-4">
-        <h3 class="fw-bold text-dark mb-1">
-          Annual Training Entitlement &amp; Budget
-        </h3>
+        <h1 class="fw-bold text-dark mb-1">
+          Annual entitlement
+        </h1>
         <p class="text-secondary small mb-0">
-          Query annual training day limits and budget allocations with instant
-          REST asynchronous data exchange.
+          View training days and budget for the selected year.
         </p>
       </div>
 
-      <!-- Filter & Search Toolbar -->
       <div class="filter-panel">
         <div class="row g-3 align-items-end mb-3 pb-3 border-bottom">
-          <!-- Search by ID -->
+
           <div class="col-md-5">
             <form
               th:action="@{/entitlements/search}"
@@ -133,7 +38,7 @@
             >
               <input
                 type="number"
-                name="queryEmployeeId"
+                name="queryEmployeeId" aria-label="Search by employee ID"
                 class="form-control form-control-sm"
                 placeholder="Search by Employee ID..."
                 min="1"
@@ -143,11 +48,11 @@
                 type="submit"
                 class="btn btn-outline-primary btn-sm rounded-pill px-3 text-nowrap"
               >
-                Search ID
+                Search
               </button>
             </form>
           </div>
-          <!-- Search by Name -->
+
           <div class="col-md-5">
             <form
               th:action="@{/entitlements/search}"
@@ -156,7 +61,7 @@
             >
               <input
                 type="text"
-                name="queryEmployeeName"
+                name="queryEmployeeName" aria-label="Search by employee name"
                 class="form-control form-control-sm"
                 placeholder="Search by Employee Name..."
                 required
@@ -165,22 +70,21 @@
                 type="submit"
                 class="btn btn-outline-primary btn-sm rounded-pill px-3 text-nowrap"
               >
-                Search Name
+                Search
               </button>
             </form>
           </div>
-          <!-- Reset Filter -->
+
           <div class="col-md-2 text-md-end">
             <a
               th:href="@{/entitlements}"
               class="btn btn-link btn-sm text-secondary text-decoration-none"
             >
-              <i class="bi bi-arrow-clockwise"></i> Show All Accessible Staff
+               Reset search
             </a>
           </div>
         </div>
 
-        <!-- Main Query Form (Async REST Intercepted) -->
         <form
           id="entitlementQueryForm"
           th:action="@{/entitlements}"
@@ -221,30 +125,27 @@
               type="submit"
               class="btn btn-primary w-100 rounded-pill fw-semibold"
             >
-              <i class="bi bi-search me-1"></i> View Entitlement
+               View allowance
             </button>
           </div>
         </form>
 
         <div
-          id="queryMessage"
+          id="queryMessage" role="status" aria-live="polite"
           class="mt-3 text-danger small fw-semibold"
           th:text="${message}"
         ></div>
       </div>
 
-      <!-- Metric KPI Cards (Retains original DOM IDs for REST JS rendering) -->
       <div
         id="entitlementResult"
         th:style="${entitlement == null ? 'display:none;' : ''}"
       >
-        <!-- Employee Info Strip -->
+
         <div
           class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 mb-3 shadow-sm"
         >
-          <div class="bg-primary-subtle text-primary p-2 rounded-circle">
-            <i class="bi bi-person-badge-fill fs-4"></i>
-          </div>
+
           <div>
             <h5 class="fw-bold mb-0">
               <span
@@ -257,7 +158,7 @@
                 id="resultEmployeeId"
                 th:text="${entitlement == null ? '' : entitlement.employeeId}"
               ></span>
-              &bull; Fiscal Year:
+              &bull; Year:
               <span
                 id="resultYear"
                 th:text="${entitlement == null ? '' : entitlement.entitlementYear}"
@@ -266,13 +167,12 @@
           </div>
         </div>
 
-        <!-- KPI Cards Grid -->
         <div class="row g-3 mb-3">
-          <!-- Training Days -->
+
           <div class="col-md-4">
             <div class="metric-card days">
               <div class="metric-title">
-                <i class="bi bi-calendar-check text-primary"></i> Training Days
+                 Training Days
                 Limit
               </div>
               <div
@@ -282,15 +182,13 @@
               >
                 0
               </div>
-              <div class="text-secondary small">
-                Standard annual quota based on designation
-              </div>
+
             </div>
           </div>
           <div class="col-md-4">
             <div class="metric-card days">
               <div class="metric-title">
-                <i class="bi bi-hourglass-split text-warning"></i> Occupied
+                 Occupied
                 Training Days
               </div>
               <div
@@ -300,15 +198,13 @@
               >
                 0
               </div>
-              <div class="text-secondary small">
-                Consumed by applied, approved or completed courses
-              </div>
+
             </div>
           </div>
           <div class="col-md-4">
             <div class="metric-card days">
               <div class="metric-title">
-                <i class="bi bi-battery-charging text-success"></i> Remaining
+                 Remaining
                 Training Days
               </div>
               <div
@@ -318,79 +214,67 @@
               >
                 0
               </div>
-              <div class="text-secondary small">
-                Available training day balance for the year
-              </div>
+
             </div>
           </div>
 
-          <!-- Training Budget -->
           <div class="col-md-4">
             <div class="metric-card budget">
               <div class="metric-title">
-                <i class="bi bi-wallet2 text-danger"></i> Training Budget Limit
+                 Training Budget Limit
               </div>
               <div class="metric-val">
-                SG$
+                S$
                 <span
                   id="resultBudget"
                   th:text="${entitlement == null ? '' : entitlement.trainingBudget}"
                   >0</span
                 >
               </div>
-              <div class="text-secondary small">
-                Annual spending limit for fee-paying courses
-              </div>
+
             </div>
           </div>
           <div class="col-md-4">
             <div class="metric-card budget">
               <div class="metric-title">
-                <i class="bi bi-credit-card text-secondary"></i> Occupied Budget
+                 Occupied Budget
               </div>
               <div class="metric-val text-secondary">
-                SG$
+                S$
                 <span id="resultOccupiedBudget" th:text="${occupiedBudget}"
                   >0</span
                 >
               </div>
-              <div class="text-secondary small">
-                Occupied by External and Certification courses
-              </div>
+
             </div>
           </div>
           <div class="col-md-4">
             <div class="metric-card budget">
               <div class="metric-title">
-                <i class="bi bi-piggy-bank text-success"></i> Remaining Budget
+                 Remaining Budget
               </div>
               <div class="metric-val text-success">
-                SG$
+                S$
                 <span id="resultRemainingBudget" th:text="${remainingBudget}"
                   >0</span
                 >
               </div>
-              <div class="text-secondary small">
-                Remaining training expenditure allowance
-              </div>
+
             </div>
           </div>
         </div>
 
         <div class="alert alert-light border small text-secondary">
-          <i class="bi bi-info-circle-fill text-primary me-1"></i>
-          <strong>Policy Notice:</strong> Course applications in
-          <code>APPLIED</code>, <code>UPDATED</code>, <code>APPROVED</code>, or
-          <code>COMPLETED</code> status occupy annual entitlement.
+
+          Pending, approved and completed courses count towards your annual allowance.
         </div>
       </div>
 
-      <!-- Administrator Maintenance Console -->
       <div th:if="${canEdit}" class="admin-zone">
         <div class="d-flex align-items-center gap-2 mb-3">
-          <i class="bi bi-gear-fill text-warning fs-4"></i>
+
           <h5 class="fw-bold text-dark mb-0">
-            Administrator Entitlement Console
+            Manage allowance
           </h5>
         </div>
 
@@ -400,13 +284,11 @@
           class="mb-4"
         >
           <p class="small text-secondary">
-            Create All Default Entitlements will create default entitlements for
-            all staff missing a record for the current year. Existing records
-            are kept.
+            Create this year’s allowances for staff who do not yet have a record.
           </p>
 
           <button type="submit" class="btn btn-primary btn-sm">
-            Create All Default Entitlements.
+            Create missing allowances
           </button>
         </form>
 
@@ -457,7 +339,7 @@
           </div>
           <div class="col-md-3">
             <label class="form-label small fw-semibold"
-              >Training Budget (SG) <span class="text-danger">*</span></label
+              >Training budget (S$) <span class="text-danger">*</span></label
             >
             <input
               type="number"
@@ -472,7 +354,7 @@
             class="col-12 d-flex justify-content-between align-items-center pt-2"
           >
             <small class="text-muted"
-              ><i class="bi bi-info-circle"></i> For deletion, only Employee ID
+              > For deletion, only Employee ID
               and Entitlement Year are required.</small
             >
             <div class="d-flex gap-2">
@@ -487,13 +369,13 @@
                   );
                 "
               >
-                <i class="bi bi-trash"></i> Delete Entitlement
+                 Delete Entitlement
               </button>
               <button
                 type="submit"
                 class="btn btn-warning btn-sm rounded-pill px-4 fw-semibold text-dark"
               >
-                <i class="bi bi-save2"></i> Save Entitlement
+                 Save Entitlement
               </button>
             </div>
           </div>
@@ -507,7 +389,6 @@
       ></div>
     </div>
 
-    <!-- Asynchronous REST Client API Script -->
     <script>
       const queryForm = document.getElementById("entitlementQueryForm");
       const queryMessage = document.getElementById("queryMessage");
@@ -526,7 +407,7 @@
         queryButton.disabled = true;
         queryMessage.className = "mt-3 text-primary small fw-semibold";
         queryMessage.textContent =
-          "Calculating entitlement quotas in real time...";
+          "Loading allowance…";
         resultArea.style.display = "none";
 
         const saveForm = document.getElementById("entitlementSaveForm");
@@ -548,7 +429,7 @@
           if (!response.ok) {
             queryMessage.className = "mt-3 text-danger small fw-semibold";
             queryMessage.textContent =
-              data.message || "Query failed. HTTP status: " + response.status;
+              data.message || "Unable to load this allowance. Status: " + response.status;
             return;
           }
 
@@ -577,12 +458,13 @@
         } catch (error) {
           queryMessage.className = "mt-3 text-danger small fw-semibold";
           queryMessage.textContent =
-            "Unable to load entitlement details. Please verify service connectivity.";
+            "Unable to load your allowance. Please try again.";
         } finally {
           queryButton.disabled = false;
         }
       });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    <script src="/vendor/bootstrap.bundle.min.js"></script>
+  </main>
+</body>
 </html>

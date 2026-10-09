@@ -1,8 +1,18 @@
 <!DOCTYPE html>
-<html>
-<head><title>404 - Not Found</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Application not found - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}">
+</th:block>
+</head>
 <body>
-    <h1>404 - Course application not found</h1>
-    <a href="/employee/history">Back to My History</a>
+<th:block th:replace="~{fragments/layout :: shell('history')}">
+</th:block>
+<main class="page-main">
+<h1>Application not found.</h1>
+<p>This course application is no longer available.</p>
+<a class="primary-button" th:href="@{/employee/history}">My applications</a>
+</main>
 </body>
 </html>

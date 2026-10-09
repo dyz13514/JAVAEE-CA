@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add Commonly Attended Course</title>
+    <title>Add Course</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
+<th:block th:replace="~{fragments/layout :: shell('courses')}"></th:block>
+<main class="page-main admin-content">
 
-<h1>Add Commonly Attended Course</h1>
+<h1>Add Course</h1>
 
-<p th:if="${errorMessage != null}"
+<p role="alert" th:if="${errorMessage != null}"
    th:text="${errorMessage}">
 </p>
 
 <p>
     <a th:href="@{/admin/common-courses}">
-        Back to Commonly Attended Course Catalogue
+        Back to Course Catalogue
     </a>
 </p>
 
@@ -40,9 +43,9 @@
         <label for="category">Category:</label>
         <select id="category" th:field="*{category}" required>
             <option value="">-- Select Category --</option>
-            <option value="INTERNAL">INTERNAL</option>
-            <option value="EXTERNAL">EXTERNAL</option>
-            <option value="CERTIFICATION">CERTIFICATION</option>
+            <option value="INTERNAL">Internal training</option>
+            <option value="EXTERNAL">External course</option>
+            <option value="CERTIFICATION">Certification</option>
         </select>
     </p>
 
@@ -73,11 +76,12 @@
     <p>
         <button type="submit"
                 th:disabled="${#lists.isEmpty(providers)}">
-            Save Commonly Attended Course
+            Save Course
         </button>
     </p>
 
 </form>
 
+</main>
 </body>
 </html>

@@ -1,94 +1,102 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - CATS</title>
-    <style>
-        * { box-sizing: border-box; }
-        :root { --blue: #0039a6; --border: #e1e5eb; --muted: #697586; }
-        body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #253044; background: #f6f7f9; }
-        a { color: var(--blue); text-decoration: none; }
-        a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
-        .topbar { position: fixed; inset: 0 0 auto; z-index: 2; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; background: #fff; border-bottom: 1px solid var(--border); }
-        .brand { font-size: 20px; font-weight: 700; }
-        .account { display: flex; align-items: center; gap: 24px; font-size: 14px; }
-        .account span { color: var(--muted); }
-        .sidebar { position: fixed; top: 60px; bottom: 0; left: 0; width: 224px; padding: 28px 16px; border-right: 1px solid var(--border); background: #fff; }
-        .nav-title { margin: 0 12px 12px; color: var(--muted); font-size: 12px; }
-        .sidebar a { display: block; padding: 12px; margin-bottom: 4px; border-radius: 4px; color: #465164; font-size: 14px; }
-        .sidebar a:hover { background: #f3f5f8; }
-        .sidebar .active { background: #edf2fc; color: var(--blue); font-weight: 600; }
-        .content { margin: 60px 0 0 224px; padding: 32px; }
-        .workspace { max-width: 1080px; margin: 0 auto; }
-        h1 { margin: 0 0 8px; font-size: 28px; font-weight: 600; }
-        .welcome { margin: 0 0 28px; font-size: 15px; color: var(--muted); }
-        h2 { margin: 0 0 16px; font-size: 18px; font-weight: 600; }
-        .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 28px; }
-        .action { display: block; padding: 22px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: #253044; }
-        .action:hover { border-color: #9baecf; }
-        .action strong { display: block; margin-bottom: 10px; color: var(--blue); font-size: 16px; font-weight: 600; }
-        .action p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
-        .policies { padding: 24px; background: #fff; border: 1px solid var(--border); border-radius: 6px; }
-        .policies ul { margin: 0; padding-left: 20px; color: #596577; font-size: 14px; line-height: 1.6; }
-        .policies li + li { margin-top: 8px; }
-        .notice { padding: 12px 16px; margin-bottom: 20px; border: 1px solid #b9d5c2; border-radius: 4px; background: #f0f8f2; font-size: 14px; }
-        .notice.error { border-color: #e8b5b5; background: #fff5f5; color: #9b2727; }
-        @media (max-height: 700px) and (min-width: 761px) { .content { padding: 20px 28px; } .welcome { margin-bottom: 20px; } .actions { margin-bottom: 20px; } .action, .policies { padding: 18px; } }
-        @media (max-width: 1000px) { .sidebar { width: 190px; } .content { margin-left: 190px; padding: 24px; } .actions { grid-template-columns: 1fr; gap: 10px; } .action { padding: 16px; } }
-        @media (max-width: 760px) { .topbar { position: static; padding: 0 16px; } .account { gap: 12px; font-size: 12px; } .sidebar { position: static; width: auto; padding: 12px; border-right: 0; border-bottom: 1px solid var(--border); } .sidebar nav { display: flex; flex-wrap: wrap; gap: 4px; } .nav-title { display: none; } .sidebar a { margin: 0; padding: 10px; } .content { margin: 0; padding: 24px 16px; } }
-    </style>
+<meta charset="UTF-8">
+<title>Overview - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}">
+</th:block>
 </head>
 <body>
-    <header class="topbar">
-        <a class="brand" th:href="@{/employee/home}">CATS</a>
-        <div class="account">
-            <span th:text="${session.loggedInUser.name}">User Name</span>
-            <a th:href="@{/employee/login}">Sign Out</a>
-        </div>
-    </header>
-    <aside class="sidebar">
-        <p class="nav-title">NAVIGATION</p>
-        <nav aria-label="Main navigation">
-            <a class="active" th:href="@{/employee/home}" aria-current="page">Home</a>
-            <a th:if="${session.loggedInUser.role.name() == 'REGULAR_STAFF'}" th:href="@{/employee/apply}">Apply for Course</a>
-            <a th:if="${session.loggedInUser.role.name() != 'ADMIN'}" th:href="@{/employee/history}">My Applications</a>
-            <a th:if="${session.loggedInUser.role.name() == 'MANAGER'}" th:href="@{/manager/approvals}">Team Applications</a>
-            <a th:href="@{/entitlements}" th:text="${session.loggedInUser.role.name() == 'ADMIN' ? 'Manage Entitlements' : 'Annual Entitlements'}">Annual Entitlements</a>
-        </nav>
-    </aside>
-    <main class="content">
-        <div class="workspace">
-            <div th:if="${successMessage}" th:text="${successMessage}" class="notice" role="status">Action succeeded.</div>
-            <div th:if="${errorMessage}" th:text="${errorMessage}" class="notice error" role="alert">Action failed.</div>
-            <h1>Home</h1>
-            <p class="welcome" th:text="'Welcome back, ' + ${session.loggedInUser.name} + '.'">Welcome back.</p>
-            <h2>Quick Access</h2>
-            <div class="actions">
-                <a th:if="${session.loggedInUser.role.name() == 'REGULAR_STAFF'}" th:href="@{/employee/apply}" class="action">
-                    <strong>Apply for Course</strong><p>Submit a new training application.</p>
-                </a>
-                <a th:if="${session.loggedInUser.role.name() == 'MANAGER'}" th:href="@{/manager/approvals}" class="action">
-                    <strong>Team Applications</strong><p>Review your team's course applications.</p>
-                </a>
-                <a th:if="${session.loggedInUser.role.name() != 'ADMIN'}" th:href="@{/employee/history}" class="action">
-                    <strong>My Applications</strong><p>View your course history and application status.</p>
-                </a>
-                <a th:href="@{/entitlements}" class="action">
-                    <strong th:text="${session.loggedInUser.role.name() == 'ADMIN' ? 'Manage Entitlements' : 'Annual Entitlements'}">Annual Entitlements</strong>
-                    <p th:text="${session.loggedInUser.role.name() == 'ADMIN' ? 'Set training day limits and budgets for staff.' : 'Check training days and available budget.'}">Check training days and available budget.</p>
-                </a>
-            </div>
-            <section class="policies" aria-labelledby="policy-title">
-                <h2 id="policy-title">Policy Guidelines</h2>
-                <ul>
-                    <li><strong>Working days:</strong> Course start and end dates must be working days (Monday to Friday).</li>
-                    <li><strong>Public holidays:</strong> Excluded from training day calculations.</li>
-                    <li><strong>Half-day sessions:</strong> Available for Internal Training only.</li>
-                    <li><strong>Budget:</strong> External courses and certifications are subject to your annual allowance.</li>
-                </ul>
-            </section>
-        </div>
-    </main>
+<th:block th:replace="~{fragments/layout :: shell('home')}">
+</th:block>
+<main class="page-main">
+<div th:if="${successMessage}" th:text="${successMessage}" class="notice" role="status">
+</div>
+<div th:if="${errorMessage}" th:text="${errorMessage}" class="notice error" role="alert">
+</div>
+<div class="page-heading">
+<div>
+<h1>Your training, in view.</h1>
+<p>Your annual allowance and course applications.</p>
+</div>
+<a th:if="${session.loggedInUser.role.name() == 'REGULAR_STAFF'}" th:href="@{/employee/apply}" class="primary-button">Apply for course</a>
+<a th:if="${session.loggedInUser.role.name() == 'MANAGER'}" th:href="@{/manager/approvals}" class="primary-button">Review team applications</a>
+</div>
+<section aria-labelledby="allowance-title">
+<div class="section-heading">
+<h2 id="allowance-title">Annual allowance <span class="year" th:text="${entitlementYear}">
+</span>
+</h2>
+<a class="text-link" th:href="@{/entitlements}">View allowance</a>
+</div>
+<div class="allowances" th:if="${allowance != null}">
+<div>
+<p class="allowance-label">Training days remaining</p>
+<div class="allowance-value">
+<strong th:text="${#numbers.formatDecimal(allowance.remainingDays,1,1)}">
+</strong>
+<span th:text="${'of ' + #numbers.formatDecimal(allowance.trainingDaysLimit,1,1) + ' days'}">
+</span>
+</div>
+<div class="allowance-meter" role="img" data-label="Training days" th:attr="data-limit=${allowance.trainingDaysLimit},data-remaining=${allowance.remainingDays}">
+</div>
+<small th:text="${#numbers.formatDecimal(allowance.occupiedDays,1,1) + ' days occupied'}">
+</small>
+</div>
+<div>
+<p class="allowance-label">Budget remaining</p>
+<div class="allowance-value">
+<strong th:text="${'S$ ' + #numbers.formatDecimal(allowance.remainingBudget,1,'COMMA',2,'POINT')}">
+</strong>
+<span th:text="${'of S$ ' + #numbers.formatDecimal(allowance.trainingBudget,1,'COMMA',2,'POINT')}">
+</span>
+</div>
+<div class="allowance-meter" role="img" data-label="Training budget" th:attr="data-limit=${allowance.trainingBudget},data-remaining=${allowance.remainingBudget}">
+</div>
+<small th:text="${'S$ ' + #numbers.formatDecimal(allowance.occupiedBudget,1,'COMMA',2,'POINT') + ' occupied'}">
+</small>
+</div>
+</div>
+<p th:unless="${allowance != null}" class="empty-state">Your allowance has not been set for this year. Contact your administrator.</p>
+</section>
+<section aria-labelledby="applications-title">
+<div class="section-heading">
+<h2 id="applications-title">Recent applications</h2>
+<a th:href="@{/employee/history}" class="text-link">View all applications</a>
+</div>
+<div class="table-scroll" th:unless="${#lists.isEmpty(recentApplications)}">
+<table>
+<thead>
+<tr>
+<th>Course</th>
+<th>Period</th>
+<th class="numeric">Fee</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr th:each="app : ${recentApplications}">
+<td>
+<a th:href="@{/employee/history/{id}(id=${app.id})}" th:text="${app.courseTitle}">
+</a>
+<small th:text="${app.category == 'INTERNAL' ? 'Internal training' : (app.category == 'EXTERNAL' ? 'External course' : 'Certification')}">
+</small>
+</td>
+<td th:text="${#temporals.format(app.fromDate,'dd MMM yyyy') + ' – ' + #temporals.format(app.toDate,'dd MMM yyyy')}">
+</td>
+<td class="numeric" th:text="${'S$ ' + #numbers.formatDecimal(app.fee,1,'COMMA',2,'POINT')}">
+</td>
+<td>
+<span th:replace="~{fragments/layout :: status(${app.status})}">
+</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="empty-state" th:if="${#lists.isEmpty(recentApplications)}">No course applications this year.</p>
+</section>
+<p class="footnote">Weekends and public holidays are excluded from training day calculations.</p>
+</main>
 </body>
 </html>

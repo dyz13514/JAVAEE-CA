@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <th:block th:fragment="assets">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" th:href="@{/css/cats.css}" href="/css/cats.css">
+        <script defer th:src="@{/js/cats.js}" src="/js/cats.js"></script>
+    </th:block>
+</head>
+<body>
+<th:block th:fragment="shell(active)" th:with="user=${session.loggedInUser}, admin=${user != null and user.role.name() == 'ADMIN'}">
+    <header class="app-header">
+        <a class="wordmark" th:href="${admin ? '/admin/home' : '/employee/home'}">CATS</a>
+        <div class="account"><span th:if="${user != null}" th:text="${user.name}"></span><a th:href="${admin ? '/admin/login' : '/employee/login'}">Sign out</a></div>
+    </header>
+    <aside class="app-sidebar">
+        <nav aria-label="Main navigation">
+            <a th:classappend="${active == 'home' ? 'active' : ''}" th:attr="aria-current=${active == 'home' ? 'page' : null}" th:href="${admin ? '/admin/home' : '/employee/home'}">Overview</a>
+            <th:block th:unless="${admin}">
+                <a th:if="${user != null and user.role.name() == 'REGULAR_STAFF'}" th:classappend="${active == 'apply' ? 'active' : ''}" th:attr="aria-current=${active == 'apply' ? 'page' : null}" th:href="@{/employee/apply}">Apply for course</a>
+                <a th:classappend="${active == 'history' ? 'active' : ''}" th:attr="aria-current=${active == 'history' ? 'page' : null}" th:href="@{/employee/history}">My applications</a>
+                <a th:if="${user != null and user.role.name() == 'MANAGER'}" th:classappend="${active == 'approvals' ? 'active' : ''}" th:attr="aria-current=${active == 'approvals' ? 'page' : null}" th:href="@{/manager/approvals}">Team applications</a>
+            </th:block>
+            <a th:if="${admin}" th:classappend="${active == 'employees' ? 'active' : ''}" th:attr="aria-current=${active == 'employees' ? 'page' : null}" th:href="@{/admin/employees}">Employees</a>
+            <a th:classappend="${active == 'entitlement' ? 'active' : ''}" th:attr="aria-current=${active == 'entitlement' ? 'page' : null}" th:href="@{/entitlements}" th:text="${admin ? 'Training allowances' : 'Annual entitlement'}">Annual entitlement</a>
+            <th:block th:if="${admin}">
+                <a th:classappend="${active == 'providers' ? 'active' : ''}" th:attr="aria-current=${active == 'providers' ? 'page' : null}" th:href="@{/admin/providers}">Training providers</a>
+                <a th:classappend="${active == 'courses' ? 'active' : ''}" th:attr="aria-current=${active == 'courses' ? 'page' : null}" th:href="@{/admin/common-courses}">Course catalogue</a>
+                <a th:classappend="${active == 'holidays' ? 'active' : ''}" th:attr="aria-current=${active == 'holidays' ? 'page' : null}" th:href="@{/admin/public-holidays}">Public holidays</a>
+            </th:block>
+        </nav>
+        <div class="sidebar-footer"><strong>NUS-ISS</strong><span>Staff training portal</span></div>
+    </aside>
+</th:block>
+<span th:fragment="status(value)" class="status" th:classappend="${'status-' + value}" th:text="${value == 'APPLIED' ? 'Awaiting review' : (value == 'DELETED' ? 'Withdrawn' : #strings.capitalize(#strings.toLowerCase(value)))}">Awaiting review</span>
+</body>
+</html>

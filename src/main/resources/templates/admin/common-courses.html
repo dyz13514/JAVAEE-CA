@@ -1,44 +1,39 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Commonly Attended Course Catalogue</title>
+    <title>Course Catalogue</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
+<th:block th:replace="~{fragments/layout :: shell('courses')}"></th:block>
+<main class="page-main admin-content">
 
-<h1>Commonly Attended Course Catalogue</h1>
+<div class="page-heading"><h1>Course Catalogue</h1><a class="primary-button" th:href="@{/admin/common-courses/new}">
+        Add Course
+    </a></div>
 
 <p>
     Commonly attended courses selected and maintained by administrators.
 </p>
 
-<p th:if="${successMessage != null}"
+<p role="status" th:if="${successMessage != null}"
    th:text="${successMessage}">
 </p>
 
-<p th:if="${errorMessage != null}"
+<p role="alert" th:if="${errorMessage != null}"
    th:text="${errorMessage}">
-</p>
-
-<p>
-    <a th:href="@{/employee/home}">Back to Home</a>
 </p>
 
 <p>
     <a th:href="@{/admin/providers}">Training Provider Management</a>
 </p>
 
-<p>
-    <a th:href="@{/admin/common-courses/new}">
-        Add Commonly Attended Course
-    </a>
-</p>
-
 <p th:if="${#lists.isEmpty(commonCourses)}">
     No commonly attended courses found.
 </p>
 
-<table border="1" th:if="${!#lists.isEmpty(commonCourses)}">
+<div class="table-scroll"><table th:if="${!#lists.isEmpty(commonCourses)}">
     <thead>
     <tr>
         <th>ID</th>
@@ -54,7 +49,7 @@
     <tr th:each="commonCourse : ${commonCourses}">
         <td th:text="${commonCourse.id}"></td>
         <td th:text="${commonCourse.title}"></td>
-        <td th:text="${commonCourse.category}"></td>
+        <td th:text="${commonCourse.category == 'INTERNAL' ? 'Internal training' : (commonCourse.category == 'EXTERNAL' ? 'External course' : 'Certification')}"></td>
         <td th:text="${commonCourse.provider.name}"></td>
         <td th:text="${commonCourse.fee}"></td>
 
@@ -72,7 +67,8 @@
         </td>
     </tr>
     </tbody>
-</table>
+</table></div>
 
+</main>
 </body>
 </html>

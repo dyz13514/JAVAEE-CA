@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Add Employee</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
+<th:block th:replace="~{fragments/layout :: shell('employees')}"></th:block>
+<main class="page-main admin-content">
 
 <h1>Add Employee</h1>
 
-<p th:if="${errorMessage != null}"
+<p role="alert" th:if="${errorMessage != null}"
    th:text="${errorMessage}">
 </p>
 
@@ -49,7 +52,7 @@
         <select id="role" th:field="*{role}" required>
             <option th:each="role : ${roles}"
                     th:value="${role}"
-                    th:text="${role}">
+                    th:text="${role.name() == 'REGULAR_STAFF' ? 'Staff' : #strings.capitalize(#strings.toLowerCase(role.name()))}">
             </option>
         </select>
     </p>
@@ -61,7 +64,7 @@
 
             <option th:each="designation : ${designations}"
                     th:value="${designation}"
-                    th:text="${designation}">
+                    th:text="${#strings.capitalize(#strings.toLowerCase(designation.name()))}">
             </option>
         </select>
     </p>
@@ -84,5 +87,6 @@
 
 </form>
 
+</main>
 </body>
 </html>

@@ -1,90 +1,34 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to CATS</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; }
-        .login-layout { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); width: 100%; height: 100vh; height: 100dvh; }
-        .login-layout::before { content: ""; position: absolute; left: 50%; top: 24px; bottom: 24px; width: 1px; background: #d0d0d0; pointer-events: none; }
-        .artwork { margin: 0; min-height: 0; padding: 0 clamp(16px, 3vw, 60px); }
-        .artwork img { display: block; width: 100%; height: 100%; object-fit: contain; }
-        .login-panel { position: relative; min-width: 0; min-height: 0; overflow: hidden; text-align: center; }
-        .panel-content { position: absolute; top: clamp(16px, 3vh, 32px); left: clamp(16px, 2.1vw, 40px); right: clamp(16px, 2.1vw, 40px); transform-origin: top center; }
-        h1 { margin: 0; color: #0039a6; font-size: clamp(22px, 2vw, 36px); line-height: 1.2; font-weight: 700; }
-        .password-heading { width: min(100%, 320px); margin: clamp(20px, 4vh, 40px) auto 16px; color: #808080; font-size: 16px; line-height: 1.2; text-align: left; }
-        .login-options { display: flex; flex-direction: column; gap: clamp(16px, 3vh, 28px); width: min(100%, 320px); margin: 0 auto; }
-        .login-link { display: flex; justify-content: center; align-items: center; min-height: 44px; padding: 6px 12px; border: 2px solid #0039a6; border-radius: 9px; color: #0039a6; background: #fff; font-size: clamp(20px, 1.5vw, 26px); line-height: 1.2; text-decoration: none; transition: background-color .15s, color .15s; }
-        .login-link.primary { color: #fff; background: #0039a6; }
-        .login-link:hover { background: #edf3ff; }
-        .login-link.primary:hover { background: #002b80; border-color: #002b80; }
-        .login-link:focus-visible { outline: 3px solid #f0a000; outline-offset: 5px; }
-        .information { margin-top: calc(clamp(48px, 9vh, 96px) + var(--information-offset, 0px)); text-align: left; }
-        .information h2 { margin: 0 0 20px; color: #0039a6; font-size: clamp(20px, 1.5vw, 28px); line-height: 1.2; }
-        .information p { margin: 0 0 32px; padding-left: clamp(12px, 2vw, 32px); color: #808080; font-size: clamp(14px, 1vw, 18px); line-height: 1.35; overflow-wrap: break-word; }
-        .information section + section { margin-top: 32px; }
-        .information p:last-child { margin-bottom: 0; }
-        .contact-number { color: #0039a6; font-weight: 700; white-space: nowrap; }
-        @media (max-width: 700px) {
-            .panel-content { left: 12px; right: 12px; }
-            h1 { font-size: 20px; }
-            .password-heading { font-size: 14px; }
-            .login-link { font-size: 18px; }
-            .information h2 { font-size: 18px; }
-            .information p { padding-left: 0; font-size: 13px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Welcome - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}">
+</th:block>
 </head>
-<body>
-    <main class="login-layout">
-        <figure class="artwork">
-            <img src="/images/cats-all-star.png" th:src="@{/images/cats-all-star.png}"
-                 alt="CATS All Star collage of cats">
-        </figure>
-        <section class="login-panel" aria-labelledby="welcome-title">
-            <div class="panel-content">
-            <h1 id="welcome-title">Welcome to Course Application<br>Tracking System(CATS)!&nbsp; !&nbsp; !</h1>
-            <h2 class="password-heading">Password Login</h2>
-            <nav class="login-options" aria-label="Choose your login">
-                <a class="login-link primary" href="/employee/login" th:href="@{/employee/login}">Employee/Manager</a>
-                <a class="login-link" href="/admin/login" th:href="@{/admin/login}">Admin</a>
-            </nav>
-            <div class="information">
-                <section aria-labelledby="announcements-title">
-                    <h2 id="announcements-title">ANNOUNCEMENTS</h2>
-                    <p>08 Oct 2026 | v1.2.0 Update: Improved login performance and fixed minor bugs.</p>
-                </section>
-                <section aria-labelledby="instructions-title">
-                    <h2 id="instructions-title">INSTRUCTIONS</h2>
-                    <p>CATS (Course Application Tracking System) is an internal ISS system for employees to apply for courses, track course applications, and manage training records.</p>
-                    <p>Please log in with your assigned account. Accounts are provided by the administrator.</p>
-                    <p>If you forget your password, please call <span class="contact-number">+65 12345678</span> to contact the administrator to reset it.</p>
-                </section>
-            </div>
-            </div>
-        </section>
-    </main>
-    <script>
-        // Fit all content into the viewport without removing any information.
-        const panel = document.querySelector('.login-panel');
-        const content = document.querySelector('.panel-content');
-        function fitContent() {
-            content.style.setProperty('--information-offset', '0px');
-            const top = parseFloat(getComputedStyle(content).top);
-            const availableHeight = Math.max(1, panel.clientHeight - top - 16);
-            const scale = Math.min(1, availableHeight / content.scrollHeight);
-            content.style.transform = `scale(${scale})`;
-            // Lower only the information block into unused space; keep the upper layout unchanged.
-            const spareHeight = Math.max(0, availableHeight / scale - content.scrollHeight);
-            const informationOffset = Math.max(0, spareHeight - 16 / scale);
-            content.style.setProperty('--information-offset', `${informationOffset}px`);
-        }
-        new ResizeObserver(fitContent).observe(panel);
-        new ResizeObserver(fitContent).observe(content);
-        window.addEventListener('load', fitContent);
-        fitContent();
-    </script>
+<body class="login-page">
+<header class="login-header">
+<a class="wordmark" th:href="@{/login}">CATS</a>
+<span>NUS-ISS</span>
+</header>
+<main class="login-main">
+<section class="login-intro">
+<h1>Make room<br>for learning.</h1>
+<p>Course Application Tracking System</p>
+<p>Apply for training. Keep your progress in view.</p>
+</section>
+<section class="login-form" aria-labelledby="login-title">
+<h2 id="login-title">Welcome to CATS</h2>
+<nav class="login-options" aria-label="Choose your login">
+<a class="primary-button" th:href="@{/employee/login}">Employee / Manager</a>
+<a class="primary-button secondary" th:href="@{/admin/login}">Administrator</a>
+</nav>
+<p class="login-help">Sign in with your assigned account.</p>
+</section>
+</main>
+<footer class="login-footer">
+<span>NUS-ISS staff training</span>
+<span>Account access is provided by your administrator.</span>
+</footer>
 </body>
 </html>

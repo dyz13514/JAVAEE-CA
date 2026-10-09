@@ -1,6 +1,8 @@
 package com.group5.cats.controller;
 
 import java.util.Optional;
+import java.time.LocalDate;
+import java.util.Comparator;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +20,7 @@ import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.service.CourseApplicationService;
+import com.group5.cats.service.EntitlementService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -26,11 +29,14 @@ import jakarta.servlet.http.HttpSession;
 public class EmployeeController {
 
     private final CourseApplicationService courseApplicationService;
+    private final EntitlementService entitlementService;
 
     public EmployeeController(
-            CourseApplicationService courseApplicationService) {
+            CourseApplicationService courseApplicationService,
+            EntitlementService entitlementService) {
 
         this.courseApplicationService = courseApplicationService;
+        this.entitlementService = entitlementService;
     }
 
     @InitBinder("courseApplication")
@@ -77,7 +83,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/employee/home")
-    public String showEmployeeHome(HttpSession session) {
+    public String showEmployeeHome(HttpSession session, Model model) {
 
         Employee employee =
                 (Employee) session.getAttribute("loggedInUser");
@@ -90,6 +96,15 @@ public class EmployeeController {
             return "redirect:/admin/home";
         }
 
+        int year = LocalDate.now().getYear();
+        model.addAttribute("entitlementYear", year);
+        model.addAttribute("allowance",
+                entitlementService.getEntitlementSummary(employee.getId(), year).orElse(null));
+        model.addAttribute("recentApplications",
+                courseApplicationService.findApplicationsByEmployee(employee).stream()
+                        .sorted(Comparator.comparing(CourseApplication::getId,
+                                Comparator.nullsLast(Comparator.reverseOrder())))
+                        .limit(3).toList());
         return "employee-home";
     }
 

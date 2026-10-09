@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,19 +16,61 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
+import com.group5.cats.model.EmployeeRole;
+import com.group5.cats.model.EntitlementSummary;
 import com.group5.cats.service.CourseApplicationService;
+import com.group5.cats.service.EntitlementService;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 class EmployeeControllerTests {
     private CourseApplicationService service;
+    private EntitlementService entitlementService;
     private MockMvc mvc;
     private Employee employee;
 
     @BeforeEach
     void setUp() {
         service = mock(CourseApplicationService.class);
-        mvc = MockMvcBuilders.standaloneSetup(new EmployeeController(service)).build();
+        entitlementService = mock(EntitlementService.class);
+        mvc = MockMvcBuilders.standaloneSetup(new EmployeeController(service, entitlementService)).build();
         employee = new Employee();
         employee.setId(1L);
+        employee.setRole(EmployeeRole.REGULAR_STAFF);
+    }
+
+    @Test
+    void overviewUsesOwnAllowanceAndThreeNewestApplications() throws Exception {
+        int year = LocalDate.now().getYear();
+        EntitlementSummary allowance = new EntitlementSummary();
+        when(entitlementService.getEntitlementSummary(1L, year)).thenReturn(Optional.of(allowance));
+        List<CourseApplication> applications = List.of(1L, 4L, 2L, 3L).stream().map(id -> {
+            CourseApplication application = new CourseApplication();
+            application.setId(id);
+            return application;
+        }).toList();
+        when(service.findApplicationsByEmployee(employee)).thenReturn(applications);
+        mvc.perform(get("/employee/home").sessionAttr("loggedInUser", employee))
+                .andExpect(view().name("employee-home"))
+                .andExpect(model().attribute("allowance", allowance))
+                .andExpect(model().attribute("entitlementYear", year))
+                .andExpect(model().attribute("recentApplications",
+                        List.of(applications.get(1), applications.get(3), applications.get(2))));
+    }
+
+    @Test
+    void overviewAllowsMissingAllowanceAndRedirectsAdminsBeforeQuerying() throws Exception {
+        when(entitlementService.getEntitlementSummary(eq(1L), anyInt())).thenReturn(Optional.empty());
+        when(service.findApplicationsByEmployee(employee)).thenReturn(List.of());
+        mvc.perform(get("/employee/home").sessionAttr("loggedInUser", employee))
+                .andExpect(view().name("employee-home"))
+                .andExpect(model().attribute("recentApplications", List.of()));
+        clearInvocations(service, entitlementService);
+        employee.setRole(EmployeeRole.ADMIN);
+        mvc.perform(get("/employee/home").sessionAttr("loggedInUser", employee))
+                .andExpect(redirectedUrl("/admin/home"));
+        verifyNoInteractions(service, entitlementService);
     }
 
     @ParameterizedTest

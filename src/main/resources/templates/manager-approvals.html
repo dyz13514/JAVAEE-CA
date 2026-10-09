@@ -2,174 +2,91 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Subordinate Approvals - CATS</title>
-    <!-- Bootstrap 5 CSS & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --nus-blue: #003D7C;
-            --nus-orange: #EF7C00;
-            --bg-body: #f8fafc;
-        }
-        body {
-            background-color: var(--bg-body);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            min-height: 100vh;
-        }
-        .navbar-custom {
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        }
-        .approval-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 1.25rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-            padding: 1.75rem;
-            margin-bottom: 1.5rem;
-            transition: all 0.25s ease;
-        }
-        .approval-card:hover {
-            box-shadow: 0 12px 28px rgba(0, 61, 124, 0.08);
-            border-color: rgba(0, 61, 124, 0.25);
-        }
-        .applicant-badge {
-            background: rgba(0, 61, 124, 0.08);
-            color: var(--nus-blue);
-            font-weight: 700;
-            padding: 0.45rem 0.9rem;
-            border-radius: 50rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-        .badge-status {
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 0.35rem 0.75rem;
-            border-radius: 50rem;
-        }
-        .status-APPLIED { background: #e0f2fe; color: #0284c7; }
-        .status-UPDATED { background: #fef3c7; color: #b45309; }
-        .status-APPROVED { background: #dcfce7; color: #16a34a; }
-        .status-REJECTED { background: #fee2e2; color: #dc2626; }
-        .comment-textarea {
-            border-radius: 0.75rem;
-            border: 1.5px solid #cbd5e1;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-        .comment-textarea:focus {
-            border-color: var(--nus-blue);
-            box-shadow: 0 0 0 3px rgba(0, 61, 124, 0.12);
-        }
-    </style>
+
+    <link href="/vendor/bootstrap.min.css" rel="stylesheet">
+
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
-
-    <!-- Top Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-3">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" th:href="@{/employee/home}">
-                <i class="bi bi-mortarboard-fill text-warning"></i> NUS-ISS CATS
-            </a>
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
-                    <i class="bi bi-person-check-fill me-1"></i> Supervisor Approvals Console
-                </span>
-                <a th:href="@{/employee/home}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                    <i class="bi bi-house-door"></i> Dashboard
-                </a>
-            </div>
-        </div>
-    </nav>
+<th:block th:replace="~{fragments/layout :: shell('approvals')}"></th:block>
+<main class="page-main">
 
     <div class="container py-4">
 
-        <!-- Flash Message -->
         <div th:if="${message}" class="alert alert-success alert-dismissible fade show d-flex align-items-center rounded-3 p-3 mb-4 shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+
             <div th:text="${message}">Review decision recorded successfully.</div>
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <!-- Header & Filter -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
             <div>
-                <h3 class="fw-bold text-dark mb-1">Subordinate Course Applications</h3>
-                <p class="text-secondary small mb-0">Review pending submissions from your team members. A valid rationale comment is required for all approvals and rejections.</p>
+                <h1 class="fw-bold text-dark mb-1">Team applications</h1>
+                <p class="text-secondary small mb-0">Review course requests from your team.</p>
             </div>
             <div class="input-group" style="max-width: 320px;" th:unless="${#lists.isEmpty(applications)}">
-                <span class="input-group-text bg-white border-end-0 rounded-start-pill"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="approvalFilter" class="form-control border-start-0 rounded-end-pill" placeholder="Search subordinate or course...">
+
+                <input type="text" id="approvalFilter" aria-label="Search team applications" class="form-control border-start-0 rounded-end-pill" placeholder="Search team member or course…">
             </div>
         </div>
 
-        <!-- Empty State -->
         <div th:if="${#lists.isEmpty(applications)}" class="approval-card text-center py-5">
-            <i class="bi bi-inbox text-secondary opacity-50 display-3"></i>
-            <h5 class="fw-bold text-dark mt-3">No Pending Subordinate Applications</h5>
-            <p class="text-secondary small mb-0">None of your direct reports currently have pending course applications awaiting review.</p>
+
+            <h5 class="fw-bold text-dark mt-3">No applications awaiting review</h5>
+            <p class="text-secondary small mb-0">Your team has no pending course requests.</p>
         </div>
 
-        <!-- Approval Item Cards -->
         <div th:unless="${#lists.isEmpty(applications)}" id="approvalList">
             <div class="approval-card application-item" th:each="app : ${applications}">
                 <div class="row align-items-center g-3">
-                    
-                    <!-- Left: Subordinate & Course Info -->
+
                     <div class="col-lg-7">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                             <span class="applicant-badge">
-                                <i class="bi bi-person-fill"></i>
+
                                 <span th:text="${app.employee.name}">Subordinate Name</span>
                             </span>
-                            <span class="badge rounded-pill bg-light text-dark border px-2 py-1" th:text="${app.category}">Category</span>
-                            <span th:class="'badge-status status-' + ${app.status}">
-                                <i class="bi bi-record-circle-fill me-1" style="font-size: 0.6rem;"></i>
-                                <span th:text="${app.status}">STATUS</span>
-                            </span>
+                            <span class="badge rounded-pill bg-light text-dark border px-2 py-1" th:text="${app.category == 'INTERNAL' ? 'Internal training' : (app.category == 'EXTERNAL' ? 'External course' : 'Certification')}">Category</span>
+                            <span th:replace="~{fragments/layout :: status(${app.status})}"></span>
                         </div>
                         <h4 class="fw-bold text-dark mb-2" th:text="${app.courseTitle}">Course Title</h4>
-                        
+
                         <div class="d-flex flex-wrap gap-4 text-secondary small">
                             <div>
-                                <i class="bi bi-calendar3 me-1"></i>
+
                                 <span th:text="${app.fromDate} + ' to ' + ${app.toDate}">From to To</span>
                             </div>
                             <div>
-                                <i class="bi bi-cash me-1"></i>
+
                                 Fee: <strong class="text-dark" th:text="'S$ ' + ${app.fee}">S$ 0</strong>
                             </div>
                             <div th:if="${app.halfDay}">
-                                <i class="bi bi-clock-half me-1 text-primary"></i> Half-day Session
+                                 Half-day Session
                             </div>
                         </div>
 
                         <div class="mt-3 p-3 bg-light rounded-3 small">
-                            <strong class="text-dark"><i class="bi bi-chat-quote-fill me-1 text-primary"></i>Applicant Justification:</strong>
+                            <strong class="text-dark">Reason for training:</strong>
                             <span class="text-secondary ms-1" th:text="${app.justification}">Justification</span>
                         </div>
                     </div>
 
-                    <!-- Right: Manager Decision Form -->
                     <div class="col-lg-5 border-start-lg pt-3 pt-lg-0">
                         <div th:if="${app.status == 'APPLIED' or app.status == 'UPDATED'}">
                             <form method="post" th:action="@{/manager/review/{id}(id=${app.id})}">
-                                <label class="form-label small fw-semibold text-secondary">
-                                    <i class="bi bi-pencil-fill me-1"></i> Manager Comment / Rationale (Required) <span class="text-danger">*</span>
+                                <label th:for="${'comment-' + app.id}" class="form-label small fw-semibold text-secondary">
+                                     Decision comment <span class="text-danger">*</span>
                                 </label>
-                                <textarea name="comment" rows="2" class="form-control comment-textarea mb-3" placeholder="Provide justification for approval or explain reasons for rejection..." required></textarea>
-                                
+                                <textarea th:id="${'comment-' + app.id}" name="comment" rows="2" class="form-control comment-textarea mb-3" placeholder="Explain your decision." required></textarea>
+
                                 <div class="d-flex gap-2 justify-content-end">
                                     <button type="submit" name="decision" value="REJECT" class="btn btn-outline-danger rounded-pill px-3 btn-sm fw-semibold">
-                                        <i class="bi bi-x-circle me-1"></i> Reject
+                                         Reject
                                     </button>
                                     <button type="submit" name="decision" value="APPROVE" class="btn btn-success rounded-pill px-4 btn-sm fw-semibold shadow-sm">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Approve
+                                         Approve
                                     </button>
                                 </div>
                             </form>
@@ -198,6 +115,7 @@
             });
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/vendor/bootstrap.bundle.min.js"></script>
+</main>
 </body>
 </html>

@@ -1,34 +1,29 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Training Provider Management</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
+<th:block th:replace="~{fragments/layout :: shell('providers')}"></th:block>
+<main class="page-main admin-content">
 
-<h1>Training Provider Management</h1>
+<div class="page-heading"><h1>Training Provider Management</h1><a class="primary-button" th:href="@{/admin/providers/new}">Add Training Provider</a></div>
 
-<p th:if="${successMessage != null}"
+<p role="status" th:if="${successMessage != null}"
    th:text="${successMessage}">
 </p>
 
-<p th:if="${errorMessage != null}"
+<p role="alert" th:if="${errorMessage != null}"
    th:text="${errorMessage}">
-</p>
-
-<p>
-    <a th:href="@{/employee/home}">Back to Home</a>
-</p>
-
-<p>
-    <a th:href="@{/admin/providers/new}">Add Training Provider</a>
 </p>
 
 <p th:if="${#lists.isEmpty(providers)}">
     No training providers found.
 </p>
 
-<table border="1" th:if="${!#lists.isEmpty(providers)}">
+<div class="table-scroll"><table th:if="${!#lists.isEmpty(providers)}">
     <thead>
     <tr>
         <th>ID</th>
@@ -56,7 +51,8 @@
         </td>
     </tr>
     </tbody>
-</table>
+</table></div>
 
+</main>
 </body>
 </html>
