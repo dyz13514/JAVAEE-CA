@@ -1,0 +1,67 @@
+/* Shared sign-in and registration layout; other portal pages are unaffected. */
+.login-page {
+    background:radial-gradient(ellipse at 100% 0%,#e4effa 0,transparent 42%),var(--canvas);
+}
+.login-page .login-atmosphere { display:none; }
+.login-page .login-main {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    align-items:stretch;
+    gap:0;
+    padding:0;
+    min-height:100dvh;
+}
+.login-page .login-intro {
+    position:sticky;
+    top:0;
+    height:100dvh;
+    padding:16px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-right:1px solid #d4d4d4;
+}
+.login-page .login-intro img { width:100%; height:100%; object-fit:contain; }
+.login-content {
+    min-width:0;
+    padding:clamp(20px,3vh,36px) clamp(24px,3vw,64px) 24px;
+    display:flex;
+    flex-direction:column;
+    gap:clamp(20px,3vh,32px);
+}
+.login-page .login-header { padding:0; display:block; text-align:center; }
+.login-page .login-header .wordmark {
+    display:block;
+    color:#003da6;
+    font-size:clamp(22px,2.2vw,34px);
+    line-height:1.2;
+    letter-spacing:0;
+}
+.login-page .login-header>span { display:block; font-size:12px; margin-top:8px; color:#808080; }
+.login-page .login-form { align-self:center; max-width:420px; }
+.login-page .login-form h2 { font-size:22px; margin:0 0 12px; }
+.login-page .role-tabs { margin-bottom:16px; gap:12px; }
+.login-page .login-form .field { margin-bottom:12px; }
+.login-page .login-form input:not([type=hidden]) { min-height:40px; padding:9px 12px; }
+.login-page .login-form .primary-button { min-height:40px; padding:10px 16px; background:#003da6; }
+.login-page .account-switch,.login-page .login-help { margin-top:12px; font-size:12px; }
+.login-information { margin-top:auto; padding-top:16px; color:#777; }
+.login-information section+section { margin-top:24px; }
+.login-information h2 { color:#003da6; font-size:20px; margin:0 0 10px; }
+.login-information p { color:#777; font-size:14px; line-height:1.5; margin:0 0 12px; }
+.login-information p:last-child { margin-bottom:0; }
+.login-information a { color:#003da6; font-weight:600; }
+@media (min-width:901px) and (max-height:800px) {
+    .login-content { padding-top:18px; padding-bottom:16px; gap:16px; }
+    .login-page .login-header .wordmark { font-size:24px; }
+    .login-information { padding-top:8px; }
+    .login-information section+section { margin-top:16px; }
+    .login-information h2 { font-size:18px; margin-bottom:8px; }
+    .login-information p { font-size:12px; margin-bottom:8px; }
+}
+@media (max-width:900px) {
+    .login-page .login-main { grid-template-columns:1fr; }
+    .login-page .login-intro { position:relative; height:32dvh; padding:12px; border-right:0; border-bottom:1px solid #d4d4d4; }
+    .login-content { padding:24px; gap:24px; }
+    .login-information { margin-top:0; }
+}
