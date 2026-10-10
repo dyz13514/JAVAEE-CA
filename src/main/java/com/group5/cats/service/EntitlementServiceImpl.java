@@ -118,8 +118,19 @@ public class EntitlementServiceImpl implements EntitlementService {
 		
 		Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("EmployeeId " + employeeId + " does not exist."));
 		
-		Optional<AnnualEntitlement> existing = annualEntitlementRepository
-				.findByEmployeeIdAndEntitlementYear(employeeId, entitlementYear);
+		
+		double occupiedDays = getOccupiedTrainingDays(employeeId, entitlementYear);
+		double occupiedBudget =  getOccupiedTrainingBudget(employeeId, entitlementYear);
+
+		if (trainingDaysLimit < occupiedDays) {
+		    throw new IllegalArgumentException( "Training days limit cannot be less than occupied training days (" + occupiedDays + ").");
+		}
+
+		if (trainingBudget < occupiedBudget) {
+		    throw new IllegalArgumentException( "Training budget cannot be less than occupied training budget (" + occupiedBudget + ").");
+		}
+		
+		Optional<AnnualEntitlement> existing = annualEntitlementRepository.findByEmployeeIdAndEntitlementYear(employeeId, entitlementYear);
 		
 		AnnualEntitlement entitlement;
 		
