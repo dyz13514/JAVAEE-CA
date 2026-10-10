@@ -50,8 +50,13 @@ class ManagerReportServiceTests {
         employeeRepository = mock(EmployeeRepository.class);
         courseApplicationRepository = mock(CourseApplicationRepository.class);
         entitlementService = mock(EntitlementService.class);
+        var categories = mock(com.group5.cats.repository.CategoryRepository.class);
+        for (String name : List.of("INTERNAL", "EXTERNAL", "CERTIFICATION")) {
+            when(categories.findByNameIgnoreCase(name)).thenReturn(Optional.of(com.group5.cats.CategoryFixtures.category(name)));
+        }
         service = new ManagerReportServiceImpl(
-                employeeRepository, courseApplicationRepository, entitlementService);
+                employeeRepository, courseApplicationRepository, entitlementService, categories);
+
 
         manager = employee(1L, "Alice Wong", EmployeeRole.MANAGER);
         ben = subordinate(2L, "Ben Tan", manager);
@@ -320,7 +325,7 @@ class ManagerReportServiceTests {
         CourseApplication application = new CourseApplication();
         application.setEmployee(employee);
         application.setCourseTitle(title);
-        application.setCategory(category);
+        application.setCategory(com.group5.cats.CategoryFixtures.category(category));
         application.setStatus(status);
         application.setFromDate(from);
         application.setToDate(to);

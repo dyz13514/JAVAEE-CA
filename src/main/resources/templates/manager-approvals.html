@@ -47,7 +47,7 @@
 
                                 <span th:text="${app.employee.name}">Subordinate Name</span>
                             </span>
-                            <span class="badge rounded-pill bg-light text-dark border px-2 py-1" th:text="${app.category == 'INTERNAL' ? 'Internal training' : (app.category == 'EXTERNAL' ? 'External course' : 'Certification')}">Category</span>
+                            <span class="badge rounded-pill bg-light text-dark border px-2 py-1" th:text="${app.categoryName}">Category</span>
                             <span th:replace="~{fragments/layout :: status(${app.status})}"></span>
                         </div>
                         <h4 class="fw-bold text-dark mb-2" th:text="${app.courseTitle}">Course Title</h4>

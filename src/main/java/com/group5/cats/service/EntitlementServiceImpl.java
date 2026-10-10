@@ -12,6 +12,7 @@ import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeDesignation;
 import com.group5.cats.model.EmployeeRole;
+import com.group5.cats.dto.CourseCategory;
 import com.group5.cats.model.EntitlementSummary;
 import com.group5.cats.repository.AnnualEntitlementRepository;
 import com.group5.cats.repository.CourseApplicationRepository;
@@ -192,8 +193,8 @@ public class EntitlementServiceImpl implements EntitlementService {
 		double occupiedBudget = 0.0;
 		
 		for (CourseApplication application : applications) { 
-			String category = application.getCategory();
-			if ("EXTERNAL".equals(category) || "CERTIFICATION".equals(category) ) {
+			String category = application.getCategoryName();
+			if (CourseCategory.isBudgetRelevant(category)) {
 				occupiedBudget += application.getFee();
 			}
 		}
@@ -219,8 +220,8 @@ public class EntitlementServiceImpl implements EntitlementService {
 		
 		for (CourseApplication application : applications) { 
 			occupiedDays += application.getTrainingDays();
-			String category = application.getCategory();
-			if ("EXTERNAL".equals(category) || "CERTIFICATION".equals(category) ) {
+			String category = application.getCategoryName();
+			if (CourseCategory.isBudgetRelevant(category)) {
 				occupiedBudget += application.getFee();
 			}
 		}

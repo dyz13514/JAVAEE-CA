@@ -1,28 +1,54 @@
 package com.group5.cats.service;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Locale;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.group5.cats.dto.CommonCourseForm;
+import com.group5.cats.model.Category;
 import com.group5.cats.model.CommonCourse;
-import com.group5.cats.model.Course;
+import com.group5.cats.model.TrainingProvider;
+import com.group5.cats.repository.CategoryRepository;
 import com.group5.cats.repository.CommonCourseRepository;
-import com.group5.cats.repository.CourseRepository;
+import com.group5.cats.repository.TrainingProviderRepository;
 
 @Service
 public class CommonCourseServiceImpl implements CommonCourseService {
-    private final CommonCourseRepository commonCourseRepository;
-    private final CourseRepository courseRepository;
 
-    public CommonCourseServiceImpl(CommonCourseRepository commonCourseRepository,
-            CourseRepository courseRepository) {
+    private final CommonCourseRepository commonCourseRepository;
+    private final CategoryRepository categoryRepository;
+    private final TrainingProviderRepository trainingProviderRepository;
+
+    public CommonCourseServiceImpl(
+            CommonCourseRepository commonCourseRepository,
+            CategoryRepository categoryRepository,
+            TrainingProviderRepository trainingProviderRepository) {
+
         this.commonCourseRepository = commonCourseRepository;
-        this.courseRepository = courseRepository;
+        this.categoryRepository = categoryRepository;
+        this.trainingProviderRepository = trainingProviderRepository;
     }
 
     @Override
     public List<CommonCourse> findAllCommonCourses() {
-        return commonCourseRepository.findAllByOrderByCourse_TitleAsc();
+        return commonCourseRepository.findAllByOrderByTitleAsc();
+    }
+
+    @Override
+    public List<CommonCourse> findCommonCourses(String keyword, Long categoryId, Long providerId) {
+        String search = keyword == null ? "" : keyword.trim().toLowerCase(Locale.ROOT);
+        List<CommonCourse> result = new ArrayList<>();
+        for (CommonCourse course : findAllCommonCourses()) {
+            if (categoryId != null && !categoryId.equals(course.getCategory().getId())) continue;
+            if (providerId != null && !providerId.equals(course.getProvider().getId())) continue;
+            String text = course.getTitle() + " " + course.getCategory().getName()
+                    + " " + course.getProvider().getName() + " " + course.getIntroduction();
+            if (text.toLowerCase(Locale.ROOT).contains(search)) result.add(course);
+        }
+        return result;
     }
 
     @Override
@@ -33,51 +59,154 @@ public class CommonCourseServiceImpl implements CommonCourseService {
     @Override
     @Transactional
     public String createCommonCourse(CommonCourseForm form) {
-        if (form.getCourseId() == null || form.getCourseId() <= 0) {
-            return "Please select a course.";
+
+        String error = validateForm(form);
+        if (error != null) {
+            return error;
         }
-        Course course = courseRepository.findById(form.getCourseId()).orElse(null);
-        if (course == null) {
-            return "Selected course does not exist.";
+
+        Category category = categoryRepository
+                .findById(form.getCategoryId()).orElse(null);
+
+        if (category == null) {
+            return "Selected category does not exist.";
         }
-        if (commonCourseRepository.existsByCourse_Id(course.getId())) {
-            return "This course is already in the commonly attended catalogue.";
+
+        TrainingProvider provider = trainingProviderRepository
+                .findById(form.getProviderId()).orElse(null);
+
+        if (provider == null) {
+            return "Selected training provider does not exist.";
         }
-        commonCourseRepository.save(new CommonCourse(course));
+
+
+        String title = form.getTitle().trim();
+
+        if (commonCourseRepository
+                .existsByTitleIgnoreCaseAndCategory_IdAndProvider_Id(
+                        title, category.getId(), provider.getId())) {
+            return "This course already exists in the catalogue.";
+        }
+
+        CommonCourse course = new CommonCourse(
+                title, category, provider, form.getFee());
+
+        course.setIntroduction(form.getIntroduction().trim());
+        commonCourseRepository.save(course);
+
         return null;
     }
 
     @Override
     @Transactional
     public String updateCommonCourse(Long id, CommonCourseForm form) {
-        CommonCourse entry = commonCourseRepository.findById(id).orElse(null);
-        if (entry == null) {
+
+        if (id == null || id <= 0) {
+            return "Course ID must be positive.";
+        }
+
+        CommonCourse course =
+                commonCourseRepository.findById(id).orElse(null);
+
+        if (course == null) {
             return "Commonly attended course not found.";
         }
-        if (form.getCourseId() == null || form.getCourseId() <= 0) {
-            return "Please select a course.";
+
+        String error = validateForm(form);
+        if (error != null) {
+            return error;
         }
-        Course course = courseRepository.findById(form.getCourseId()).orElse(null);
-        if (course == null) {
-            return "Selected course does not exist.";
+
+        Category category = categoryRepository
+                .findById(form.getCategoryId()).orElse(null);
+
+        if (category == null) {
+            return "Selected category does not exist.";
         }
-        if (commonCourseRepository.existsByCourse_IdAndIdNot(course.getId(), id)) {
-            return "This course is already in the commonly attended catalogue.";
+
+        TrainingProvider provider = trainingProviderRepository
+                .findById(form.getProviderId()).orElse(null);
+
+        if (provider == null) {
+            return "Selected training provider does not exist.";
         }
-        entry.setCourse(course);
-        commonCourseRepository.save(entry);
+
+
+        String title = form.getTitle().trim();
+
+        if (commonCourseRepository
+                .existsByTitleIgnoreCaseAndCategory_IdAndProvider_IdAndIdNot(
+                        title, category.getId(), provider.getId(), id)) {
+            return "This course already exists in the catalogue.";
+        }
+
+        course.setTitle(title);
+        course.setCategory(category);
+        course.setProvider(provider);
+        course.setFee(form.getFee());
+        course.setIntroduction(form.getIntroduction().trim());
+
+        commonCourseRepository.save(course);
+
         return null;
     }
 
     @Override
     @Transactional
     public String deleteCommonCourse(Long id) {
-        CommonCourse entry = commonCourseRepository.findById(id).orElse(null);
-        if (entry == null) {
+
+        if (id == null || id <= 0) {
+            return "Course ID must be positive.";
+        }
+
+        CommonCourse course =
+                commonCourseRepository.findById(id).orElse(null);
+
+        if (course == null) {
             return "Commonly attended course not found.";
         }
-        // No cascade: removing the catalogue entry never deletes the Course.
-        commonCourseRepository.delete(entry);
+
+        commonCourseRepository.delete(course);
+
+        return null;
+    }
+
+    private String validateForm(CommonCourseForm form) {
+
+        if (form == null) {
+            return "Course information is required.";
+        }
+
+        if (form.getTitle() == null || form.getTitle().isBlank()) {
+            return "Course title is required.";
+        }
+
+        if (form.getTitle().trim().length() > 255) {
+            return "Course title must not exceed 255 characters.";
+        }
+
+        if (form.getCategoryId() == null || form.getCategoryId() <= 0) {
+            return "Please select a valid category.";
+        }
+
+        if (form.getProviderId() == null || form.getProviderId() <= 0) {
+            return "Please select a valid training provider.";
+        }
+
+        if (form.getFee() == null) {
+            return "Course fee is required.";
+        }
+
+        if (!Double.isFinite(form.getFee()) || form.getFee() < 0) {
+            return "Course fee must be a valid number greater than or equal to zero.";
+        }
+
+        if (form.getIntroduction() == null
+                || form.getIntroduction().isBlank()
+                || form.getIntroduction().trim().length() > 4000) {
+            return "Please enter a course introduction of 1 to 4000 characters.";
+        }
+
         return null;
     }
 }

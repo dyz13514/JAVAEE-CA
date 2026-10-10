@@ -22,27 +22,26 @@ public class CourseApplication {
     @ManyToOne
     private Employee employee;
 
-    // Nullable for existing applications and manually entered courses.
-    @ManyToOne
-    @JoinColumn(name = "course_id")
-    private Course course;
-
+    // Form input: the service resolves this ID to a stored Category.
     @Transient
-    private Long courseId;
+    private Long categoryId;
 
-    public Course getCourse() { return course; }
-    public void setCourse(Course course) { this.course = course; }
-
-    public Long getCourseId() {
-        if (courseId != null) return courseId;
-        return course == null ? null : course.getId();
+    public Long getCategoryId() {
+        if (categoryId != null) {
+            return categoryId;
+        }
+        return category == null ? null : category.getId();
     }
 
-    public void setCourseId(Long courseId) { this.courseId = courseId; }
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
 
-    // Snapshot fields: catalogue updates must not rewrite application history.
+    // The actual title and provider are kept on each application.
     private String courseTitle;
-    private String category;      // INTERNAL / EXTERNAL / CERTIFICATION
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     private String provider;
 
@@ -96,12 +95,17 @@ public class CourseApplication {
         this.courseTitle = courseTitle;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
+        this.categoryId = null;
+    }
+
+    public String getCategoryName() {
+        return category == null ? null : category.getName();
     }
 
     public String getProvider() {

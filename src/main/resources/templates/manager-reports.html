@@ -43,7 +43,7 @@
         <select id="attendanceCategory" name="category">
             <option th:each="option : ${categories}" th:value="${option}"
                     th:selected="${option == selectedCategory}"
-                    th:text="${option == 'ALL' ? 'All categories' : (option == 'INTERNAL' ? 'Internal training' : (option == 'EXTERNAL' ? 'External course' : 'Professional certification'))}"></option>
+                    th:text="${option == 'ALL' ? 'All categories' : option}"></option>
         </select>
     </div>
     <div class="field">
@@ -197,8 +197,7 @@
     </table>
 </div>
 <p class="footnote">Course fee claims are the course fees committed or approved in the reporting year, calculated with the same
-    rule as the annual entitlement page: external courses and certifications count toward the annual budget, internal training
-    does not. These are application fees, not confirmed reimbursements. The budget and utilisation figures cover the whole
+    rule as the annual entitlement page: all categories except INTERNAL count toward the annual budget. INTERNAL fees are recorded but excluded. These are application fees, not confirmed reimbursements. The budget and utilisation figures cover the whole
     entitlement year, so they are never combined with a filtered period.</p>
 </th:block>
 </section>

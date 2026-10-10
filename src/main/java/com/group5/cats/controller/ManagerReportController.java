@@ -1,6 +1,10 @@
 package com.group5.cats.controller;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import com.group5.cats.model.Category;
+import com.group5.cats.service.CategoryService;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
@@ -35,9 +39,12 @@ public class ManagerReportController {
     private static final String BUDGET = "budget";
 
     private final ManagerReportService managerReportService;
+    private final CategoryService categoryService;
 
-    public ManagerReportController(ManagerReportService managerReportService) {
+    public ManagerReportController(ManagerReportService managerReportService,
+            CategoryService categoryService) {
         this.managerReportService = managerReportService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/manager/reports")
@@ -100,7 +107,12 @@ public class ManagerReportController {
 
         model.addAttribute("activeReport", activeReport);
         model.addAttribute("employees", managerReportService.findReportableEmployees(manager));
-        model.addAttribute("categories", CourseCategory.filterValues());
+        List<String> categories = new ArrayList<>();
+        categories.add(CourseCategory.ALL);
+        for (Category courseCategory : categoryService.findAllCategories()) {
+            categories.add(courseCategory.getName());
+        }
+        model.addAttribute("categories", categories);
         model.addAttribute("selectedEmployeeId", selectedEmployeeId);
         model.addAttribute("selectedCategory", selectedCategory);
         model.addAttribute("startDate", reportFrom);

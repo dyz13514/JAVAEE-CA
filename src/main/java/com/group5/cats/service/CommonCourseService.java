@@ -9,6 +9,8 @@ public interface CommonCourseService {
 
     List<CommonCourse> findAllCommonCourses();
 
+    List<CommonCourse> findCommonCourses(String keyword, Long categoryId, Long providerId);
+
     CommonCourse findCommonCourseById(Long id);
 
     String createCommonCourse(CommonCourseForm commonCourseForm);
@@ -18,4 +20,6 @@ public interface CommonCourseService {
             CommonCourseForm commonCourseForm);
 
     String deleteCommonCourse(Long id);
+
+
 }

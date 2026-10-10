@@ -19,6 +19,7 @@ import com.group5.cats.model.Employee;
 import com.group5.cats.model.EntitlementSummary;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
+import com.group5.cats.repository.CategoryRepository;
 
 @Service
 public class ManagerReportServiceImpl implements ManagerReportService {
@@ -38,15 +39,18 @@ public class ManagerReportServiceImpl implements ManagerReportService {
     private final EmployeeRepository employeeRepository;
     private final CourseApplicationRepository courseApplicationRepository;
     private final EntitlementService entitlementService;
+    private final CategoryRepository categoryRepository;
 
     public ManagerReportServiceImpl(
             EmployeeRepository employeeRepository,
             CourseApplicationRepository courseApplicationRepository,
-            EntitlementService entitlementService) {
+            EntitlementService entitlementService,
+            CategoryRepository categoryRepository) {
 
         this.employeeRepository = employeeRepository;
         this.courseApplicationRepository = courseApplicationRepository;
         this.entitlementService = entitlementService;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -74,8 +78,10 @@ public class ManagerReportServiceImpl implements ManagerReportService {
                     "The start date must not be after the end date.");
         }
         String selectedCategory = category == null ? CourseCategory.ALL : category;
-        if (!CourseCategory.isValidFilter(selectedCategory)) {
-            throw new IllegalArgumentException("Please select a valid course category.");
+        if (!CourseCategory.ALL.equals(selectedCategory)) {
+            selectedCategory = categoryRepository.findByNameIgnoreCase(selectedCategory)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Please select a valid course category.")).getName();
         }
 
         AttendanceReport report = new AttendanceReport();
@@ -90,7 +96,8 @@ public class ManagerReportServiceImpl implements ManagerReportService {
 
         List<CourseApplication> applications = new ArrayList<>(
                 courseApplicationRepository.findByEmployeeIn(employees));
-        applications.removeIf(application -> !countsAsConfirmedAttendance(application, fromDate, toDate, selectedCategory));
+        String filterCategory = selectedCategory;
+        applications.removeIf(application -> !countsAsConfirmedAttendance(application, fromDate, toDate, filterCategory));
         applications.sort(attendanceOrder());
 
         List<AttendanceReportRow> rows = new ArrayList<>();
@@ -162,7 +169,7 @@ public class ManagerReportServiceImpl implements ManagerReportService {
         if (application.getFromDate().isAfter(toDate) || application.getToDate().isBefore(fromDate)) {
             return false;
         }
-        return CourseCategory.ALL.equals(category) || category.equals(application.getCategory());
+        return CourseCategory.ALL.equals(category) || category.equals(application.getCategoryName());
     }
 
     private Comparator<CourseApplication> attendanceOrder() {
@@ -179,7 +186,7 @@ public class ManagerReportServiceImpl implements ManagerReportService {
         AttendanceReportRow row = new AttendanceReportRow();
         row.setEmployeeName(application.getEmployee() == null ? null : application.getEmployee().getName());
         row.setCourseTitle(application.getCourseTitle());
-        row.setCategory(application.getCategory());
+        row.setCategory(application.getCategoryName());
         row.setFromDate(application.getFromDate());
         row.setToDate(application.getToDate());
         row.setTrainingDays(application.getTrainingDays());
@@ -227,12 +234,12 @@ public class ManagerReportServiceImpl implements ManagerReportService {
     private CourseFeeDetail toFeeDetail(CourseApplication application) {
         CourseFeeDetail detail = new CourseFeeDetail();
         detail.setCourseTitle(application.getCourseTitle());
-        detail.setCategory(application.getCategory());
+        detail.setCategory(application.getCategoryName());
         detail.setFromDate(application.getFromDate());
         detail.setToDate(application.getToDate());
         detail.setStatus(application.getStatus());
         detail.setFee(application.getFee());
-        detail.setCountsTowardsBudget(CourseCategory.isBudgetRelevant(application.getCategory()));
+        detail.setCountsTowardsBudget(CourseCategory.isBudgetRelevant(application.getCategoryName()));
         return detail;
     }
 

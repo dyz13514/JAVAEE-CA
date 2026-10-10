@@ -30,6 +30,7 @@ class NotificationPersistenceTests {
     @Autowired PlatformTransactionManager transactionManager;
     @Autowired CourseApplicationService courseService;
     @Autowired EntitlementService entitlementService;
+    @Autowired CategoryRepository categories;
 
     @BeforeEach
     void clearNotifications() {
@@ -48,7 +49,7 @@ class NotificationPersistenceTests {
         entitlementService.setEntitlement(employee.getId(), from.getYear(), 10, 2000);
         CourseApplication application = new CourseApplication();
         application.setCourseTitle("Email integration");
-        application.setCategory("EXTERNAL");
+        application.setCategory(categories.findByNameIgnoreCase("EXTERNAL").orElseThrow());
         application.setFee(100);
         application.setJustification("Learn Spring");
         application.setFromDate(from);
@@ -76,6 +77,7 @@ class NotificationPersistenceTests {
             application.setEmployee(owner);
             application.setCourseTitle("Transactional course");
             application.setStatus("APPLIED");
+            application.setCategory(categories.findByNameIgnoreCase("INTERNAL").orElseThrow());
             applications.saveAndFlush(application);
             var service = new NotificationServiceImpl(notifications, true, "http://localhost:8080");
             service.createNotification(application, NotificationType.APPLICATION_SUBMITTED);
@@ -102,6 +104,7 @@ class NotificationPersistenceTests {
             CourseApplication application = new CourseApplication();
             application.setEmployee(employees.findByUsername("emp1").orElseThrow());
             application.setStatus("APPLIED");
+            application.setCategory(categories.findByNameIgnoreCase("INTERNAL").orElseThrow());
             applications.saveAndFlush(application);
             new NotificationServiceImpl(notifications, true, "http://localhost")
                     .createNotification(application, NotificationType.APPLICATION_SUBMITTED);

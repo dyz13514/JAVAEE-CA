@@ -91,11 +91,11 @@
                             <div th:each="courseApplication : ${applicationsByDay.get(day)}" class="course" th:classappend="${courseApplication.status != 'APPROVED' ? 'pending-course' : ''}">
                                 <p class="course-title" th:text="${courseApplication.courseTitle}">Course Title</p>
                                 <span th:replace="~{fragments/layout :: status(${courseApplication.status})}"></span>
-                                <p class="course-category" th:switch="${courseApplication.category}">
+                                <p class="course-category" th:switch="${courseApplication.categoryName}">
                                     <span th:case="'INTERNAL'">Internal Training</span>
                                     <span th:case="'EXTERNAL'">External Course</span>
                                     <span th:case="'CERTIFICATION'">Professional Certification</span>
-                                    <span th:case="*" th:text="${courseApplication.category}"></span>
+                                    <span th:case="*" th:text="${courseApplication.categoryName}"></span>
                                 </p>
                             </div>
                         </th:block>

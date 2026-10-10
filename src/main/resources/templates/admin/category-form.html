@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"><title>Category - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
+<body><th:block th:replace="~{fragments/layout :: shell('categories')}"></th:block>
+<main class="page-main admin-content">
+<h1 th:text="${editing ? 'Edit Category' : 'Add Category'}"></h1>
+<p><a th:href="@{/admin/categories}">Back to Categories</a></p>
+<p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
+<form th:action="@{${formAction}}" th:object="${category}" method="post">
+<p><label for="name">Name</label><input id="name" th:field="*{name}" th:readonly="${fixedCategory}" maxlength="255" required></p>
+<p><label for="description">Description</label><textarea id="description" th:field="*{description}" maxlength="1000"></textarea></p>
+<p th:unless="${fixedCategory}"><label for="halfDayAllowed">Allow Half-day Sessions</label>
+<input type="checkbox" id="halfDayAllowed" th:field="*{halfDayAllowed}"></p>
+<p th:if="${fixedCategory}">Half-day allowed: <span th:text="${fixedHalfDay ? 'Yes' : 'No'}"></span>
+<input type="hidden" name="halfDayAllowed" th:value="${fixedHalfDay}"></p>
+<button type="submit">Save</button>
+</form>
+</main></body></html>

@@ -1,41 +1,11 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<body>
-<form th:fragment="filter(action)" th:action="@{${action}}" method="get" class="filter-panel">
-    <div class="form-grid">
-        <div class="field">
-            <label for="keyword">Course or provider name</label>
-            <input id="keyword" name="keyword" type="search" th:value="${keyword}" maxlength="255" placeholder="Search courses">
-        </div>
-        <div class="field">
-            <label for="filterProvider">Training provider</label>
-            <select id="filterProvider" name="providerId">
-                <option value="">All providers</option>
-                <option th:each="provider : ${providers}" th:value="${provider.id}"
-                        th:text="${provider.name}" th:selected="${provider.id == selectedProviderId}"></option>
-            </select>
-        </div>
-        <div class="field">
-            <label for="filterCategory">Category</label>
-            <select id="filterCategory" name="category">
-                <option value="">All categories</option>
-                <option value="INTERNAL" th:selected="${category == 'INTERNAL'}">Internal training</option>
-                <option value="EXTERNAL" th:selected="${category == 'EXTERNAL'}">External course</option>
-                <option value="CERTIFICATION" th:selected="${category == 'CERTIFICATION'}">Certification</option>
-            </select>
-        </div>
-        <div class="field">
-            <label for="commonOnly">Catalogue</label>
-            <select id="commonOnly" name="commonOnly">
-                <option value="false" th:selected="${!commonOnly}">All courses</option>
-                <option value="true" th:selected="${commonOnly}">Commonly attended only</option>
-            </select>
-        </div>
-    </div>
-    <div class="form-actions">
-        <a th:href="@{${action}}">Reset filters</a>
-        <button type="submit">Search</button>
-    </div>
-</form>
-</body>
-</html>
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body>
+<form th:fragment="filter(baseUrl)" th:action="@{${baseUrl}}" method="get" class="catalogue-filter">
+<p><label for="keyword">Search Courses</label><input id="keyword" name="keyword" th:value="${keyword}"></p>
+<p><label for="categoryId">Category</label><select id="categoryId" name="categoryId">
+<option value="">All Categories</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"
+th:selected="${category.id == selectedCategoryId}"></option></select></p>
+<p><label for="providerId">Training Provider</label><select id="providerId" name="providerId">
+<option value="">All Providers</option><option th:each="provider : ${providers}" th:value="${provider.id}" th:text="${provider.name}"
+th:selected="${provider.id == selectedProviderId}"></option></select></p>
+<button type="submit">Search</button><a th:href="@{${baseUrl}}">Reset</a>
+</form></body></html>

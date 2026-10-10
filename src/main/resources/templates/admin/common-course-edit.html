@@ -1,31 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Change Common Course Selection</title>
-    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
-</head>
-<body>
-<th:block th:replace="~{fragments/layout :: shell('common-courses')}"></th:block>
+<head><meta charset="UTF-8"><title>Edit Common Course - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
+<body><th:block th:replace="~{fragments/layout :: shell('common-courses')}"></th:block>
 <main class="page-main admin-content">
-    <h1>Change Common Course Selection</h1>
-    <p><a th:href="@{/admin/common-courses}">Back to Commonly Attended Course Catalogue</a></p>
-    <p>Select an existing course. Maintain its title, provider and reference fee in
-        <a th:href="@{/admin/courses}">Course Management</a>.</p>
-    <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
-    <p th:if="${#lists.isEmpty(courses)}">No courses available.
-        <a th:href="@{/admin/courses/new}">Add a course first</a>.</p>
-    <form th:action="@{/admin/common-courses/{id}/update(id=${commonCourseId})}" th:object="${commonCourseForm}" method="post">
-        <p>
-            <label for="courseId">Course</label>
-            <select id="courseId" th:field="*{courseId}" required>
-                <option value="">-- Select Course --</option>
-                <option th:each="course : ${courses}" th:value="${course.id}"
-                        th:text="${course.title + ' — ' + course.provider.name + ' (ID: ' + course.id + ')'}"></option>
-            </select>
-        </p>
-        <button type="submit" th:disabled="${#lists.isEmpty(courses)}">Save Selection</button>
-    </form>
-</main>
-</body>
-</html>
+<h1>Edit Commonly Attended Course</h1>
+<p><a th:href="@{/admin/common-courses}">Back to Catalogue</a></p>
+<p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
+<form th:action="@{/admin/common-courses/{id}/update(id=${commonCourseId})}" th:object="${commonCourseForm}" method="post"><p><label for="title">Course Title</label><input id="title" th:field="*{title}" maxlength="255" required></p>
+<p><label for="categoryId">Category</label><select id="categoryId" th:field="*{categoryId}" required>
+<option value="">-- Select Category --</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option>
+</select></p>
+<p><label for="providerId">Training Provider</label><select id="providerId" th:field="*{providerId}" required>
+<option value="">-- Select Provider --</option><option th:each="provider : ${providers}" th:value="${provider.id}" th:text="${provider.name}"></option>
+</select></p>
+<p><label for="fee">Reference Fee (S$)</label><input type="number" id="fee" th:field="*{fee}" min="0" step="0.01" required></p>
+<p><label for="introduction">Introduction</label><textarea id="introduction" th:field="*{introduction}" maxlength="4000" required></textarea></p>
+<p>Employees enter their own dates and actual fees when applying. INTERNAL fees do not occupy budget.</p>
+<button type="submit">Save</button></form>
+</main></body></html>

@@ -1,6 +1,5 @@
 package com.group5.cats.service;
 
-import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -10,8 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.group5.cats.model.NotificationType;
 import com.group5.cats.model.CourseApplication;
-import com.group5.cats.model.Course;
-import com.group5.cats.repository.CourseRepository;
+import com.group5.cats.model.Category;
+import com.group5.cats.dto.CourseCategory;
+import com.group5.cats.repository.CategoryRepository;
 import com.group5.cats.model.Employee;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
@@ -32,20 +32,18 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     private final EntitlementService entitlementService;
     private final PublicHolidayRepository publicHolidayRepository;
     private final NotificationService notificationService;
-    private final CourseRepository courseRepository;
-    private final CourseScheduleService scheduleService;
+    private final CategoryRepository categoryRepository;
 
     public CourseApplicationServiceImpl(CourseApplicationRepository courseApplicationRepository,
             EmployeeRepository employeeRepository, EntitlementService entitlementService,
             PublicHolidayRepository publicHolidayRepository, NotificationService notificationService,
-            CourseRepository courseRepository, CourseScheduleService scheduleService) {
+            CategoryRepository categoryRepository) {
         this.courseApplicationRepository = courseApplicationRepository;
         this.employeeRepository = employeeRepository;
         this.entitlementService = entitlementService;
         this.publicHolidayRepository = publicHolidayRepository;
         this.notificationService = notificationService;
-        this.courseRepository = courseRepository;
-        this.scheduleService = scheduleService;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -96,7 +94,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         String supervisorError = validateSupervisor(application.getEmployee());
         if (supervisorError != null) return supervisorError;
-        String error = selectCourse(application, null);
+        String error = selectCategory(application);
         if (error != null) return error;
         error = validateBasicRules(application);
         if (error != null) {
@@ -119,51 +117,16 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         return null;
     }
 
-    private String selectCourse(CourseApplication data, CourseApplication existing) {
-        Long courseId = data.getCourseId();
-        if (courseId == null) {
-            if (existing != null && existing.getCourse() != null) {
-                return "Please select a recorded course and one of its available start dates.";
-            }
-            data.setCourse(null);
-            return null; // Legacy applications without a course link keep their original workflow.
+    private String selectCategory(CourseApplication application) {
+        Long categoryId = application.getCategoryId();
+        if (categoryId == null || categoryId <= 0) {
+            return "Please select a valid course category.";
         }
-        if (courseId <= 0) {
-            return "Please select a valid course.";
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        if (category == null) {
+            return "Selected category no longer exists.";
         }
-        Course course = courseRepository.findById(courseId).orElse(null);
-        if (course == null) {
-            return "Selected course no longer exists.";
-        }
-        boolean sameSchedule = existing != null && existing.getCourse() != null
-                && courseId.equals(existing.getCourse().getId())
-                && Objects.equals(data.getFromDate(), existing.getFromDate());
-        if (sameSchedule) {
-            // Published changes must not move an existing applicant to different dates.
-            data.setToDate(existing.getToDate());
-            data.setHalfDay(existing.getHalfDay());
-        } else {
-            if (course.getDurationDays() == null) {
-                return "This course has no published schedule. Please contact an administrator.";
-            }
-            LocalDate end = scheduleService.findAvailableDates(course).get(data.getFromDate());
-            if (end == null) return "Please choose one of this course's available start dates.";
-            data.setToDate(end);
-            data.setHalfDay(false);
-        }
-        data.setCourse(course);
-        if (existing != null && existing.getCourse() != null
-                && courseId.equals(existing.getCourse().getId())) {
-            // Editing dates or reasons should keep the original course snapshot.
-            data.setCourseTitle(existing.getCourseTitle());
-            data.setCategory(existing.getCategory());
-            data.setProvider(existing.getProvider());
-        } else {
-            data.setCourseTitle(course.getTitle());
-            data.setCategory(course.getCategory());
-            data.setProvider(course.getProvider().getName());
-        }
-        // Fee is the actual fee requested by the employee, not the reference fee.
+        application.setCategory(category);
         return null;
     }
 
@@ -177,17 +140,10 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         error = validateText(application.getDissemination(), "Work dissemination", false);
         if (error != null) return error;
 
-        String category = application.getCategory();
-        if (!"INTERNAL".equals(category) && !"EXTERNAL".equals(category)
-                && !"CERTIFICATION".equals(category)) {
-            return "Please select a valid course category.";
-        }
+        Category category = application.getCategory();
         double fee = application.getFee();
         if (!Double.isFinite(fee) || fee < 0) {
             return "Course fee must be a valid number greater than or equal to zero.";
-        }
-        if ("INTERNAL".equals(category) && fee != 0) {
-            return "Internal training must have a fee of zero.";
         }
 
         LocalDate from = application.getFromDate();
@@ -199,13 +155,13 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
             return "Course dates must be within years 1 to 9999.";
         }
         if (Boolean.TRUE.equals(application.getHalfDay())) {
-            if (!"INTERNAL".equals(application.getCategory())) {
-                return "Half-day sessions are allowed for Internal Training only.";
+            if (!category.isHalfDayAllowed()) {
+                return "This category does not allow half-day sessions.";
             }
             if (!from.equals(to)) {
                 return "Half-day session must start and end on the same date.";
             }
-        } else if (from.isAfter(to) || (from.equals(to) && application.getCourse() == null)) {
+        } else if (!from.isBefore(to)) {
             return "Course end date must be after start date for a full-day course.";
         }
 
@@ -257,7 +213,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
                     || "COMPLETED".equals(status) || "APPLIED".equals(status) || "UPDATED".equals(status))) {
                 usedDays += existing.getTrainingDays();
 
-                if ("EXTERNAL".equals(existing.getCategory()) || "CERTIFICATION".equals(existing.getCategory())) {
+                if (CourseCategory.isBudgetRelevant(existing.getCategoryName())) {
                     usedFees += existing.getFee();
                 }
             }
@@ -268,7 +224,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
                     + " + requested " + application.getTrainingDays()
                     + " exceeds your limit of " + limit + " days.";
         }
-        if (("EXTERNAL".equals(application.getCategory()) || "CERTIFICATION".equals(application.getCategory()))
+        if (CourseCategory.isBudgetRelevant(application.getCategoryName())
                 && usedFees + application.getFee() > budget) {
             return "Training budget exceeded for " + year + ": used $" + usedFees
                     + " + requested $" + application.getFee()
@@ -334,6 +290,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     }
 
     @Override
+    @Transactional
     public String updateApplication(Long id, CourseApplication updatedData, Employee employee) {
         Optional<CourseApplication> result = courseApplicationRepository.findById(id);
         if (result.isEmpty()) {
@@ -352,7 +309,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         String supervisorError = validateSupervisor(currentEmployee);
         if (supervisorError != null) return supervisorError;
-        String error = selectCourse(updatedData, application);
+        String error = selectCategory(updatedData);
         if (error != null) return error;
         error = validateBasicRules(updatedData);
         if (error != null) {
@@ -367,8 +324,6 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (overlapError != null) {
             return overlapError;
         }
-        application.setCourse(updatedData.getCourse());
-        application.setCourseId(updatedData.getCourseId());
         application.setCourseTitle(updatedData.getCourseTitle());
         application.setCategory(updatedData.getCategory());
         application.setFromDate(updatedData.getFromDate());

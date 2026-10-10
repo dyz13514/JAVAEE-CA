@@ -14,7 +14,8 @@ import com.group5.cats.model.CommonCourse;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.service.CommonCourseService;
-import com.group5.cats.service.CourseService;
+import com.group5.cats.service.CategoryService;
+import com.group5.cats.service.TrainingProviderService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -22,14 +23,17 @@ import jakarta.servlet.http.HttpSession;
 public class AdminCommonCourseController {
 
     private final CommonCourseService commonCourseService;
-    private final CourseService courseService;
+    private final CategoryService categoryService;
+    private final TrainingProviderService trainingProviderService;
 
     public AdminCommonCourseController(
             CommonCourseService commonCourseService,
-            CourseService courseService) {
+            CategoryService categoryService,
+            TrainingProviderService trainingProviderService) {
 
         this.commonCourseService = commonCourseService;
-        this.courseService = courseService;
+        this.categoryService = categoryService;
+        this.trainingProviderService = trainingProviderService;
     }
 
     @GetMapping("/admin/common-courses")
@@ -75,9 +79,12 @@ public class AdminCommonCourseController {
 
         model.addAttribute("commonCourseForm", commonCourseForm);
         model.addAttribute(
-                "courses",
-                courseService.findAllCourses()
-        );
+                "categories",
+                categoryService.findAllCategories());
+
+        model.addAttribute(
+                "providers",
+                trainingProviderService.findAllProviders());
 
         return "admin/common-course-form";
     }
@@ -105,12 +112,15 @@ public class AdminCommonCourseController {
         if (bindingResult.hasErrors()) {
             model.addAttribute(
                     "errorMessage",
-                    "Please select a valid course."
+                    "Please enter valid course information."
             );
             model.addAttribute(
-                    "courses",
-                    courseService.findAllCourses()
-            );
+                    "categories",
+                    categoryService.findAllCategories());
+
+            model.addAttribute(
+                    "providers",
+                    trainingProviderService.findAllProviders());
 
             return "admin/common-course-form";
         }
@@ -122,9 +132,12 @@ public class AdminCommonCourseController {
         if (error != null) {
             model.addAttribute("errorMessage", error);
             model.addAttribute(
-                    "courses",
-                    courseService.findAllCourses()
-            );
+                    "categories",
+                    categoryService.findAllCategories());
+
+            model.addAttribute(
+                    "providers",
+                    trainingProviderService.findAllProviders());
 
             return "admin/common-course-form";
         }
@@ -169,14 +182,28 @@ public class AdminCommonCourseController {
 
         CommonCourseForm commonCourseForm = new CommonCourseForm();
 
-        commonCourseForm.setCourseId(commonCourse.getCourse().getId());
+        commonCourseForm.setTitle(commonCourse.getTitle());
+
+        commonCourseForm.setCategoryId(
+                commonCourse.getCategory().getId());
+
+        commonCourseForm.setProviderId(
+                commonCourse.getProvider().getId());
+
+        commonCourseForm.setFee(commonCourse.getFee());
+
+        commonCourseForm.setIntroduction(
+                commonCourse.getIntroduction());
 
         model.addAttribute("commonCourseId", commonCourse.getId());
         model.addAttribute("commonCourseForm", commonCourseForm);
         model.addAttribute(
-                "courses",
-                courseService.findAllCourses()
-        );
+                "categories",
+                categoryService.findAllCategories());
+
+        model.addAttribute(
+                "providers",
+                trainingProviderService.findAllProviders());
 
         return "admin/common-course-edit";
     }
@@ -216,14 +243,17 @@ public class AdminCommonCourseController {
 
         model.addAttribute("commonCourseId", id);
         model.addAttribute(
-                "courses",
-                courseService.findAllCourses()
-        );
+                "categories",
+                categoryService.findAllCategories());
+
+        model.addAttribute(
+                "providers",
+                trainingProviderService.findAllProviders());
 
         if (bindingResult.hasErrors()) {
             model.addAttribute(
                     "errorMessage",
-                    "Please select a valid course."
+                    "Please enter valid course information."
             );
 
             return "admin/common-course-edit";
@@ -272,7 +302,7 @@ public class AdminCommonCourseController {
         } else {
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Commonly attended course removed from the catalogue. The course is still available."
+                    "Commonly attended course deleted."
             );
         }
 

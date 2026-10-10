@@ -1,11 +1,28 @@
 package com.group5.cats.repository;
 
 import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.group5.cats.model.CommonCourse;
 
-public interface CommonCourseRepository extends JpaRepository<CommonCourse, Long> {
-    List<CommonCourse> findAllByOrderByCourse_TitleAsc();
-    boolean existsByCourse_Id(Long courseId);
-    boolean existsByCourse_IdAndIdNot(Long courseId, Long id);
+public interface CommonCourseRepository
+        extends JpaRepository<CommonCourse, Long> {
+
+    List<CommonCourse> findAllByOrderByTitleAsc();
+
+    boolean existsByTitleIgnoreCaseAndCategory_IdAndProvider_Id(
+            String title,
+            Long categoryId,
+            Long providerId);
+
+    boolean existsByTitleIgnoreCaseAndCategory_IdAndProvider_IdAndIdNot(
+            String title,
+            Long categoryId,
+            Long providerId,
+            Long id);
+
+    boolean existsByCategory_Id(Long categoryId);
+
+    boolean existsByProvider_Id(Long providerId);
 }

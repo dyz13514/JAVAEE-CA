@@ -1,77 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Commonly Attended Course Catalogue</title>
-<th:block th:replace="~{fragments/layout :: assets}"></th:block>
-</head>
-<body>
-<th:block th:replace="~{fragments/layout :: shell('common-courses')}"></th:block>
+<head><meta charset="UTF-8"><title>Common Course Catalogue - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
+<body><th:block th:replace="~{fragments/layout :: shell('common-courses')}"></th:block>
 <main class="page-main admin-content">
-
-<div class="page-heading"><h1>Commonly Attended Course Catalogue</h1><a class="primary-button" th:href="@{/admin/common-courses/new}">
-        Select Course
-    </a></div>
-
-<p>
-    Commonly attended courses selected and maintained by administrators.
-</p>
-
-<p role="status" th:if="${successMessage != null}"
-   th:text="${successMessage}">
-</p>
-
-<p role="alert" th:if="${errorMessage != null}"
-   th:text="${errorMessage}">
-</p>
-
-<p>
-    <a th:href="@{/admin/providers}">Training Provider Management</a>
-    <a th:href="@{/admin/courses}">All Courses</a>
-</p>
-
-<p th:if="${#lists.isEmpty(commonCourses)}">
-    No commonly attended courses found.
-</p>
-
-<div class="table-scroll"><table th:if="${!#lists.isEmpty(commonCourses)}">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Course ID</th>
-        <th>Title</th>
-        <th>Category</th>
-        <th>Training Provider</th>
-        <th>Reference Fee (S$)</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    <tr th:each="commonCourse : ${commonCourses}">
-        <td th:text="${commonCourse.id}"></td>
-        <td th:text="${commonCourse.course.id}"></td>
-        <td th:text="${commonCourse.course.title}"></td>
-        <td th:text="${commonCourse.course.category == 'INTERNAL' ? 'Internal training' : (commonCourse.course.category == 'EXTERNAL' ? 'External course' : 'Certification')}"></td>
-        <td th:text="${commonCourse.course.provider.name}"></td>
-        <td th:text="${commonCourse.course.fee}"></td>
-
-        <td>
-            <a th:href="@{/admin/common-courses/{id}/edit(id=${commonCourse.id})}">
-                Change Selection
-            </a>
-
-            <form th:action="@{/admin/common-courses/{id}/delete(id=${commonCourse.id})}"
-                  method="post"
-                  onsubmit="return confirm('Are you sure you want to remove this course from the commonly attended catalogue?');">
-
-                <button type="submit">Remove</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table></div>
-
-</main>
-</body>
-</html>
+<h1>Commonly Attended Course Catalogue</h1>
+<p><a th:href="@{/admin/common-courses/new}">Add Course</a></p>
+<p role="status" th:if="${successMessage != null}" th:text="${successMessage}"></p>
+<p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
+<p th:if="${#lists.isEmpty(commonCourses)}">No commonly attended courses found.</p>
+<div class="table-scroll"><table th:unless="${#lists.isEmpty(commonCourses)}">
+<thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Training Provider</th><th>Reference Fee (S$)</th><th>Actions</th></tr></thead>
+<tbody><tr th:each="course : ${commonCourses}">
+<td th:text="${course.id}"></td><td th:text="${course.title}"></td><td th:text="${course.category.name}"></td>
+<td th:text="${course.provider.name}"></td><td th:text="${course.fee}"></td>
+<td><a th:href="@{/admin/common-courses/{id}/edit(id=${course.id})}">Edit</a>
+<form th:action="@{/admin/common-courses/{id}/delete(id=${course.id})}" method="post"
+onsubmit="return confirm('Remove this course from the catalogue?');"><button type="submit">Delete</button></form></td>
+</tr></tbody></table></div>
+</main></body></html>

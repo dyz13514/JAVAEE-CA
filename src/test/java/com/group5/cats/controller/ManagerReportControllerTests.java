@@ -46,7 +46,11 @@ class ManagerReportControllerTests {
     @BeforeEach
     void setUp() {
         service = mock(ManagerReportService.class);
-        mvc = MockMvcBuilders.standaloneSetup(new ManagerReportController(service)).build();
+        var categories = mock(com.group5.cats.service.CategoryService.class);
+        when(categories.findAllCategories()).thenReturn(List.of(
+                com.group5.cats.CategoryFixtures.category("INTERNAL"), com.group5.cats.CategoryFixtures.category("EXTERNAL"),
+                com.group5.cats.CategoryFixtures.category("CERTIFICATION")));
+        mvc = MockMvcBuilders.standaloneSetup(new ManagerReportController(service, categories)).build();
         manager = employee(1L, "Alice Wong", EmployeeRole.MANAGER);
     }
 
@@ -77,7 +81,7 @@ class ManagerReportControllerTests {
                 .andExpect(model().attribute("selectedCategory", "EXTERNAL"))
                 .andExpect(model().attribute("startDate", LocalDate.of(2026, 3, 1)))
                 .andExpect(model().attribute("endDate", LocalDate.of(2026, 3, 31)))
-                .andExpect(model().attribute("categories", CourseCategory.filterValues()));
+                .andExpect(model().attribute("categories", List.of("ALL", "INTERNAL", "EXTERNAL", "CERTIFICATION")));
     }
 
     @Test

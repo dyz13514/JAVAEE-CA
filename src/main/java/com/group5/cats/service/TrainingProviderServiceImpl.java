@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.group5.cats.model.TrainingProvider;
-import com.group5.cats.repository.CourseRepository;
+import com.group5.cats.repository.CommonCourseRepository;
 import com.group5.cats.repository.TrainingProviderRepository;
 
 @Service
@@ -15,14 +15,14 @@ public class TrainingProviderServiceImpl
         implements TrainingProviderService {
 
     private final TrainingProviderRepository trainingProviderRepository;
-    private final CourseRepository courseRepository;
+    private final CommonCourseRepository commonCourseRepository;
 
     public TrainingProviderServiceImpl(
             TrainingProviderRepository trainingProviderRepository,
-            CourseRepository courseRepository) {
+            CommonCourseRepository commonCourseRepository) {
 
         this.trainingProviderRepository = trainingProviderRepository;
-        this.courseRepository = courseRepository;
+        this.commonCourseRepository = commonCourseRepository;
     }
 
     @Override
@@ -109,8 +109,8 @@ public class TrainingProviderServiceImpl
             return "Training provider not found.";
         }
 
-        if (courseRepository.existsByProvider_Id(id)) {
-            return "This provider has courses and cannot be deleted.";
+        if (commonCourseRepository.existsByProvider_Id(id)) {
+            return "This provider is used by commonly attended courses and cannot be deleted.";
         }
 
         trainingProviderRepository.delete(provider);

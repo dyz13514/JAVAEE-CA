@@ -1,47 +1,27 @@
-# Course and CommonCourse
+# 已有 MySQL 数据库升级
 
-- `Course` maps to `courses`: all recorded course details, including provider and reference fee.
-- `CommonCourse` maps to `common_courses`: one administrator-selected catalogue entry per course.
-- `CourseApplication.course` maps to nullable `course_applications.course_id`.
-- Dates and the actual requested fee belong to each application. Title, category and provider are copied into its snapshot fields.
-- Existing/manual applications may have no course link. They are not automatically matched by title or promoted into the catalogue.
-- DataLoader now creates six sample courses only when courses is empty. It reuses matching provider names and does not add any common_courses entries.
+本次由 Course + CommonCourse(course_id) 改为独立 Category 和直接保存课程资料的 CommonCourse。
+Hibernate 的 ddl-auto=update 不会自动搬迁旧资料或删除旧的非空 course_id，
+所以已有数据库不能仅靠重启完成升级。
 
-## Existing database upgrade
+1. 停止 Spring Boot。先在 MySQL Workbench 导出完整数据库备份。
+2. 选中项目实际使用的数据库，核对当前还有 courses、common_courses.course_id、
+   course_applications.category 三处旧结构。
+3. 打开并完整执行 `database/migrate-category-and-catalogue.sql`，包括 DELIMITER、过程定义及 CALL。
+4. 末尾查询的迁移前后目录数量、申请数量应分别相同。核对三种原始类别和半天设置。
+5. 启动 Spring Boot。管理员检查类别、常用课程、培训机构、假日及额度页面；
+   员工检查原申请、手动新申请、从目录预填，以及申请编辑；经理检查审批和报表。
 
-The old CommonCourse entity used the table name `courses`. Its rows and IDs are now used directly by Course; do not rename or drop that table.
+脚本保留 common_courses 的原 ID，申请 ID、员工 ID、日期、trainingDays、实际费用和状态不变。
+只有旧目录选中的课程进入新 CommonCourse；未选中的总 Course 不会自动变成常用课程。
+全部旧 Course、目录、申请和排期还会复制到 archive_* 表中，归档表没有外键，不影响今后的维护。
+不要在确认迁移正确前删除归档表。
 
-If your existing `courses` table contains old commonly attended courses, stop the application, back up the database, and run `database/migrate-common-course-catalogue.sql` **once, before using the new version**. It preserves their common-catalogue membership. It does not delete or modify course data. Do not run it after adding new total courses: that would mark those courses as common too.
+脚本只适用于本项目旧结构。空数据库直接启动，不执行迁移脚本。
+已经迁移过不能重复运行。中途中断时停止操作，检查报错和导出备份；
+MySQL 的 DDL 会自动提交，不能依赖 ROLLBACK 恢复整个迁移。
+脚本遇到空类别、失效机构或其他未知 Course 依赖会停止，避免把这些记录静默丢弃。
+如果曾尝试新版本导致 category_id 已部分生成，脚本会重新按原类别文字映射该列。
 
-For a fresh database or an empty old course catalogue, simply start the application. The current Hibernate `ddl-auto=update` creates `common_courses` and adds the nullable application foreign key. Existing applications keep their original information and have a null course link.
-
-## Manual checks
-
-1. Admin → All courses → Add Course (add a provider first if needed).
-2. Admin → Common course catalogue → Select Course.
-3. Selecting the same course twice should show a validation message.
-4. Removing a common entry must leave its total course available.
-5. Staff → Apply for course → choose a recorded course, check the actual fee and submit.
-6. Changing course/provider details must not rewrite saved application details.
-7. A course referenced by a catalogue entry or application cannot be deleted.
-8. A provider with any recorded course cannot be deleted.
-
-The original manual-entry application option remains available for courses not yet recorded.
-
-## Course identity and catalogue status
-
-The create/edit form rejects the same title (ignoring case and outer spaces), category and provider combination. The same title may exist for different providers or categories. This is a service-level validation; the unique database constraint on common_courses.course_id separately guarantees one common entry per course.
-
-All courses shows a Commonly Attended column calculated from common_courses. There is no second boolean flag to keep in sync.
-
-## Browsing and searching
-
-Staff and managers can open Browse courses from the sidebar. Staff can follow Apply to prefill a new application; that GET request does not save anything. The final submission still validates the selected course on the server. Existing/manual applications remain supported.
-
-Both /courses and /admin/courses support keyword (course or provider name), providerId, category and commonOnly filters. Filters combine with AND. Keyword matching ignores case and outer spaces. Reset filters shows all courses again. The implementation deliberately uses a simple loop suitable for the current small catalogue.
-
-## Sample courses and card layout
-
-On the next normal startup, an empty course table receives Java/Spring Boot, SQL, Cloud Architecture, Workplace Communication, Security Awareness and Project Management Certification samples. Their providers and fees are demonstration data, not verified commercial offerings. If the table already contains a course, the loader leaves the catalogue unchanged. If all courses are deleted, the next startup seeds it again.
-
-The employee page shows the administrator-selected Commonly Attended Courses first, independently of filters. Course overview below includes all courses by default, including common courses, and supports the existing search filters. Admin management retains its table layout. No completion percentages are displayed because catalogue entries are not enrolment records.
+旧 `migrate-common-course-catalogue.sql` 已由此次脚本替换，不再运行旧拆表脚本。
+申请 INTERNAL 时实际费用会保留，但不占用预算；迁移不会把旧 INTERNAL 的费用强制改成零。

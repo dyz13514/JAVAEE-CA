@@ -1,29 +1,35 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Course application - CATS</title>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"><title>Course Application - CATS</title>
 <th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
 <body><th:block th:replace="~{fragments/layout :: shell('apply')}"></th:block>
-<main th:with="courseBaseUrl=${session.loggedInUser.role.name() == 'ADMIN' ? '/admin/courses' : '/employee/courses'}" class="page-main">
-<h1 th:text="${courseApplication.id == null ? 'Apply for a course' : 'Edit application'}"></h1>
-<p th:if="${errorMessage}" th:text="${errorMessage}" class="notice error" role="alert"></p>
-<p><a th:href="@{${courseBaseUrl}}">Back to course selection</a></p>
-<form method="post" th:action="${formAction}" th:object="${courseApplication}" id="courseForm">
-<input type="hidden" th:field="*{courseId}">
-<section class="form-section"><h2 id="summaryTitle" th:text="*{courseTitle}"></h2>
-<p th:text="*{provider}"></p>
-<p th:if="${selectedCourse != null}" th:text="${'Fixed duration: ' + selectedCourse.durationDays + ' training days'}"></p>
-<p th:if="${courseApplication.id != null}">Keeping your original start date also keeps the original end date, even if the published duration has changed.</p>
-<div class="field"><label for="fromDate">Available start date</label>
-<select id="fromDate" th:field="*{fromDate}" required>
-<option value="">Choose a start date</option>
-<option th:each="date : ${availableDates}" th:value="${date.key.toString()}" th:text="${date.key.toString() + ' → ' + date.value.toString()}"></option>
-</select><small>Each option shows the start and end dates. Weekends and public holidays are excluded.</small></div>
-<p th:if="${availableDates == null or #maps.isEmpty(availableDates)}">No available start dates. Please contact an administrator.</p>
-<div class="field"><label for="fee">Actual course fee (S$)</label><input id="fee" type="number" th:field="*{fee}" min="0" step="0.01" required></div>
-</section>
-<section class="form-section"><h2>Reason and knowledge sharing</h2>
-<div class="field"><label for="justification">Reason for training</label><textarea id="justification" th:field="*{justification}" rows="3" maxlength="255" required></textarea></div>
-<div class="field"><label for="dissemination">Knowledge sharing plan</label><textarea id="dissemination" th:field="*{dissemination}" rows="3" maxlength="255"></textarea></div>
-</section><p>Your assigned manager will review this application.</p>
-<button type="submit" th:disabled="${availableDates == null or #maps.isEmpty(availableDates)}" th:text="${courseApplication.id == null ? 'Submit application' : 'Save changes'}">Submit application</button>
-</form></main></body></html>
+<main class="page-main admin-content">
+<h1 th:text="${courseApplication.id == null ? 'Apply for a Course' : 'Edit Application'}"></h1>
+<p>You can enter any course, or use the commonly attended catalogue to prefill the information.</p>
+<p><a th:href="@{/employee/courses}">Browse commonly attended courses</a></p>
+<p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
+<form th:action="@{${formAction}}" th:object="${courseApplication}" method="post">
+    <p><label for="courseTitle">Course Title</label>
+        <input id="courseTitle" th:field="*{courseTitle}" maxlength="255" required></p>
+    <p><label for="categoryId">Category</label>
+        <select id="categoryId" th:field="*{categoryId}" required>
+            <option value="">-- Select Category --</option>
+            <option th:each="category : ${categories}" th:value="${category.id}"
+                    th:text="${category.name + (category.halfDayAllowed ? ' (half-day allowed)' : '')}"></option>
+        </select></p>
+    <p><label for="provider">Training Provider</label>
+        <input id="provider" th:field="*{provider}" list="providerNames" maxlength="255">
+        <datalist id="providerNames"><option th:each="provider : ${providers}" th:value="${provider.name}"></option></datalist></p>
+    <p><label for="fromDate">From Date</label><input type="date" id="fromDate" th:field="*{fromDate}" required></p>
+    <p><label for="toDate">To Date</label><input type="date" id="toDate" th:field="*{toDate}" required></p>
+    <p><label for="halfDay">Half-day Session</label><input type="checkbox" id="halfDay" th:field="*{halfDay}"></p>
+    <p>A half-day session must use the same start and end date and a category that allows half-days.
+       Other courses must end after the start date. Weekends and public holidays are excluded from training days.</p>
+    <p><label for="fee">Actual Course Fee (S$)</label><input type="number" id="fee" th:field="*{fee}" min="0" step="0.01" required></p>
+    <p>INTERNAL fees are recorded but do not count toward your annual budget.</p>
+    <p><label for="justification">Reason for Training</label><textarea id="justification" th:field="*{justification}" maxlength="255" required></textarea></p>
+    <p><label for="dissemination">Knowledge Sharing Plan</label><textarea id="dissemination" th:field="*{dissemination}" maxlength="255"></textarea></p>
+    <button type="submit">Submit</button>
+    <a th:href="@{/employee/history}">Back to My Applications</a>
+</form>
+</main></body></html>

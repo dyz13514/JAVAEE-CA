@@ -17,7 +17,7 @@
         <div class="row justify-content-center">
             <div class="col-lg-10">
 
-<div class="page-heading"><div><h1 th:text="${courseApplication.courseTitle}">Course application</h1><p th:text="${courseApplication.category == 'INTERNAL' ? 'Internal training' : (courseApplication.category == 'EXTERNAL' ? 'External course' : 'Certification')}"></p></div><div class="detail-state"><span th:replace="~{fragments/layout :: status(${courseApplication.status})}"></span><small th:text="${'Application #' + courseApplication.id}"></small></div></div>
+<div class="page-heading"><div><h1 th:text="${courseApplication.courseTitle}">Course application</h1><p th:text="${courseApplication.categoryName}"></p></div><div class="detail-state"><span th:replace="~{fragments/layout :: status(${courseApplication.status})}"></span><small th:text="${'Application #' + courseApplication.id}"></small></div></div>
                 <div class="detail-card">
 
                     <dl class="row param-grid">

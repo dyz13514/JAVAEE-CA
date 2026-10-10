@@ -15,7 +15,7 @@ import com.group5.cats.model.Employee;
 public interface CourseApplicationRepository
         extends JpaRepository<CourseApplication, Long> {
 
-    boolean existsByCourse_Id(Long courseId);
+    boolean existsByCategory_Id(Long categoryId);
 
     List<CourseApplication> findByEmployee(Employee employee);
 
@@ -25,7 +25,7 @@ public interface CourseApplicationRepository
     @Query("SELECT a FROM CourseApplication a WHERE a.employee.id = :employeeId "
             + "AND (:currentYear = false OR (a.fromDate >= :yearStart AND a.fromDate < :nextYear)) "
             + "AND (:keyword = '' OR LOCATE(LOWER(:keyword), LOWER(a.courseTitle)) > 0 "
-            + "OR LOCATE(LOWER(:keyword), LOWER(a.category)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.category.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.provider)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.status)) > 0)")
     Page<CourseApplication> searchEmployeeApplications(
@@ -36,7 +36,7 @@ public interface CourseApplicationRepository
     @Query("SELECT a FROM CourseApplication a WHERE a.employee.supervisor.id = :managerId "
             + "AND (:keyword = '' OR LOCATE(LOWER(:keyword), LOWER(a.employee.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.courseTitle)) > 0 "
-            + "OR LOCATE(LOWER(:keyword), LOWER(a.category)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.category.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.provider)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.status)) > 0)")
     Page<CourseApplication> searchTeamApplications(@Param("managerId") Long managerId,

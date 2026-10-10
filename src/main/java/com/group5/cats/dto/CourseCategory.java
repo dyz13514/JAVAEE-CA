@@ -1,10 +1,8 @@
 package com.group5.cats.dto;
 
-import java.util.List;
-
 /**
- * Course categories stored on course applications, plus the filter value used by
- * manager reports. Labels match the wording already used across the portal.
+ * Names of the three original categories and the manager report's ALL option.
+ * The Category table supplies the selectable categories.
  */
 public final class CourseCategory {
 
@@ -16,17 +14,8 @@ public final class CourseCategory {
     private CourseCategory() {
     }
 
-    /** Filter values: all categories first, then the concrete categories. */
-    public static List<String> filterValues() {
-        return List.of(ALL, INTERNAL, EXTERNAL, CERTIFICATION);
-    }
-
-    public static boolean isValidFilter(String category) {
-        return filterValues().contains(category);
-    }
-
     public static boolean isBudgetRelevant(String category) {
-        return EXTERNAL.equals(category) || CERTIFICATION.equals(category);
+        return category != null && !category.isBlank() && !INTERNAL.equals(category);
     }
 
     public static String label(String category) {

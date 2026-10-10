@@ -21,7 +21,7 @@ class ApplicationPaginationControllerTests {
     void historyPassesNormalizedSearchAndOnlyQueriesTheLoggedInEmployee() throws Exception {
         var service = mock(CourseApplicationService.class);
         var controller = new EmployeeController(service, mock(EntitlementService.class),
-                mock(CourseService.class), mock(CourseScheduleService.class));
+                mock(CommonCourseService.class), mock(CategoryService.class), mock(TrainingProviderService.class));
         var mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setViewResolvers(new InternalResourceViewResolver("/templates/", ".html")).build();
         Employee user = user(EmployeeRole.REGULAR_STAFF);

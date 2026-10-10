@@ -218,7 +218,7 @@ class TrainingCalendarControllerTests {
         CourseApplication course = new CourseApplication();
         course.setEmployee(staff);
         course.setCourseTitle("Cross-month training");
-        course.setCategory("EXTERNAL");
+        course.setCategory(com.group5.cats.CategoryFixtures.category("EXTERNAL"));
         course.setFromDate(LocalDate.of(2026, 10, 30));
         course.setToDate(LocalDate.of(2026, 11, 2));
         for (int month : List.of(10, 11)) {

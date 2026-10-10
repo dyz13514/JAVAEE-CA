@@ -16,7 +16,8 @@
     <aside class="app-sidebar">
         <nav aria-label="Main navigation">
             <a th:classappend="${active == 'home' ? 'active' : ''}" th:attr="aria-current=${active == 'home' ? 'page' : null}" th:href="${admin ? '/admin/home' : '/employee/home'}"><svg th:replace="~{fragments/icons :: icon('overview')}"></svg><span>Overview</span></a>
-                <a th:classappend="${active == 'browse-courses' ? 'active' : ''}" th:attr="aria-current=${active == 'browse-courses' ? 'page' : null}" th:href="${admin ? '/admin/courses' : '/employee/courses'}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span th:text="${admin ? 'Course management' : 'Apply for course'}">Apply for course</span></a>
+            <a th:unless="${admin}" th:href="@{/employee/courses}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Common course catalogue</span></a>
+            <a th:unless="${admin}" th:href="@{/employee/apply}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Apply for course</span></a>
             <th:block th:unless="${admin}">
                 <a th:classappend="${active == 'history' ? 'active' : ''}" th:attr="aria-current=${active == 'history' ? 'page' : null}" th:href="@{/employee/history}"><svg th:replace="~{fragments/icons :: icon('history')}"></svg><span>My applications</span></a>
                 <a th:if="${user != null and user.role.name() == 'MANAGER'}" th:classappend="${active == 'approvals' ? 'active' : ''}" th:attr="aria-current=${active == 'approvals' ? 'page' : null}" th:href="@{/manager/approvals}"><svg th:replace="~{fragments/icons :: icon('review')}"></svg><span>Team applications</span></a>
@@ -25,6 +26,7 @@
             <a th:if="${admin}" th:classappend="${active == 'employees' ? 'active' : ''}" th:attr="aria-current=${active == 'employees' ? 'page' : null}" th:href="@{/admin/employees}"><svg th:replace="~{fragments/icons :: icon('employees')}"></svg><span>Employees</span></a>
             <a th:classappend="${active == 'entitlement' ? 'active' : ''}" th:attr="aria-current=${active == 'entitlement' ? 'page' : null}" th:href="@{/entitlements}"><svg th:replace="~{fragments/icons :: icon('calendar')}"></svg><span th:text="${admin ? 'Training allowances' : 'Annual entitlement'}">Annual entitlement</span></a>
             <th:block th:if="${admin}">
+                <a th:classappend="${active == 'categories' ? 'active' : ''}" th:href="@{/admin/categories}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Course categories</span></a>
                 <a th:classappend="${active == 'notifications' ? 'active' : ''}" th:attr="aria-current=${active == 'notifications' ? 'page' : null}" th:href="@{/admin/notifications}"><svg th:replace="~{fragments/icons :: icon('history')}"></svg><span>Email notifications</span></a>
                 <a th:classappend="${active == 'providers' ? 'active' : ''}" th:attr="aria-current=${active == 'providers' ? 'page' : null}" th:href="@{/admin/providers}"><svg th:replace="~{fragments/icons :: icon('providers')}"></svg><span>Training providers</span></a>
                 <a th:classappend="${active == 'common-courses' ? 'active' : ''}" th:attr="aria-current=${active == 'common-courses' ? 'page' : null}" th:href="@{/admin/common-courses}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Common course catalogue</span></a>

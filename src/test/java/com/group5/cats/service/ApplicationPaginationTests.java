@@ -97,7 +97,7 @@ class ApplicationPaginationTests {
         CourseApplication application = new CourseApplication();
         application.setEmployee(employee);
         application.setCourseTitle(title);
-        application.setCategory("EXTERNAL");
+        application.setCategory(com.group5.cats.CategoryFixtures.category("EXTERNAL"));
         application.setProvider("Test provider");
         application.setFromDate(date);
         application.setToDate(date.plusDays(1));

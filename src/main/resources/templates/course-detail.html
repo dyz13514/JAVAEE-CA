@@ -1,34 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Course details - CATS</title>
-    <th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
-<body>
-<th:block th:replace="~{fragments/layout :: shell('browse-courses')}"></th:block>
-<main th:with="courseBaseUrl=${session.loggedInUser.role.name() == 'ADMIN' ? '/admin/courses' : '/employee/courses'}" class="page-main course-catalogue">
-    <p><a th:href="@{${courseBaseUrl}}" th:text="${canApply ? '← Apply for course' : '← Course management'}">Back to courses</a></p>
-    <div class="page-heading"><div><h1 th:text="${course.title}"></h1>
-        <p th:text="${course.provider.name}"></p></div></div>
-    <section class="form-section">
-        <h2>Introduction</h2>
-        <p class="course-introduction" th:text="${course.introduction ?: 'An introduction has not been published yet.'}"></p>
-        <dl><dt>Category</dt><dd th:text="${course.category}"></dd>
-            <dt>Training provider</dt><dd th:text="${course.provider.name}"></dd>
-            <dt>Duration</dt><dd th:text="${course.durationDays == null ? 'Not scheduled yet' : course.durationDays + ' training days'}"></dd>
-            <dt>Reference fee</dt><dd th:text="${'S$ ' + #numbers.formatDecimal(course.fee, 1, 2)}"></dd></dl>
-    </section>
-    <section class="form-section"><h2>Available start dates</h2>
-        <p>Duration is fixed. Weekends and public holidays are excluded.</p>
-        <p th:if="${#maps.isEmpty(availableDates)}">No available dates. Please check again after the administrator publishes a schedule.</p>
-        <ul><li th:each="date : ${availableDates}" th:text="${date.key.toString() + ' → ' + date.value.toString()}"></li></ul>
-        <a class="primary-button" th:if="${canApply and !#maps.isEmpty(availableDates)}" th:href="@{/employee/apply(courseId=${course.id})}">Apply</a>
-        <p th:if="${canApply}">Your assigned manager must approve your application.</p>
-    </section>
-    <section class="form-section" th:if="${session.loggedInUser.role.name() == 'ADMIN'}">
-        <h2>Manage this course</h2>
-        <p><a th:href="@{/admin/courses/{id}/edit(id=${course.id})}">Edit course and schedule</a> ·
-            <a th:href="@{/admin/common-courses}">Manage commonly attended courses</a></p>
-        <form method="post" th:action="@{/admin/courses/{id}/delete(id=${course.id})}" onsubmit="return confirm('Delete this course?');">
-            <button type="submit">Delete course</button>
-        </form>
-    </section>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"><title>Course Details - CATS</title>
+<th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
+<body><th:block th:replace="~{fragments/layout :: shell('browse-courses')}"></th:block>
+<main class="page-main admin-content">
+<h1 th:text="${course.title}"></h1>
+<p>Category: <span th:text="${course.category.name}"></span></p>
+<p th:text="${course.category.description}"></p>
+<p>Half-day Allowed: <span th:text="${course.category.halfDayAllowed ? 'Yes' : 'No'}"></span></p>
+<p>Training Provider: <span th:text="${course.provider.name}"></span></p>
+<p>Reference Fee (S$): <span th:text="${course.fee}"></span></p><p th:text="${course.introduction}"></p>
+<p>Enter your own training dates and actual fee in the application.</p>
+<a th:if="${canApply}" th:href="@{/employee/apply(commonCourseId=${course.id})}">Use for Application</a>
+<a th:href="@{/employee/courses}">Back to Catalogue</a>
 </main></body></html>
