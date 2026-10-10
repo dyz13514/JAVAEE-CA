@@ -22,9 +22,16 @@
         <datalist id="providerNames"><option th:each="provider : ${providers}" th:value="${provider.name}"></option></datalist></p>
     <p><label for="fromDate">From Date</label><input type="date" id="fromDate" th:field="*{fromDate}" required></p>
     <p><label for="toDate">To Date</label><input type="date" id="toDate" th:field="*{toDate}" required></p>
-    <p><label for="halfDay">Half-day Session</label><input type="checkbox" id="halfDay" th:field="*{halfDay}"></p>
-    <p>A half-day session must use the same start and end date and a category that allows half-days.
-       Other courses must end after the start date. Weekends and public holidays are excluded from training days.</p>
+	<p>
+	    <label for="halfDay">Last Training Day Is a Half-day</label>
+	    <input type="checkbox" id="halfDay" th:field="*{halfDay}">
+	</p>
+
+	<p>
+	    Select this only for a category that allows half-days.
+	    The last training day counts as 0.5 day.
+	    Weekends and public holidays are excluded from training days.
+	</p>
     <p><label for="fee">Actual Course Fee (S$)</label><input type="number" id="fee" th:field="*{fee}" min="0" step="0.01" required></p>
     <p>INTERNAL fees are recorded but do not count toward your annual budget.</p>
     <p><label for="justification">Reason for Training</label><textarea id="justification" th:field="*{justification}" maxlength="255" required></textarea></p>

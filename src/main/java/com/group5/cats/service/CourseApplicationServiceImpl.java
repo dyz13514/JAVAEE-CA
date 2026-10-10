@@ -158,8 +158,8 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
             if (!category.isHalfDayAllowed()) {
                 return "This category does not allow half-day sessions.";
             }
-            if (!from.equals(to)) {
-                return "Half-day session must start and end on the same date.";
+            if (to.isBefore(from)) {
+                return "Course end date must not be before start date.";
             }
         } else if (!from.isBefore(to)) {
             return "Course end date must be after start date for a full-day course.";
@@ -428,10 +428,16 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     }
 
     private double computeTrainingDays(CourseApplication application) {
+
+        double days = countTrainingDays(
+                application.getFromDate(),
+                application.getToDate());
+
         if (Boolean.TRUE.equals(application.getHalfDay())) {
-            return 0.5;
+            days = days - 0.5;
         }
-        return countTrainingDays(application.getFromDate(), application.getToDate());
+
+        return days;
     }
     
     private boolean isPublicHoliDays(LocalDate date) { 
