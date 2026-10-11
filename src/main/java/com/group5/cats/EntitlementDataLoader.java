@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeDesignation;
@@ -12,6 +13,7 @@ import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.EmployeeRepository;
 import com.group5.cats.service.EntitlementService;
 
+@Profile("!demo")
 @Component
 @Order(2)
 public class EntitlementDataLoader implements CommandLineRunner {

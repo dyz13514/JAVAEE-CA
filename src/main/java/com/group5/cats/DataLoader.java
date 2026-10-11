@@ -10,12 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeDesignation;
 import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.EmployeeRepository;
 
+@Profile("!demo")
 @Component 
 @Order(1)
 public class DataLoader implements CommandLineRunner {
