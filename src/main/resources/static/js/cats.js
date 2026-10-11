@@ -2,13 +2,14 @@
 (() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        document.querySelectorAll('button, .btn, .primary-button, .app-sidebar nav a, .management-link').forEach(control => {
-            control.addEventListener('pointermove', event => {
-                if (reducedMotion.matches) return;
-                const box = control.getBoundingClientRect();
-                control.style.setProperty('--light-x', `${event.clientX - box.left}px`);
-                control.style.setProperty('--light-y', `${event.clientY - box.top}px`);
-            });
+        // Delegation also covers action links added after the page has loaded.
+        document.addEventListener('pointermove', event => {
+            if (reducedMotion.matches) return;
+            const control = event.target.closest('button, .btn, .primary-button, .secondary-button, .danger-button, .success-button, .app-sidebar nav a, .management-link');
+            if (!control || control.matches(':disabled, [aria-disabled="true"]')) return;
+            const box = control.getBoundingClientRect();
+            control.style.setProperty('--light-x', `${event.clientX - box.left}px`);
+            control.style.setProperty('--light-y', `${event.clientY - box.top}px`);
         });
     }
     document.querySelectorAll('.allowance-meter').forEach(meter => {

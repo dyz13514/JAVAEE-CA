@@ -912,7 +912,7 @@ body .bg-white,body .bg-light {
 }
 
 body .btn {
-    border-radius:var(--control-radius,6px)!important;
+    border-radius:var(--button-radius,999px)!important;
     box-shadow:none;
     background:var(--blue);
     color:#fff;
