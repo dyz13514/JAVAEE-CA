@@ -32,6 +32,7 @@ class NotificationPersistenceTests {
     @Autowired EntitlementService entitlementService;
     @Autowired CategoryRepository categories;
     @Autowired TrainingProviderRepository providers;
+    @Autowired CourseRepository courseRepository;
 
     @BeforeEach
     void clearNotifications() {
@@ -49,6 +50,9 @@ class NotificationPersistenceTests {
         LocalDate from = LocalDate.now().plusDays(7).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
         entitlementService.setEntitlement(employee.getId(), from.getYear(), 10, 2000);
         CourseApplication application = new CourseApplication();
+        application.setCourseId(courseRepository.findByActiveTrueOrderByTitleAscCategory_NameAscProvider_NameAsc()
+                .stream().filter(course -> course.getCategory().getName().equals("EXTERNAL"))
+                .findFirst().orElseThrow().getId());
         application.setCourseTitle("Email integration");
         application.setProvider(providers.findAll().get(0));
         application.setCategory(categories.findByNameIgnoreCase("EXTERNAL").orElseThrow());

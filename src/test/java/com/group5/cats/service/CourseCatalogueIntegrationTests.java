@@ -1,12 +1,13 @@
 package com.group5.cats.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import com.group5.cats.dto.CommonCourseForm;
 import com.group5.cats.model.*;
 import com.group5.cats.repository.*;
 
@@ -20,6 +21,7 @@ import com.group5.cats.repository.*;
 @Transactional
 class CourseCatalogueIntegrationTests {
     @Autowired CommonCourseRepository courses;
+    @Autowired CourseRepository records;
     @Autowired CommonCourseService courseService;
     @Autowired CategoryRepository categories;
     @Autowired CategoryService categoryService;
@@ -28,20 +30,78 @@ class CourseCatalogueIntegrationTests {
     @Autowired CourseApplicationRepository applications;
     @Autowired EmployeeRepository employees;
     @Autowired jakarta.persistence.EntityManager entityManager;
+    @Autowired org.springframework.web.context.WebApplicationContext context;
 
     @Test
-    void duplicateIdentityIsCheckedAndOwnUpdateAllowed() {
-        TrainingProvider provider = providers.save(new TrainingProvider("Identity provider"));
-        Category category = categories.findByNameIgnoreCase("EXTERNAL").orElseThrow();
-        CommonCourse course = courses.saveAndFlush(new CommonCourse("Java", category, provider, 200));
-        CommonCourseForm form = new CommonCourseForm();
-        form.setTitle(" java "); form.setIntroduction("Learn Java.");
-        form.setCategoryId(category.getId()); form.setProviderId(provider.getId()); form.setFee(300.0);
-        assertNotNull(courseService.createCommonCourse(form));
-        assertNull(courseService.updateCommonCourse(course.getId(), form));
-        CommonCourse other = courses.saveAndFlush(new CommonCourse("Other", category, provider, 100));
-        assertNotNull(courseService.updateCommonCourse(other.getId(), form));
-        assertEquals("Other", other.getTitle());
+    void realPagesAndMembershipRequestsRespectRolesAndNeverChangeTheCourse() throws Exception {
+        var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup(context).build();
+        Employee admin = employees.findByUsername("admin").orElseThrow();
+        Course fixed = records.findByActiveTrueOrderByTitleAscCategory_NameAscProvider_NameAsc().get(0);
+        Long courseId = fixed.getId();
+        double fee = fixed.getFee();
+        String title = fixed.getTitle();
+        long count = records.count();
+        String addUrl = "/admin/common-courses/" + courseId + "/add";
+        mvc.perform(post(addUrl).sessionAttr("loggedInUser", admin)
+                .param("fee", "1").param("title", "Forged course").param("categoryId", "99"))
+                .andExpect(redirectedUrl("/admin/common-courses"));
+        mvc.perform(post(addUrl).sessionAttr("loggedInUser", admin))
+                .andExpect(flash().attributeExists("errorMessage"));
+        assertEquals(1, courses.count());
+        Long entryId = courses.findAll().get(0).getId();
+        for (String username : List.of("emp1", "manager1")) {
+            Employee user = employees.findByUsername(username).orElseThrow();
+            String html = mvc.perform(get("/employee/courses").sessionAttr("loggedInUser", user))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            assertTrue(html.contains("Commonly Attended Course Catalogue"));
+            assertTrue(html.contains("All Course"));
+            assertFalse(html.contains("Add to Common"));
+            assertFalse(html.contains("Remove from Common"));
+            mvc.perform(post(addUrl).sessionAttr("loggedInUser", user)).andExpect(status().isForbidden());
+            mvc.perform(post("/admin/common-courses/" + entryId + "/delete").sessionAttr("loggedInUser", user))
+                    .andExpect(status().isForbidden());
+        }
+        mvc.perform(post("/admin/common-courses/" + entryId + "/delete").sessionAttr("loggedInUser", admin))
+                .andExpect(redirectedUrl("/admin/common-courses"));
+        entityManager.flush(); entityManager.clear();
+        assertEquals(0, courses.count());
+        assertEquals(count, records.count());
+        Course saved = records.findById(courseId).orElseThrow();
+        assertTrue(saved.isActive());
+        assertEquals(title, saved.getTitle());
+        assertEquals(fee, saved.getFee());
+        Employee staff = employees.findByUsername("emp1").orElseThrow();
+        mvc.perform(get("/employee/courses/details/" + courseId).sessionAttr("loggedInUser", staff))
+                .andExpect(status().isOk());
+        mvc.perform(get("/employee/apply").param("courseId", courseId.toString()).sessionAttr("loggedInUser", staff))
+                .andExpect(status().isOk()).andExpect(model().attribute("courseLocked", true));
+        mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", staff)
+                .param("lockedCourseId", courseId.toString()).param("courseId", "999")
+                .param("courseTitle", "Forged").param("fee", "1")
+                .param("fromDate", "2027-01-04").param("toDate", "2027-01-05"))
+                .andExpect(view().name("apply-course"))
+                .andExpect(model().attribute("courseLocked", true))
+                .andExpect(result -> {
+                    CourseApplication data = (CourseApplication) result.getModelAndView().getModel().get("courseApplication");
+                    assertEquals(courseId, data.getCourseId());
+                    assertEquals(title, data.getCourseTitle());
+                    assertEquals(fee, data.getFee());
+                });
+        assertEquals(0, applications.count());
+    }
+
+    @Test
+    void membershipIsUniqueAndDoesNotCreateOrModifyACourse() {
+        Course fixed = records.findByActiveTrueOrderByTitleAscCategory_NameAscProvider_NameAsc().get(0);
+        long courseCount = records.count();
+        double fee = fixed.getFee();
+        assertEquals(0, courses.count());
+        assertNull(courseService.addCommonCourse(fixed.getId()));
+        assertNotNull(courseService.addCommonCourse(fixed.getId()));
+        entityManager.flush(); entityManager.clear();
+        assertEquals(1, courses.count());
+        assertEquals(courseCount, records.count());
+        assertEquals(fee, records.findById(fixed.getId()).orElseThrow().getFee());
     }
 
     @Test
@@ -49,7 +109,7 @@ class CourseCatalogueIntegrationTests {
         assertNull(categoryService.createCategory("WORKSHOP", "Workshop", true));
         Category category = categories.findByNameIgnoreCase("WORKSHOP").orElseThrow();
         TrainingProvider provider = providers.save(new TrainingProvider("Catalogue provider"));
-        CommonCourse course = courses.saveAndFlush(new CommonCourse("Java", category, provider, 200));
+        CommonCourse course = courses.saveAndFlush(new CommonCourse(records.save(new Course("Java", category, provider, 200))));
         course.setIntroduction("Java introduction");
         CourseApplication application = new CourseApplication();
         application.setEmployee(employees.findByUsername("emp1").orElseThrow());
@@ -82,15 +142,16 @@ class CourseCatalogueIntegrationTests {
     }
 
     @Test
-    void categoryRelationshipAndReferenceFeeSurviveReload() {
+    void categoryRelationshipAndFixedFeeSurviveReload() {
         Category category = categories.findByNameIgnoreCase("INTERNAL").orElseThrow();
         TrainingProvider provider = providers.save(new TrainingProvider("Fee provider"));
-        CommonCourse course = new CommonCourse("Recorded internal cost", category, provider, 125);
+        CommonCourse course = new CommonCourse("Free internal course", category, provider, 0);
         course.setIntroduction("Recorded cost, excluded from entitlement budget.");
+        records.save(course.getCourse());
         courses.saveAndFlush(course);
         Long id = course.getId(); entityManager.clear();
         CommonCourse saved = courses.findById(id).orElseThrow();
-        assertEquals(125, saved.getFee());
+        assertEquals(0, saved.getFee());
         assertEquals("INTERNAL", saved.getCategory().getName());
         assertTrue(saved.getCategory().isHalfDayAllowed());
         assertTrue(saved.getIntroduction().contains("excluded"));

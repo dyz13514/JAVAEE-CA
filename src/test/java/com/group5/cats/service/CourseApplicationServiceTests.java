@@ -24,9 +24,8 @@ import com.group5.cats.repository.*;
 class CourseApplicationServiceTests {
     private CourseApplicationRepository applications;
     private EntitlementService entitlements;
-    private CategoryRepository categories;
-    private TrainingProviderRepository providers;
-    private TrainingProvider provider;
+    private CourseRepository courses;
+    private Course[] catalogue = new Course[5];
     private PublicHolidayRepository holidays;
     private CourseApplicationServiceImpl service;
     private NotificationService notifications;
@@ -39,19 +38,22 @@ class CourseApplicationServiceTests {
         entitlements = mock(EntitlementService.class);
         holidays = mock(PublicHolidayRepository.class);
         notifications = mock(NotificationService.class);
-        categories = mock(CategoryRepository.class);
-        when(categories.findById(anyLong())).thenAnswer(invocation -> {
+        courses = mock(CourseRepository.class);
+        for (int id = 1; id <= 4; id++) {
+            Category category = com.group5.cats.CategoryFixtures.category(
+                    id == 1 ? "INTERNAL" : id == 2 ? "EXTERNAL" : id == 3 ? "CERTIFICATION" : "WORKSHOP");
+            TrainingProvider provider = new TrainingProvider("ISS");
+            provider.setId(1L);
+            catalogue[id] = new Course("Spring MVC", category, provider, id == 1 ? 0 : 100);
+            catalogue[id].setId((long) id);
+        }
+        when(courses.findById(anyLong())).thenAnswer(invocation -> {
             long id = invocation.getArgument(0);
-            return id >= 1 && id <= 4 ? Optional.of(com.group5.cats.CategoryFixtures.category(
-                    id == 1 ? "INTERNAL" : id == 2 ? "EXTERNAL" : id == 3 ? "CERTIFICATION" : "WORKSHOP")) : Optional.empty();
+            return id >= 1 && id <= 4 ? Optional.of(catalogue[(int) id]) : Optional.empty();
         });
-        providers = mock(TrainingProviderRepository.class);
-        provider = new TrainingProvider("Test provider");
-        provider.setId(1L);
-        when(providers.findById(1L)).thenReturn(Optional.of(provider));
         employees = mock(EmployeeRepository.class);
         service = new CourseApplicationServiceImpl(applications, employees,
-                entitlements, holidays, notifications, categories, providers);
+                entitlements, holidays, notifications, courses);
         employee = new Employee();
         employee.setId(1L);
         Employee manager = new Employee();
@@ -66,6 +68,7 @@ class CourseApplicationServiceTests {
 
     private CourseApplication validApplication() {
         CourseApplication application = new CourseApplication();
+        application.setCourseId(2L);
         application.setCourseTitle("Spring MVC");
         application.setProviderId(1L);
         application.setCategory(com.group5.cats.CategoryFixtures.category("EXTERNAL"));
@@ -83,7 +86,7 @@ class CourseApplicationServiceTests {
         assertNull(service.submitApplication(application, employee));
         verify(notifications).createNotification(application, NotificationType.APPLICATION_SUBMITTED);
         reset(notifications);
-        application.setCourseTitle(" ");
+        application.setJustification(" ");
         assertNotNull(service.submitApplication(application, employee));
         verifyNoInteractions(notifications);
     }
@@ -117,7 +120,7 @@ class CourseApplicationServiceTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"courseTitle", "justification"})
+    @ValueSource(strings = {"justification"})
     void missingRequiredTextCannotBeSaved(String field) {
         for (String value : new String[] {null, "", " \t "}) {
             CourseApplication application = validApplication();
@@ -129,55 +132,42 @@ class CourseApplicationServiceTests {
     }
 
     @Test
-    void invalidCategoryCannotBeSaved() {
+    void missingOrUnknownCourseCannotBeSaved() {
         for (Long id : new Long[] {null, 0L, 999L}) {
             CourseApplication application = validApplication();
             application.setCategory(null);
-            application.setCategoryId(id);
+            application.setCourseId(id);
             assertNotNull(service.submitApplication(application, employee));
         }
         verify(applications, never()).save(any());
     }
 
     @Test
-    void missingInvalidOrDeletedProviderCannotBeSaved() {
-        for (Long id : new Long[] {null, 0L, -1L, 999L}) {
-            CourseApplication application = validApplication();
-            application.setProviderId(id);
-            assertNotNull(service.submitApplication(application, employee));
-        }
-        verify(applications, never()).save(any());
-        verifyNoInteractions(notifications);
-    }
-
-    @Test
-    void submissionUsesStoredProviderInsteadOfSubmittedName() {
+    void submissionUsesCourseProviderInsteadOfSubmittedProvider() {
         CourseApplication application = validApplication();
-        TrainingProvider submitted = new TrainingProvider("Forged name");
-        submitted.setId(1L);
-        application.setProvider(submitted);
+        application.setProvider(new TrainingProvider("Forged name"));
+        application.setProviderId(999L);
         assertNull(service.submitApplication(application, employee));
-        assertSame(provider, application.getProvider());
-        assertEquals("Test provider", application.getProviderName());
+        assertSame(catalogue[2].getProvider(), application.getProvider());
+        assertEquals("ISS", application.getProviderName());
     }
 
     @Test
-    void updateChangesProviderAndRejectsDeletedProviderWithoutChangingSavedRecord() {
+    void updateUsesSelectedCourseProviderAndRejectsUnavailableCourse() {
         CourseApplication saved = validApplication();
         saved.setId(10L);
         saved.setEmployee(employee);
-        saved.setProvider(provider);
+        saved.setProvider(catalogue[2].getProvider());
         when(applications.findById(10L)).thenReturn(Optional.of(saved));
         CourseApplication update = validApplication();
-        update.setProviderId(999L);
+        update.setCourseId(999L);
         assertNotNull(service.updateApplication(10L, update, employee));
-        assertSame(provider, saved.getProvider());
+        assertSame(catalogue[2].getProvider(), saved.getProvider());
         verify(applications, never()).save(any());
-
         TrainingProvider replacement = new TrainingProvider("New provider");
         replacement.setId(2L);
-        when(providers.findById(2L)).thenReturn(Optional.of(replacement));
-        update.setProviderId(2L);
+        catalogue[3].setProvider(replacement);
+        update.setCourseId(3L);
         assertNull(service.updateApplication(10L, update, employee));
         assertSame(replacement, saved.getProvider());
         assertEquals("UPDATED", saved.getStatus());
@@ -188,6 +178,7 @@ class CourseApplicationServiceTests {
     void finalHalfDayCountsAcrossMultipleTrainingDays(int daysAfterStart) {
         CourseApplication application = validApplication();
         application.setCategory(com.group5.cats.CategoryFixtures.category("INTERNAL"));
+        application.setCourseId(1L);
         application.setHalfDay(true);
         application.setToDate(application.getFromDate().plusDays(daysAfterStart));
         assertNull(service.submitApplication(application, employee));
@@ -200,28 +191,30 @@ class CourseApplicationServiceTests {
 
     @ParameterizedTest
     @MethodSource("invalidAmounts")
-    void invalidFeeCannotBeSaved(double fee) {
+    void invalidStoredFeeCannotBeSaved(double fee) {
         CourseApplication application = validApplication();
-        application.setFee(fee);
+        catalogue[2].setFee(fee);
         assertNotNull(service.submitApplication(application, employee));
         verify(applications, never()).save(any());
     }
 
     @Test
-    void internalFeeIsSavedButDoesNotUseBudget() {
+    void internalCourseIsFreeAndDoesNotUseBudget() {
         CourseApplication application = validApplication();
         application.setCategory(com.group5.cats.CategoryFixtures.category("INTERNAL"));
+        application.setCourseId(1L);
+        application.setCourseId(1L);
         application.setFee(9000);
         when(entitlements.findEntitlement(eq(1L), anyInt())).thenAnswer(invocation ->
                 Optional.of(new AnnualEntitlement(employee, invocation.getArgument(1), 10, 0)));
         assertNull(service.submitApplication(application, employee));
-        assertEquals(9000, application.getFee());
+        assertEquals(0, application.getFee());
         assertEquals(2, application.getTrainingDays());
         verify(applications).save(application);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"title", "justification", "dissemination"})
+    @ValueSource(strings = {"justification", "dissemination"})
     void textExceedingStorageLimitCannotBeSaved(String field) {
         CourseApplication application = validApplication();
         String text = "x".repeat(256);
@@ -245,7 +238,7 @@ class CourseApplicationServiceTests {
     @Test
     void validSubmissionNormalizesTextAndComputesDays() {
         CourseApplication application = validApplication();
-        application.setCourseTitle("  Spring MVC  ");
+        catalogue[2].setTitle("  Spring MVC  ");
         allowSubmission(application);
         assertNull(service.submitApplication(application, employee));
         assertEquals("Spring MVC", application.getCourseTitle());
@@ -258,6 +251,8 @@ class CourseApplicationServiceTests {
     void validInternalHalfDayRemainsSupported() {
         CourseApplication application = validApplication();
         application.setCategory(com.group5.cats.CategoryFixtures.category("INTERNAL"));
+        application.setCourseId(1L);
+        application.setCourseId(1L);
         application.setFee(0);
         application.setHalfDay(true);
         application.setToDate(application.getFromDate());
@@ -270,6 +265,8 @@ class CourseApplicationServiceTests {
     void publicHolidayCannotBeUsedForHalfDay() {
         CourseApplication application = validApplication();
         application.setCategory(com.group5.cats.CategoryFixtures.category("INTERNAL"));
+        application.setCourseId(1L);
+        application.setCourseId(1L);
         application.setFee(0);
         application.setHalfDay(true);
         application.setToDate(application.getFromDate());
@@ -343,6 +340,7 @@ class CourseApplicationServiceTests {
     void internalFeeStillCannotBypassDayQuota() {
         CourseApplication data = validApplication();
         data.setCategory(com.group5.cats.CategoryFixtures.category("INTERNAL"));
+        data.setCourseId(1L);
         data.setFee(9000);
         when(entitlements.findEntitlement(eq(1L), anyInt())).thenAnswer(invocation ->
                 Optional.of(new AnnualEntitlement(employee, invocation.getArgument(1), 1, 0)));
@@ -354,14 +352,14 @@ class CourseApplicationServiceTests {
     void newCategoryUsesBudgetAndItsHalfDayPermission() {
         Category workshop = com.group5.cats.CategoryFixtures.category("WORKSHOP");
         workshop.setHalfDayAllowed(true);
-        when(categories.findById(4L)).thenReturn(Optional.of(workshop));
+        catalogue[4].setCategory(workshop);
         CourseApplication data = validApplication();
-        data.setCategoryId(4L);
+        data.setCourseId(4L);
         data.setHalfDay(true);
         data.setToDate(data.getFromDate());
         assertNull(service.submitApplication(data, employee));
         assertEquals(0.5, data.getTrainingDays());
-        data.setFee(3000);
+        catalogue[4].setFee(3000);
         assertTrue(service.submitApplication(data, employee).contains("Training budget exceeded"));
     }
 
@@ -400,5 +398,21 @@ class CourseApplicationServiceTests {
         assertNotNull(service.submitApplication(data, employee));
         employee.setSupervisor(null);
         assertTrue(service.submitApplication(validApplication(), employee).contains("assign your manager"));
+    }
+    @Test
+    void submittedCourseDetailsCannotOverrideCatalogueAndRemovedCourseIsRejected() {
+        CourseApplication data = validApplication();
+        data.setCourseTitle("Fake title");
+        data.setCategoryId(1L);
+        data.setProvider(new TrainingProvider("Fake provider"));
+        data.setFee(0);
+        assertNull(service.submitApplication(data, employee));
+        assertEquals("Spring MVC", data.getCourseTitle());
+        assertEquals("EXTERNAL", data.getCategoryName());
+        assertEquals("ISS", data.getProviderName());
+        assertEquals(100, data.getFee());
+        assertSame(catalogue[2], data.getCourse());
+        catalogue[2].setActive(false);
+        assertNotNull(service.submitApplication(validApplication(), employee));
     }
 }

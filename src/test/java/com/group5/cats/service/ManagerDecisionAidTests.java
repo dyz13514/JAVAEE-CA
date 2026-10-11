@@ -39,8 +39,7 @@ class ManagerDecisionAidTests {
         entitlementService = mock(EntitlementService.class);
         service = new CourseApplicationServiceImpl(applications, employees,
                 entitlementService, mock(PublicHolidayRepository.class),
-                mock(NotificationService.class), mock(CategoryRepository.class),
-                mock(TrainingProviderRepository.class));
+                mock(NotificationService.class), mock(com.group5.cats.repository.CourseRepository.class));
 
         manager = employee(1L, EmployeeRole.MANAGER);
         applicant = employee(2L, EmployeeRole.REGULAR_STAFF);

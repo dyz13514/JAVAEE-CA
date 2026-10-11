@@ -1,12 +1,12 @@
 <!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body>
-<article th:fragment="card(course)" class="catalogue-card">
+<article th:fragment="card(course)" class="catalogue-card course-card" th:attr="data-course-id=${course.id}">
 <div class="catalogue-card-body">
 <div class="catalogue-card-labels"><span th:text="${course.category.name}"></span></div>
 <h2 th:text="${course.title}"></h2>
 <p class="catalogue-provider" th:text="${course.provider.name}"></p><p class="course-introduction" th:text="${course.introduction}"></p>
-<p class="catalogue-price">Reference Fee (S$): <strong th:text="${#numbers.formatDecimal(course.fee,1,'COMMA',2,'POINT')}"></strong></p>
+<p class="catalogue-price">Course Fee (S$): <strong th:text="${#numbers.formatDecimal(course.fee,1,'COMMA',2,'POINT')}"></strong></p>
 <div class="action-row catalogue-card-actions">
-<a class="secondary-button" th:href="@{/employee/courses/{id}(id=${course.id})}">View Details</a>
-<a class="primary-button" th:if="${canApply}" th:href="@{/employee/apply(commonCourseId=${course.id})}">Use for Application</a>
+<a class="secondary-button" th:href="@{/employee/courses/details/{id}(id=${course.id})}">View Details</a>
+<a class="primary-button" th:if="${canApply}" th:href="@{/employee/apply(courseId=${course.id})}">Apply</a>
 </div></div>
 </article></body></html>

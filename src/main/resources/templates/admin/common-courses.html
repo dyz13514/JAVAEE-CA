@@ -1,21 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head><meta charset="UTF-8"><title>Common Course Catalogue - CATS</title>
+<head><meta charset="UTF-8"><title>All Course - CATS</title>
 <th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
 <body><th:block th:replace="~{fragments/layout :: shell('common-courses')}"></th:block>
 <main class="page-main admin-content">
 <h1>Commonly Attended Course Catalogue</h1>
-<p><a th:href="@{/admin/common-courses/new}">Add Course</a></p>
+<p>Choose which courses appear in the common catalogue.</p>
 <p role="status" th:if="${successMessage != null}" th:text="${successMessage}"></p>
 <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
-<p th:if="${#lists.isEmpty(commonCourses)}">No commonly attended courses found.</p>
+<section id="common-courses" class="course-list-section" aria-label="Commonly Attended Course Catalogue">
+<p th:if="${#lists.isEmpty(commonCourses)}">No common courses selected. Add a course from All Course below.</p>
 <div class="table-scroll"><table th:unless="${#lists.isEmpty(commonCourses)}">
-<thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Training Provider</th><th>Reference Fee (S$)</th><th>Actions</th></tr></thead>
-<tbody><tr th:each="course : ${commonCourses}">
-<td th:text="${course.id}"></td><td th:text="${course.title}"></td><td th:text="${course.category.name}"></td>
-<td th:text="${course.provider.name}"></td><td th:text="${course.fee}"></td>
-<td><a th:href="@{/admin/common-courses/{id}/edit(id=${course.id})}">Edit</a>
-<form th:action="@{/admin/common-courses/{id}/delete(id=${course.id})}" method="post"
-onsubmit="return confirm('Remove this course from the catalogue?');"><button type="submit">Delete</button></form></td>
+<thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Training Provider</th><th>Course Fee (S$)</th><th>Actions</th></tr></thead>
+<tbody><tr th:each="entry : ${commonCourses}" th:attr="data-course-id=${entry.course.id}">
+<td th:text="${entry.course.id}"></td><td th:text="${entry.title}"></td><td th:text="${entry.category.name}"></td>
+<td th:text="${entry.provider.name}"></td><td th:text="${#numbers.formatDecimal(entry.fee, 1, 2)}"></td>
+<td><form th:action="@{/admin/common-courses/{id}/delete(id=${entry.id})}" method="post">
+<button type="submit">Remove from Common</button></form></td>
 </tr></tbody></table></div>
+</section>
+<section id="all-courses" class="course-list-section" aria-labelledby="all-courses-heading">
+<h2 id="all-courses-heading">All Course</h2>
+<p>Course details and fees are fixed. Add an existing course to the common catalogue.</p>
+<p th:if="${#lists.isEmpty(courses)}">No courses available.</p>
+<div class="table-scroll"><table th:unless="${#lists.isEmpty(courses)}">
+<thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Training Provider</th><th>Course Fee (S$)</th><th>Actions</th></tr></thead>
+<tbody><tr th:each="course : ${courses}" th:attr="data-course-id=${course.id}">
+<td th:text="${course.id}"></td><td th:text="${course.title}"></td><td th:text="${course.category.name}"></td>
+<td th:text="${course.provider.name}"></td><td th:text="${#numbers.formatDecimal(course.fee, 1, 2)}"></td>
+<td><span th:if="${#lists.contains(commonCourseIds, course.id)}">Already Added</span>
+<form th:unless="${#lists.contains(commonCourseIds, course.id)}" th:action="@{/admin/common-courses/{courseId}/add(courseId=${course.id})}" method="post">
+<button type="submit">Add to Common</button></form></td>
+</tr></tbody></table></div>
+</section>
 </main></body></html>

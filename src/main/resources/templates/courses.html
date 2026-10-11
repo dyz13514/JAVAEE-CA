@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head><meta charset="UTF-8"><title>Commonly Attended Courses - CATS</title>
+<head><meta charset="UTF-8"><title>All Course - CATS</title>
 <th:block th:replace="~{fragments/layout :: assets}"></th:block></head>
 <body><th:block th:replace="~{fragments/layout :: shell('browse-courses')}"></th:block>
 <main class="page-main course-catalogue staff-catalogue">
-<div class="page-heading"><div>
-<h1>Commonly Attended Courses</h1>
-<p>Use a catalogue entry to prefill an application, or enter your own course.</p>
-</div><a th:if="${canApply}" class="primary-button" th:href="@{/employee/apply}">Apply for Any Course</a></div>
+<div class="page-heading"><div><h1>Commonly Attended Course Catalogue</h1>
+<p>Browse common courses and the complete course library. Course details and fees are fixed.</p>
+</div><a th:if="${canApply}" class="primary-button" th:href="@{/employee/apply}">Apply for a Course</a></div>
 <p th:if="${successMessage != null}" th:text="${successMessage}"></p>
 <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
 <th:block th:replace="~{fragments/course-filter :: filter('/employee/courses')}"></th:block>
+<section id="common-courses" class="course-list-section" aria-label="Commonly Attended Course Catalogue">
+<p th:if="${#lists.isEmpty(featuredCourses)}">No common courses match your filters.</p>
+<div class="catalogue-grid"><th:block th:each="course : ${featuredCourses}">
+<article th:replace="~{fragments/course-card :: card(${course})}"></article>
+</th:block></div>
+</section>
+<section id="all-courses" class="course-list-section" aria-labelledby="all-courses-heading">
+<h2 id="all-courses-heading">All Course</h2>
 <p th:text="${#lists.size(courses) + ' courses found'}"></p>
-<p class="empty-state" th:if="${#lists.isEmpty(courses)}">No matching courses. Try another search or reset the filters.</p>
+<p th:if="${#lists.isEmpty(courses)}">No courses match your filters.</p>
 <div class="catalogue-grid"><th:block th:each="course : ${courses}">
 <article th:replace="~{fragments/course-card :: card(${course})}"></article>
 </th:block></div>
+</section>
 </main></body></html>

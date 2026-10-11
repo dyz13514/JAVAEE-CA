@@ -8,12 +8,12 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.group5.cats.CategoryFixtures;
-import com.group5.cats.dto.CommonCourseForm;
 import com.group5.cats.model.*;
 import com.group5.cats.repository.*;
 
 class CourseCatalogueServiceTests {
     private CommonCourseRepository courses;
+    private CourseRepository records;
     private CategoryRepository categories;
     private TrainingProviderRepository providers;
     private CourseApplicationRepository applications;
@@ -25,53 +25,49 @@ class CourseCatalogueServiceTests {
     @BeforeEach
     void setUp() {
         courses = mock(CommonCourseRepository.class);
+        records = mock(CourseRepository.class);
         categories = mock(CategoryRepository.class);
         providers = mock(TrainingProviderRepository.class);
         applications = mock(CourseApplicationRepository.class);
-        service = new CommonCourseServiceImpl(courses, categories, providers);
-        categoryService = new CategoryServiceImpl(categories, courses, applications);
+        service = new CommonCourseServiceImpl(courses, records);
+        categoryService = new CategoryServiceImpl(categories, records, applications);
         external = CategoryFixtures.category("EXTERNAL");
         provider = new TrainingProvider("NUS"); provider.setId(3L);
         when(categories.findById(2L)).thenReturn(Optional.of(external));
         when(providers.findById(3L)).thenReturn(Optional.of(provider));
     }
 
-    private CommonCourseForm form() {
-        CommonCourseForm form = new CommonCourseForm();
-        form.setTitle("Java"); form.setCategoryId(2L); form.setProviderId(3L);
-        form.setFee(200.0); form.setIntroduction("Learn Java.");
-        return form;
+    @Test
+    void membershipReferencesAnExistingCourseAndRejectsDuplicates() {
+        Course course = new Course("Java", external, provider, 200); course.setId(8L);
+        when(records.findById(8L)).thenReturn(Optional.of(course));
+        assertNull(service.addCommonCourse(8L));
+        verify(courses).save(argThat(entry -> entry.getCourse() == course));
+        when(courses.existsByCourse_Id(8L)).thenReturn(true);
+        assertNotNull(service.addCommonCourse(8L));
+        verify(records, never()).save(any());
     }
 
     @Test
-    void catalogueValidatesReferencesAndDuplicateIdentity() {
-        assertNull(service.createCommonCourse(form()));
-        verify(courses).save(argThat(course -> course.getCategory() == external && course.getProvider() == provider));
-        when(courses.existsByTitleIgnoreCaseAndCategory_IdAndProvider_Id("Java", 2L, 3L)).thenReturn(true);
-        assertNotNull(service.createCommonCourse(form()));
-        CommonCourseForm invalid = form(); invalid.setCategoryId(999L);
-        assertNotNull(service.createCommonCourse(invalid));
-        invalid = form(); invalid.setProviderId(999L);
-        assertNotNull(service.createCommonCourse(invalid));
+    void unavailableCoursesCannotBeAddedToCommon() {
+        Course course = new Course("Java", external, provider, 200); course.setActive(false);
+        when(records.findById(8L)).thenReturn(Optional.of(course));
+        assertNotNull(service.addCommonCourse(8L));
+        assertNotNull(service.addCommonCourse(999L));
+        assertNotNull(service.addCommonCourse(null));
+        assertNotNull(service.addCommonCourse(0L));
+        verify(courses, never()).save(any());
     }
 
     @Test
-    void internalReferenceFeeMayBeRecordedAndInvalidFeeIsRejected() {
-        when(categories.findById(2L)).thenReturn(Optional.of(CategoryFixtures.category("INTERNAL")));
-        assertNull(service.createCommonCourse(form()));
-        for (double fee : new double[] {-1, Double.NaN, Double.POSITIVE_INFINITY}) {
-            CommonCourseForm invalid = form(); invalid.setFee(fee);
-            assertNotNull(service.createCommonCourse(invalid));
-        }
-    }
-
-    @Test
-    void removingCatalogueDoesNotDeleteApplications() {
-        CommonCourse course = new CommonCourse("Java", external, provider, 100); course.setId(5L);
-        when(courses.findById(5L)).thenReturn(Optional.of(course));
+    void removingCatalogueDoesNotChangeCourseOrApplications() {
+        CommonCourse entry = new CommonCourse("Java", external, provider, 100); entry.setId(5L);
+        when(courses.findById(5L)).thenReturn(Optional.of(entry));
         assertNull(service.deleteCommonCourse(5L));
-        verify(courses).delete(course);
-        verifyNoInteractions(applications);
+        verify(courses).delete(entry);
+        assertTrue(entry.getCourse().isActive());
+        assertEquals(100, entry.getFee());
+        verifyNoInteractions(records, applications);
     }
 
     @Test
@@ -94,9 +90,9 @@ class CourseCatalogueServiceTests {
         when(applications.existsByCategory_Id(4L)).thenReturn(true);
         assertNotNull(categoryService.deleteCategory(4L));
         when(applications.existsByCategory_Id(4L)).thenReturn(false);
-        when(courses.existsByCategory_Id(4L)).thenReturn(true);
+        when(records.existsByCategory_Id(4L)).thenReturn(true);
         assertNotNull(categoryService.deleteCategory(4L));
-        when(courses.existsByCategory_Id(4L)).thenReturn(false);
+        when(records.existsByCategory_Id(4L)).thenReturn(false);
         assertNull(categoryService.deleteCategory(4L));
         verify(categories).delete(category);
     }

@@ -24,6 +24,19 @@ public class CourseApplication {
     @ManyToOne
     private Employee employee;
 
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+    @Transient
+    private Long courseId;
+    private String categoryNameSnapshot;
+
+    public Course getCourse() { return course; }
+    public void setCourse(Course course) { this.course = course; this.courseId = null; }
+    public Long getCourseId() { return courseId != null ? courseId : course == null ? null : course.getId(); }
+    public void setCourseId(Long courseId) { this.courseId = courseId; }
+    public void setCategoryNameSnapshot(String name) { this.categoryNameSnapshot = name; }
+
     private String courseTitle;
 
     @ManyToOne(optional = false)
@@ -117,6 +130,7 @@ public class CourseApplication {
     }
 
     public String getCategoryName() {
+        if (categoryNameSnapshot != null) return categoryNameSnapshot;
         if (category == null) {
             return null;
         }

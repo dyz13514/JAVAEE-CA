@@ -4,6 +4,7 @@ import com.group5.cats.model.CommonCourse;
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.service.CommonCourseService;
+import com.group5.cats.service.CourseService;
 import com.group5.cats.service.CategoryService;
 import com.group5.cats.service.TrainingProviderService;
 import jakarta.servlet.http.HttpSession;
@@ -17,14 +18,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class CourseBrowseController {
     private final CommonCourseService courseService;
+    private final CourseService allCourseService;
     private final CategoryService categoryService;
     private final TrainingProviderService providerService;
 
     public CourseBrowseController(CommonCourseService courseService,
-            CategoryService categoryService, TrainingProviderService providerService) {
+            CategoryService categoryService, TrainingProviderService providerService, CourseService allCourseService) {
         this.courseService = courseService;
         this.categoryService = categoryService;
         this.providerService = providerService;
+        this.allCourseService = allCourseService;
     }
 
     @GetMapping({"/courses", "/employee/courses"})
@@ -34,7 +37,9 @@ public class CourseBrowseController {
             HttpSession session, Model model) {
         Employee employee = (Employee) session.getAttribute("loggedInUser");
         if (employee == null) return "redirect:/employee/login";
-        model.addAttribute("courses", courseService.findCommonCourses(keyword, categoryId, providerId));
+        model.addAttribute("featuredCourses", courseService.findCommonCourses(keyword, categoryId, providerId)
+                .stream().map(CommonCourse::getCourse).toList());
+        model.addAttribute("courses", allCourseService.findCourses(keyword, categoryId, providerId));
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("providers", providerService.findAllProviders());
         model.addAttribute("keyword", keyword);
@@ -50,6 +55,19 @@ public class CourseBrowseController {
         Employee employee = (Employee) session.getAttribute("loggedInUser");
         if (employee == null) return "redirect:/employee/login";
         CommonCourse course = courseService.findCommonCourseById(id);
+        if (course == null) {
+            response.setStatus(404);
+            return "error/404";
+        }
+        return "redirect:/employee/courses/details/" + course.getCourse().getId();
+    }
+
+    @GetMapping({"/courses/details/{id}", "/employee/courses/details/{id}"})
+    public String allCourseDetails(@PathVariable Long id, HttpSession session, Model model,
+            HttpServletResponse response) {
+        Employee employee = (Employee) session.getAttribute("loggedInUser");
+        if (employee == null) return "redirect:/employee/login";
+        var course = allCourseService.findCourseById(id).orElse(null);
         if (course == null) {
             response.setStatus(404);
             return "error/404";

@@ -6,6 +6,8 @@ import com.group5.cats.dto.ApplicationPagination;
 import com.group5.cats.service.CategoryService;
 import com.group5.cats.service.TrainingProviderService;
 import com.group5.cats.service.CommonCourseService;
+import com.group5.cats.service.CourseService;
+import com.group5.cats.dto.CourseOption;
 import java.util.Optional;
 import java.util.List;
 import com.group5.cats.model.CommonCourse;
@@ -45,15 +47,22 @@ public class EmployeeController {
     private final CommonCourseService commonCourseService;
     private final CategoryService categoryService;
     private final TrainingProviderService providerService;
+    private final CourseService courseService;
 
     public EmployeeController(CourseApplicationService courseApplicationService,
             EntitlementService entitlementService, CommonCourseService commonCourseService,
-            CategoryService categoryService, TrainingProviderService providerService) {
+            CategoryService categoryService, TrainingProviderService providerService, CourseService courseService) {
         this.courseApplicationService = courseApplicationService;
         this.entitlementService = entitlementService;
         this.commonCourseService = commonCourseService;
         this.categoryService = categoryService;
         this.providerService = providerService;
+        this.courseService = courseService;
+    }
+
+    @ModelAttribute("courseOptions")
+    public List<CourseOption> availableCourses() {
+        return courseService.findAvailableCourses();
     }
 
     @ModelAttribute("categories")
@@ -68,14 +77,15 @@ public class EmployeeController {
 
     @InitBinder("courseApplication")
     public void configureApplicationBinding(WebDataBinder binder) {
-        binder.setAllowedFields("courseTitle", "categoryId", "providerId", "fromDate", "toDate",
-                "fee", "justification", "dissemination", "halfDay");
+        binder.setAllowedFields("courseId", "courseTitle", "categoryId", "providerId", "fromDate", "toDate",
+                "justification", "dissemination", "halfDay");
     }
 
     @PostMapping("/employee/apply")
     public String submitApplication(
             @ModelAttribute("courseApplication") CourseApplication application,
             BindingResult bindingResult,
+            @RequestParam(value = "lockedCourseId", required = false) Long lockedCourseId,
             HttpSession session,
             Model model,
             RedirectAttributes redirectAttrs) {
@@ -89,6 +99,11 @@ public class EmployeeController {
 
         if (employee.getRole() == EmployeeRole.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This role cannot use this application endpoint.");
+        }
+        if (lockedCourseId != null) {
+            application.setCourseId(lockedCourseId);
+            model.addAttribute("courseLocked", true);
+            model.addAttribute("lockedCourseId", lockedCourseId);
         }
         String error = bindingResult.hasErrors()
                 ? "Please enter valid course dates, fee and half-day selection."
@@ -141,6 +156,7 @@ public class EmployeeController {
     @GetMapping("/employee/apply")
     public String showEmployeeApply(
             @RequestParam(value = "commonCourseId", required = false) Long commonCourseId,
+            @RequestParam(value = "courseId", required = false) Long courseId,
             HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         Employee employee = (Employee) session.getAttribute("loggedInUser");
         if (employee == null) {
@@ -150,18 +166,34 @@ public class EmployeeController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Administrators manage courses but cannot apply.");
         }
         CourseApplication application = new CourseApplication();
-        if (commonCourseId != null) {
+        if (courseId != null) {
+            var course = courseService.findCourseById(courseId).orElse(null);
+            if (course == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Selected course no longer exists.");
+                return "redirect:/employee/courses";
+            }
+            application.setCourse(course);
+            application.setCourseTitle(course.getTitle());
+            application.setCategory(course.getCategory());
+            application.setProvider(course.getProvider());
+            application.setFee(course.getFee());
+        } else if (commonCourseId != null) {
             CommonCourse course = commonCourseService.findCommonCourseById(commonCourseId);
             if (course == null) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Selected course no longer exists.");
                 return "redirect:/employee/courses";
             }
+            application.setCourse(course.getCourse());
             application.setCourseTitle(course.getTitle());
             application.setCategory(course.getCategory());
             application.setProvider(course.getProvider());
             application.setFee(course.getFee());
         }
         model.addAttribute("courseApplication", application);
+        if (courseId != null || commonCourseId != null) {
+            model.addAttribute("courseLocked", true);
+            model.addAttribute("lockedCourseId", application.getCourseId());
+        }
         model.addAttribute("formAction", "/employee/apply");
         return "apply-course";
     }

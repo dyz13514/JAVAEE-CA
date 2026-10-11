@@ -11,10 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.group5.cats.model.NotificationType;
 import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Category;
+import com.group5.cats.model.Course;
 import com.group5.cats.dto.CourseCategory;
-import com.group5.cats.repository.CategoryRepository;
-import com.group5.cats.model.TrainingProvider;
-import com.group5.cats.repository.TrainingProviderRepository;
+import com.group5.cats.repository.CourseRepository;
 import com.group5.cats.model.Employee;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
@@ -35,21 +34,18 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     private final EntitlementService entitlementService;
     private final PublicHolidayRepository publicHolidayRepository;
     private final NotificationService notificationService;
-    private final CategoryRepository categoryRepository;
-    private final TrainingProviderRepository trainingProviderRepository;
+    private final CourseRepository courseRepository;
 
     public CourseApplicationServiceImpl(CourseApplicationRepository courseApplicationRepository,
             EmployeeRepository employeeRepository, EntitlementService entitlementService,
             PublicHolidayRepository publicHolidayRepository, NotificationService notificationService,
-            CategoryRepository categoryRepository,
-            TrainingProviderRepository trainingProviderRepository) {
+            CourseRepository courseRepository) {
         this.courseApplicationRepository = courseApplicationRepository;
         this.employeeRepository = employeeRepository;
         this.entitlementService = entitlementService;
         this.publicHolidayRepository = publicHolidayRepository;
         this.notificationService = notificationService;
-        this.categoryRepository = categoryRepository;
-        this.trainingProviderRepository = trainingProviderRepository;
+        this.courseRepository = courseRepository;
     }
 
     @Override
@@ -100,12 +96,8 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         String supervisorError = validateSupervisor(application.getEmployee());
         if (supervisorError != null) return supervisorError;
-        String error = selectCategory(application);
+        String error = selectCourse(application);
         if (error != null) return error;
-        error = selectProvider(application);
-        if (error != null) {
-            return error;
-        }
         error = validateBasicRules(application);
         if (error != null) {
             return error;
@@ -127,29 +119,25 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         return null;
     }
 
-    private String selectCategory(CourseApplication application) {
-        Long categoryId = application.getCategoryId();
-        if (categoryId == null || categoryId <= 0) {
-            return "Please select a valid course category.";
+    private String selectCourse(CourseApplication application) {
+        Long courseId = application.getCourseId();
+        if (courseId == null || courseId <= 0) {
+            return "Please select a course, category and training provider.";
         }
-        Category category = categoryRepository.findById(categoryId).orElse(null);
-        if (category == null) {
-            return "Selected category no longer exists.";
+        Course course = courseRepository.findById(courseId).orElse(null);
+        if (course == null || !course.isActive()) {
+            return "Selected course is no longer available. Please select another course.";
         }
-        application.setCategory(category);
-        return null;
-    }
-
-    private String selectProvider(CourseApplication application) {
-        Long providerId = application.getProviderId();
-        if (providerId == null || providerId <= 0) {
-            return "Please select a valid training provider.";
+        if ("INTERNAL".equals(course.getCategory().getName()) && course.getFee() != 0) {
+            return "Internal training must have a zero course fee. Please contact the administrator.";
         }
-        TrainingProvider provider = trainingProviderRepository.findById(providerId).orElse(null);
-        if (provider == null) {
-            return "Selected training provider no longer exists.";
-        }
-        application.setProvider(provider);
+        application.setCourse(course);
+        application.setCourseTitle(course.getTitle());
+        application.setCategory(course.getCategory());
+        application.setCategoryNameSnapshot(course.getCategory().getName());
+        application.setProvider(course.getProvider());
+        application.setProviderId(course.getProvider().getId());
+        application.setFee(course.getFee());
         return null;
     }
 
@@ -329,12 +317,8 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         String supervisorError = validateSupervisor(currentEmployee);
         if (supervisorError != null) return supervisorError;
-        String error = selectCategory(updatedData);
+        String error = selectCourse(updatedData);
         if (error != null) return error;
-        error = selectProvider(updatedData);
-        if (error != null) {
-            return error;
-        }
         error = validateBasicRules(updatedData);
         if (error != null) {
             return error;
@@ -348,6 +332,8 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (overlapError != null) {
             return overlapError;
         }
+        application.setCourse(updatedData.getCourse());
+        application.setCategoryNameSnapshot(updatedData.getCategoryName());
         application.setCourseTitle(updatedData.getCourseTitle());
         application.setCategory(updatedData.getCategory());
         application.setFromDate(updatedData.getFromDate());

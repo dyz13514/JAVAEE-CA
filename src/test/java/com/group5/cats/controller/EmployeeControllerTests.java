@@ -29,6 +29,7 @@ class EmployeeControllerTests {
     private EntitlementService entitlementService;
     private MockMvc mvc;
     private com.group5.cats.service.CommonCourseService courses;
+    private com.group5.cats.service.CourseService library;
     private Employee employee;
 
     @BeforeEach
@@ -36,10 +37,53 @@ class EmployeeControllerTests {
         service = mock(CourseApplicationService.class);
         entitlementService = mock(EntitlementService.class);
         courses = mock(com.group5.cats.service.CommonCourseService.class);
-        mvc = MockMvcBuilders.standaloneSetup(new EmployeeController(service, entitlementService, courses, mock(com.group5.cats.service.CategoryService.class), mock(com.group5.cats.service.TrainingProviderService.class))).build();
+        library = mock(com.group5.cats.service.CourseService.class);
+        mvc = MockMvcBuilders.standaloneSetup(new EmployeeController(service, entitlementService, courses, mock(com.group5.cats.service.CategoryService.class), mock(com.group5.cats.service.TrainingProviderService.class), library)).build();
         employee = new Employee();
         employee.setId(1L);
         employee.setRole(EmployeeRole.REGULAR_STAFF);
+    }
+
+    @Test
+    void allCourseLinkPrefillsEvenWithoutCommonMembership() throws Exception {
+        var course = new com.group5.cats.model.Course("Java", com.group5.cats.CategoryFixtures.category("EXTERNAL"),
+                new com.group5.cats.model.TrainingProvider("AWS"), 300);
+        course.setId(8L);
+        when(library.findCourseById(8L)).thenReturn(Optional.of(course));
+        mvc.perform(get("/employee/apply").param("courseId", "8").sessionAttr("loggedInUser", employee))
+                .andExpect(view().name("apply-course"))
+                .andExpect(model().attribute("courseLocked", true))
+                .andExpect(model().attribute("lockedCourseId", 8L))
+                .andExpect(result -> {
+                    CourseApplication data = (CourseApplication) result.getModelAndView().getModel().get("courseApplication");
+                    assertEquals(8L, data.getCourseId());
+                    assertEquals("Java", data.getCourseTitle());
+                    assertEquals("AWS", data.getProviderName());
+                    assertEquals(300, data.getFee());
+                    assertNull(data.getId());
+                });
+        verifyNoInteractions(courses, service);
+        mvc.perform(get("/employee/apply").param("courseId", "999").sessionAttr("loggedInUser", employee))
+                .andExpect(redirectedUrl("/employee/courses"))
+                .andExpect(flash().attributeExists("errorMessage"));
+    }
+
+    @Test
+    void lockedSelectionSurvivesValidationAndOverridesAnotherSubmittedCourseId() throws Exception {
+        when(service.submitApplication(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(employee)))
+                .thenReturn("Justification is required.");
+        mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
+                .param("lockedCourseId", "8").param("courseId", "99"))
+                .andExpect(view().name("apply-course"))
+                .andExpect(model().attribute("courseLocked", true))
+                .andExpect(model().attribute("lockedCourseId", 8L))
+                .andExpect(result -> {
+                    CourseApplication data = (CourseApplication) result.getModelAndView().getModel().get("courseApplication");
+                    assertEquals(8L, data.getCourseId());
+                });
+        mvc.perform(get("/employee/apply").sessionAttr("loggedInUser", employee))
+                .andExpect(view().name("apply-course"))
+                .andExpect(model().attributeDoesNotExist("lockedCourseId"));
     }
 
     @Test
@@ -132,10 +176,10 @@ class EmployeeControllerTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"not-a-number", ""})
-    void invalidFeeReturnsFormWithEnteredText(String fee) throws Exception {
+    @ValueSource(strings = {"not-an-id"})
+    void invalidCourseIdReturnsFormWithEnteredText(String courseId) throws Exception {
         mvc.perform(post("/employee/apply").param("commonCourseId", "7").sessionAttr("loggedInUser", employee)
-                .param("courseTitle", "My course").param("fee", fee))
+                .param("courseTitle", "My course").param("courseId", courseId))
                 .andExpect(status().isOk()).andExpect(view().name("apply-course"))
                 .andExpect(model().attributeExists("errorMessage"))
                 .andExpect(model().attribute("formAction", "/employee/apply"))
@@ -171,7 +215,8 @@ class EmployeeControllerTests {
         mvc.perform(post("/employee/apply").param("commonCourseId", "7").sessionAttr("loggedInUser", employee)
                 .param("courseTitle", "My course").param("id", "99")
                 .param("employee.id", "99").param("status", "APPROVED")
-                .param("trainingDays", "0").param("managerComment", "Approved"))
+                .param("trainingDays", "0").param("managerComment", "Approved")
+                .param("fee", "1").param("provider", "Forged provider"))
                 .andExpect(status().is3xxRedirection());
         ArgumentCaptor<CourseApplication> input = ArgumentCaptor.forClass(CourseApplication.class);
         verify(service).submitApplication(input.capture(), eq(employee));
@@ -179,14 +224,16 @@ class EmployeeControllerTests {
         assertNull(input.getValue().getEmployee());
         assertEquals("APPLIED", input.getValue().getStatus());
         assertNull(input.getValue().getManagerComment());
+        assertEquals(0, input.getValue().getFee());
+        assertNull(input.getValue().getProvider());
     }
     @Test
-    void manualRequestCanBeSubmittedWithoutCatalogueSelection() throws Exception {
+    void selectedCourseIdIsPassedToApplicationService() throws Exception {
         mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
-                .param("courseTitle", "New course").param("categoryId", "2")
+                .param("courseId", "12").param("courseTitle", "Java").param("categoryId", "2")
                 .param("fromDate", "2027-01-04").param("toDate", "2027-01-05").param("fee", "100"))
                 .andExpect(redirectedUrl("/employee/history"));
-        verify(service).submitApplication(any(), eq(employee));
+        verify(service).submitApplication(argThat(data -> data.getCourseId().equals(12L)), eq(employee));
     }
 
     @Test

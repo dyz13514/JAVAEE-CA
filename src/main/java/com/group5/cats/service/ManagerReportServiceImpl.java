@@ -169,7 +169,10 @@ public class ManagerReportServiceImpl implements ManagerReportService {
         if (application.getFromDate().isAfter(toDate) || application.getToDate().isBefore(fromDate)) {
             return false;
         }
-        return CourseCategory.ALL.equals(category) || category.equals(application.getCategoryName());
+        // Filter by the current category selection while displaying the historical name.
+        String currentCategory = application.getCategory() == null
+                ? application.getCategoryName() : application.getCategory().getName();
+        return CourseCategory.ALL.equals(category) || category.equals(currentCategory);
     }
 
     private Comparator<CourseApplication> attendanceOrder() {
