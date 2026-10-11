@@ -22,7 +22,6 @@ it; Hibernate updates the application tables during startup.
 
 ## Application provider relationship
 
-Applications now reference the maintained training provider table. Existing
-databases with a string provider column need a one-time migration before
-startup. See [application-provider.md](application-provider.md) for the migration
-steps and webpage verification.
+Applications reference the maintained training provider table through
+`provider_id`. See [application-provider.md](application-provider.md) for the
+relationship and webpage verification.
