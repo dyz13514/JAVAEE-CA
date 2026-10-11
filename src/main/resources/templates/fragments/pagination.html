@@ -17,7 +17,7 @@
     </div>
     <!-- Omitting page starts every new search at page 1. -->
     <button type="submit" class="btn btn-primary">Search</button>
-    <a th:href="@{${listUrl}(size=${search.size},employeeId=${selectedEmployeeId})}">Reset</a>
+    <a class="secondary-button" th:href="@{${listUrl}(size=${search.size},employeeId=${selectedEmployeeId})}">Reset</a>
 </form>
 
 <div th:fragment="navigation" class="application-pagination" th:if="${pagination != null}">

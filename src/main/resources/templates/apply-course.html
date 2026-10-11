@@ -39,7 +39,9 @@
     <p>INTERNAL fees are recorded but do not count toward your annual budget.</p>
     <p><label for="justification">Reason for Training</label><textarea id="justification" th:field="*{justification}" maxlength="255" required></textarea></p>
     <p><label for="dissemination">Knowledge Sharing Plan</label><textarea id="dissemination" th:field="*{dissemination}" maxlength="255"></textarea></p>
+    <div class="action-row">
     <button type="submit">Submit</button>
-    <a th:href="@{/employee/history}">Back to My Applications</a>
+    <a class="secondary-button" th:href="@{/employee/history}">Back to My Applications</a>
+    </div>
 </form>
 </main></body></html>

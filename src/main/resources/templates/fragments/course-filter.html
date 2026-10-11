@@ -1,5 +1,6 @@
 <!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body>
 <form th:fragment="filter(baseUrl)" th:action="@{${baseUrl}}" method="get" class="catalogue-filter">
+<div class="catalogue-filter-fields">
 <p><label for="keyword">Search Courses</label><input id="keyword" name="keyword" th:value="${keyword}"></p>
 <p><label for="categoryId">Category</label><select id="categoryId" name="categoryId">
 <option value="">All Categories</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"
@@ -7,5 +8,6 @@ th:selected="${category.id == selectedCategoryId}"></option></select></p>
 <p><label for="providerId">Training Provider</label><select id="providerId" name="providerId">
 <option value="">All Providers</option><option th:each="provider : ${providers}" th:value="${provider.id}" th:text="${provider.name}"
 th:selected="${provider.id == selectedProviderId}"></option></select></p>
-<button type="submit">Search</button><a th:href="@{${baseUrl}}">Reset</a>
+</div>
+<div class="action-row"><button type="submit">Search</button><a class="secondary-button" th:href="@{${baseUrl}}">Reset</a></div>
 </form></body></html>

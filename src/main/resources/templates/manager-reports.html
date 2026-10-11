@@ -57,7 +57,7 @@
                th:value="${endDate != null ? #temporals.format(endDate,'yyyy-MM-dd') : ''}">
     </div>
     <button type="submit" class="primary-button">Apply filters</button>
-    <a class="text-link" th:href="@{/manager/reports/attendance.csv(employeeId=${selectedEmployeeId},category=${selectedCategory},startDate=${startDate != null ? #temporals.format(startDate,'yyyy-MM-dd') : ''},endDate=${endDate != null ? #temporals.format(endDate,'yyyy-MM-dd') : ''})}">Export CSV</a>
+    <a class="secondary-button" th:href="@{/manager/reports/attendance.csv(employeeId=${selectedEmployeeId},category=${selectedCategory},startDate=${startDate != null ? #temporals.format(startDate,'yyyy-MM-dd') : ''},endDate=${endDate != null ? #temporals.format(endDate,'yyyy-MM-dd') : ''})}">Export CSV</a>
 </form>
 
 <th:block th:if="${attendanceReport != null}">
@@ -128,7 +128,7 @@
         <input type="number" id="budgetYear" name="year" min="1" max="9999" th:value="${selectedYear}">
     </div>
     <button type="submit" class="primary-button">Apply filters</button>
-    <a class="text-link" th:href="@{/manager/reports/budget.csv(employeeId=${selectedEmployeeId},year=${selectedYear})}">Export CSV</a>
+    <a class="secondary-button" th:href="@{/manager/reports/budget.csv(employeeId=${selectedEmployeeId},year=${selectedYear})}">Export CSV</a>
 </form>
 
 <th:block th:if="${budgetReport != null}">

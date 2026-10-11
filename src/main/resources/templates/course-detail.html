@@ -11,6 +11,8 @@
 <p>Training Provider: <span th:text="${course.provider.name}"></span></p>
 <p>Reference Fee (S$): <span th:text="${course.fee}"></span></p><p th:text="${course.introduction}"></p>
 <p>Enter your own training dates and actual fee in the application.</p>
-<a th:if="${canApply}" th:href="@{/employee/apply(commonCourseId=${course.id})}">Use for Application</a>
-<a th:href="@{/employee/courses}">Back to Catalogue</a>
+<div class="action-row">
+<a class="primary-button" th:if="${canApply}" th:href="@{/employee/apply(commonCourseId=${course.id})}">Use for Application</a>
+<a class="secondary-button" th:href="@{/employee/courses}">Back to Catalogue</a>
+</div>
 </main></body></html>

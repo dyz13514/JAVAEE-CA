@@ -71,8 +71,8 @@
     <aside class="app-sidebar">
         <nav aria-label="Main navigation">
             <a th:classappend="${active == 'home' ? 'active' : ''}" th:attr="aria-current=${active == 'home' ? 'page' : null}" th:href="${admin ? '/admin/home' : '/employee/home'}"><svg th:replace="~{fragments/icons :: icon('overview')}"></svg><span>Overview</span></a>
-            <a th:unless="${admin}" th:href="@{/employee/courses}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Common course catalogue</span></a>
-            <a th:unless="${admin}" th:href="@{/employee/apply}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Apply for course</span></a>
+            <a th:unless="${admin}" th:classappend="${active == 'browse-courses' ? 'active' : ''}" th:attr="aria-current=${active == 'browse-courses' ? 'page' : null}" th:href="@{/employee/courses}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Common course catalogue</span></a>
+            <a th:unless="${admin}" th:classappend="${active == 'apply' ? 'active' : ''}" th:attr="aria-current=${active == 'apply' ? 'page' : null}" th:href="@{/employee/apply}"><svg th:replace="~{fragments/icons :: icon('courses')}"></svg><span>Apply for course</span></a>
             <th:block th:unless="${admin}">
                 <a th:classappend="${active == 'history' ? 'active' : ''}" th:attr="aria-current=${active == 'history' ? 'page' : null}" th:href="@{/employee/history}"><svg th:replace="~{fragments/icons :: icon('history')}"></svg><span>My applications</span></a>
                 <a th:classappend="${active == 'claims' ? 'active' : ''}" th:attr="aria-current=${active == 'claims' ? 'page' : null}" th:href="@{/employee/claims}"><svg th:replace="~{fragments/icons :: icon('history')}"></svg><span>My claims</span></a>
