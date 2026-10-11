@@ -21,7 +21,8 @@
 </section>
 <section id="all-courses" class="course-list-section" aria-labelledby="all-courses-heading">
 <h2 id="all-courses-heading">All Course</h2>
-<p>Course details and fees are fixed. Add an existing course to the common catalogue.</p>
+<p><a th:href="@{/admin/courses/new}">Create Course</a></p>
+<p>Add courses to the common catalogue. Courses used by applications cannot be deleted.</p>
 <p th:if="${#lists.isEmpty(courses)}">No courses available.</p>
 <div class="table-scroll"><table th:unless="${#lists.isEmpty(courses)}">
 <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Training Provider</th><th>Course Fee (S$)</th><th>Actions</th></tr></thead>
@@ -30,7 +31,9 @@
 <td th:text="${course.provider.name}"></td><td th:text="${#numbers.formatDecimal(course.fee, 1, 2)}"></td>
 <td><span th:if="${#lists.contains(commonCourseIds, course.id)}">Already Added</span>
 <form th:unless="${#lists.contains(commonCourseIds, course.id)}" th:action="@{/admin/common-courses/{courseId}/add(courseId=${course.id})}" method="post">
-<button type="submit">Add to Common</button></form></td>
+<button type="submit">Add to Common</button></form>
+<form th:action="@{/admin/courses/{id}/delete(id=${course.id})}" method="post">
+<button type="submit">Delete Course</button></form></td>
 </tr></tbody></table></div>
 </section>
 </main></body></html>

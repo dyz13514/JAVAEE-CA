@@ -33,7 +33,15 @@ public class CourseApplication {
 
     public Course getCourse() { return course; }
     public void setCourse(Course course) { this.course = course; this.courseId = null; }
-    public Long getCourseId() { return courseId != null ? courseId : course == null ? null : course.getId(); }
+    public Long getCourseId() {
+        if (courseId != null) {
+            return courseId;
+        }
+        if (course == null) {
+            return null;
+        }
+        return course.getId();
+    }
     public void setCourseId(Long courseId) { this.courseId = courseId; }
     public void setCategoryNameSnapshot(String name) { this.categoryNameSnapshot = name; }
 

@@ -19,6 +19,8 @@ public interface CourseApplicationRepository
 
     boolean existsByProvider_Id(Long providerId);
 
+    boolean existsByCourse_Id(Long courseId);
+
     List<CourseApplication> findByEmployee(Employee employee);
 
     List<CourseApplication> findByEmployeeIn(List<Employee> employees);

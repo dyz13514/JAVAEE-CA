@@ -15,7 +15,7 @@ import com.group5.cats.service.EntitlementService;
 
 @Profile("!demo")
 @Component
-@Order(2)
+@Order(3)
 public class EntitlementDataLoader implements CommandLineRunner {
 	
 	private final EmployeeRepository employeeRepository;
