@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import org.springframework.context.annotation.Profile;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.group5.cats.model.Employee;
 import com.group5.cats.model.EmployeeDesignation;
@@ -13,7 +13,6 @@ import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.EmployeeRepository;
 import com.group5.cats.service.EntitlementService;
 
-@Profile("!demo")
 @Component
 @Order(3)
 public class EntitlementDataLoader implements CommandLineRunner {
@@ -28,18 +27,17 @@ public class EntitlementDataLoader implements CommandLineRunner {
 		this.entitlementService = entitlementService;
 	}
 	
+	@Override
+	@Transactional
 	public void run(String... args) throws Exception {
-		
-		if (employeeRepository.findByUsername("entitlememt_test").isEmpty()) {
-		
-		Employee employee = new Employee("entitlememt_test", "entitlememt_test_password", "entitlememt_test", null, EmployeeDesignation.ADMINISTRATIVE, EmployeeRole.REGULAR_STAFF  );
-		
-		employee = employeeRepository.save(employee);
-		
-		entitlementService.createDefaultEntitlement(
-				employee.getId(),
-				LocalDate.now().getYear());
-	}
+		Employee employee = employeeRepository.findByUsername("entitlememt_test").orElse(null);
+		if (employee == null) {
+			employee = employeeRepository.save(new Employee(
+					"entitlememt_test", "entitlememt_test_password", "entitlememt_test",
+					null, EmployeeDesignation.ADMINISTRATIVE, EmployeeRole.REGULAR_STAFF));
+		}
+		// 账号存在时，也补齐当年的额度；已有额度由 Service 保留。
+		entitlementService.createDefaultEntitlement(employee.getId(), LocalDate.now().getYear());
 	}
 
 

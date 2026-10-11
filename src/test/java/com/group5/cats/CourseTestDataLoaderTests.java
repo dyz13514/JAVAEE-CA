@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import com.group5.cats.model.Category;
+import com.group5.cats.model.Course;
 import com.group5.cats.model.TrainingProvider;
 import com.group5.cats.repository.*;
 import com.group5.cats.service.CourseService;
@@ -13,7 +14,6 @@ class CourseTestDataLoaderTests {
     @Test
     void firstEmptyDatabaseSeedsCoursesThroughTheSameServiceAsAdmin() {
         CourseRepository courses = mock(CourseRepository.class);
-        EmployeeRepository employees = mock(EmployeeRepository.class);
         CategoryRepository categories = mock(CategoryRepository.class);
         TrainingProviderRepository providers = mock(TrainingProviderRepository.class);
         CourseService service = mock(CourseService.class);
@@ -28,7 +28,7 @@ class CourseTestDataLoaderTests {
             provider.setId(2L);
             return provider;
         });
-        new CourseTestDataLoader(courses, employees, categories, providers, service).run();
+        new CourseTestDataLoader(courses, categories, providers, service).run();
         verify(service, times(18)).createCourse(anyString(), eq(1L), eq(2L), anyDouble(), anyString());
         verify(service, times(6)).createCourse(anyString(), eq(1L), eq(2L), eq(0.0), anyString());
         verify(providers, times(3)).save(any());
@@ -36,25 +36,29 @@ class CourseTestDataLoaderTests {
     }
 
     @Test
-    void deletingAllCoursesDoesNotReseedWhenEmployeesAlreadyExist() {
+    void existingCourseIsSkippedAndOtherSamplesAreAdded() {
         CourseRepository courses = mock(CourseRepository.class);
-        EmployeeRepository employees = mock(EmployeeRepository.class);
-        when(employees.count()).thenReturn(5L);
         CategoryRepository categories = mock(CategoryRepository.class);
         TrainingProviderRepository providers = mock(TrainingProviderRepository.class);
         CourseService service = mock(CourseService.class);
-        new CourseTestDataLoader(courses, employees, categories, providers, service).run();
-        verifyNoInteractions(courses, categories, providers, service);
-    }
-
-    @Test
-    void existingCoursesAreNotOverwrittenEvenBeforeEmployeesAreSeeded() {
-        CourseRepository courses = mock(CourseRepository.class);
-        when(courses.count()).thenReturn(1L);
-        CategoryRepository categories = mock(CategoryRepository.class);
-        TrainingProviderRepository providers = mock(TrainingProviderRepository.class);
-        CourseService service = mock(CourseService.class);
-        new CourseTestDataLoader(courses, mock(EmployeeRepository.class), categories, providers, service).run();
-        verifyNoInteractions(categories, providers, service);
+        when(categories.findByNameIgnoreCase(anyString())).thenAnswer(invocation -> {
+            String name = invocation.getArgument(0);
+            Category category = new Category(name, "", false);
+            category.setId((long) java.util.List.of("INTERNAL", "EXTERNAL", "CERTIFICATION").indexOf(name) + 1);
+            return Optional.of(category);
+        });
+        when(providers.findByNameIgnoreCase(anyString())).thenAnswer(invocation -> {
+            String name = invocation.getArgument(0);
+            TrainingProvider provider = new TrainingProvider(name);
+            provider.setId((long) java.util.List.of("ISS", "AWS", "Demo Skills Academy").indexOf(name) + 1);
+            return Optional.of(provider);
+        });
+        when(courses.findByTitleIgnoreCaseAndCategory_IdAndProvider_Id("Java", 2L, 2L))
+                .thenReturn(Optional.of(new Course()));
+        new CourseTestDataLoader(courses, categories, providers, service).run();
+        verify(service, times(17)).createCourse(anyString(), anyLong(), anyLong(), anyDouble(), anyString());
+        verify(service, never()).createCourse(eq("Java"), eq(2L), eq(2L), anyDouble(), anyString());
+        verify(providers, never()).save(any());
+        verify(courses, never()).save(any());
     }
 }
