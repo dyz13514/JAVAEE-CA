@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Course fee claim detail - CATS</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell(${activeNavigation})}"></th:block>
+<main class="page-main admin-content">
+    <div class="page-heading">
+        <div>
+            <h1 th:text="${claim.application.courseTitle}">Course fee claim</h1>
+            <p th:text="${'Claim #' + claim.id + ' / Application #' + claim.application.id}"></p>
+        </div>
+        <span th:replace="~{fragments/layout :: status(${claim.status.name()})}"></span>
+    </div>
+    <p><a th:href="@{${listUrl}}">Back to claims</a></p>
+    <div class="detail-card">
+        <dl>
+            <dt>Employee</dt><dd th:text="${claim.application.employee.name}"></dd>
+            <dt>Category</dt><dd th:text="${claim.application.categoryName}"></dd>
+            <dt>Course period</dt><dd th:text="${claim.application.fromDate + ' to ' + claim.application.toDate}"></dd>
+            <dt>Course fee</dt><dd th:text="${'S$ ' + #numbers.formatDecimal(claim.application.fee, 1, 'COMMA', 2, 'POINT')}"></dd>
+            <dt>Claim amount</dt><dd th:text="${'S$ ' + #numbers.formatDecimal(claim.amount, 1, 'COMMA', 2, 'POINT')}"></dd>
+            <dt>Paid personally</dt><dd th:text="${claim.paidPersonally ? 'Yes' : 'No'}"></dd>
+            <dt>Submitted at</dt><dd th:text="${#temporals.format(claim.submittedAt, 'yyyy-MM-dd HH:mm')}"></dd>
+            <dt>Receipt</dt>
+            <dd><a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${claim.receipt.id})}"
+                   th:text="${claim.receipt.originalFilename}"></a></dd>
+            <dt>Certificate of completion</dt>
+            <dd><a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${claim.certificate.id})}"
+                   th:text="${claim.certificate.originalFilename}"></a></dd>
+        </dl>
+        <p><a th:href="@{/training-ledger(employeeId=${claim.application.employee.id},year=${claim.application.fromDate.year})}">View employee training ledger</a></p>
+        <p th:if="${isOwner}"><a th:href="@{/employee/history/{id}(id=${claim.application.id})}">View course application</a></p>
+        <p th:if="${isOwner and claim.status.name() == 'REJECTED'}">
+            <a class="primary-button" th:href="@{/employee/claims/{id}/edit(id=${claim.id})}">Revise and resubmit</a>
+        </p>
+    </div>
+
+    <div class="detail-card" th:if="${claim.reviewedAt != null}">
+        <h2>Manager review</h2>
+        <p><strong>Reviewed by:</strong> <span th:text="${claim.reviewedByName}"></span></p>
+        <p><strong>Reviewed at:</strong> <span th:text="${#temporals.format(claim.reviewedAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+        <p><strong>Reason:</strong> <span th:text="${claim.managerReason}"></span></p>
+    </div>
+
+    <div class="detail-card" th:if="${canReview}">
+        <h2>Review claim</h2>
+        <form th:action="@{/manager/claims/{id}/review(id=${claim.id})}" method="post">
+            <input type="hidden" name="version" th:value="${claim.version}">
+            <p>
+                <label for="reason">Approval or rejection reason</label>
+                <textarea id="reason" name="reason" rows="4" maxlength="1000" required></textarea>
+            </p>
+            <div class="form-actions">
+                <button type="submit" name="decision" value="APPROVE">Approve</button>
+                <button type="submit" name="decision" value="REJECT">Reject</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="detail-card" th:if="${canPay}">
+        <h2>Record reimbursement payment</h2>
+        <p>Record the actual payment after reimbursement has been made.</p>
+        <form th:action="@{/admin/claims/{id}/pay(id=${claim.id})}" method="post">
+            <input type="hidden" name="version" th:value="${claim.version}">
+            <p>
+                <label for="paymentDate">Payment date</label>
+                <input id="paymentDate" name="paymentDate" type="date" th:value="${today}"
+                       th:min="${claim.reviewedAt.toLocalDate()}" th:max="${today}" required>
+            </p>
+            <p>
+                <label for="reference">Payment reference</label>
+                <input id="reference" name="reference" type="text" maxlength="100" required>
+            </p>
+            <p>
+                <label for="note">Payment note (optional)</label>
+                <textarea id="note" name="note" rows="3" maxlength="1000"></textarea>
+            </p>
+            <div class="form-actions"><button type="submit">Mark as reimbursed</button></div>
+        </form>
+    </div>
+
+    <div class="detail-card" th:if="${claim.status.name() == 'REIMBURSED'}">
+        <h2>Reimbursement payment</h2>
+        <p><strong>Payment date:</strong> <span th:text="${claim.paymentDate}"></span></p>
+        <p><strong>Payment reference:</strong> <span th:text="${claim.paymentReference}"></span></p>
+        <p><strong>Recorded by:</strong> <span th:text="${claim.paidByName}"></span></p>
+        <p><strong>Recorded at:</strong> <span th:text="${#temporals.format(claim.paidAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+        <p th:if="${claim.paymentNote != null and !claim.paymentNote.isEmpty()}"><strong>Note:</strong> <span th:text="${claim.paymentNote}"></span></p>
+    </div>
+
+    <div class="detail-card">
+        <h2>Claim history</h2>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                <tr><th>Recorded at</th><th>Status</th><th>Amount</th><th>Recorded by</th><th>Reason / action</th><th>Attachments</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry : ${history}">
+                    <td th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td><span th:replace="~{fragments/layout :: status(${entry.status.name()})}"></span></td>
+                    <td th:text="${'S$ ' + #numbers.formatDecimal(entry.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+                    <td th:text="${entry.actorName}"></td>
+                    <td th:text="${entry.comment}"></td>
+                    <td>
+                        <a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${entry.receipt.id})}">Receipt</a>
+                        <a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${entry.certificate.id})}">Certificate</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

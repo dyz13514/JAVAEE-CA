@@ -70,6 +70,12 @@
 
                         <div class="d-flex flex-wrap gap-2">
 
+                            <a th:if="${courseApplication.status == 'COMPLETED' and courseApplication.fee > 0 and (courseApplication.categoryName == 'EXTERNAL' or courseApplication.categoryName == 'CERTIFICATION')}"
+                               th:href="@{/employee/claims/new(applicationId=${courseApplication.id})}"
+                               class="btn btn-outline-primary rounded-pill px-4">
+                                 Course fee claim
+                            </a>
+
                             <a th:if="${courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED'}"
                                th:href="@{/employee/history/{id}/edit(id=${courseApplication.id})}"
                                class="btn btn-warning rounded-pill px-4 fw-semibold text-dark">

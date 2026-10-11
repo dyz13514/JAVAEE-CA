@@ -25,8 +25,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/cats?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: cats_app
       SPRING_DATASOURCE_PASSWORD: cats_dev_only
+      CATS_CLAIM_UPLOAD_DIRECTORY: /app/uploads/claims
     ports:
       - "8080:8080"
+    volumes:
+      - cats-claim-files:/app/uploads/claims
 
 volumes:
   cats-mysql-data:
+  cats-claim-files:

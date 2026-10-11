@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Training ledger - CATS</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('training-ledger')}"></th:block>
+<main class="page-main admin-content">
+    <div class="page-heading">
+        <div><h1>Training ledger</h1><p>Training budget, approved course fees and reimbursement claims by course year.</p></div>
+        <a th:if="${ledger != null}" class="primary-button"
+           th:href="@{/training-ledger/export.csv(employeeId=${selectedId},year=${selectedYear})}">Export CSV</a>
+    </div>
+    <div class="filter-panel">
+        <form th:action="@{/training-ledger}" method="get">
+            <div class="form-grid">
+                <p>
+                    <label for="employeeId">Employee</label>
+                    <select id="employeeId" name="employeeId" required>
+                        <option th:each="employee : ${employees}" th:value="${employee.id}"
+                                th:selected="${employee.id == selectedId}" th:text="${employee.name}"></option>
+                    </select>
+                </p>
+                <p>
+                    <label for="year">Course year</label>
+                    <input id="year" name="year" type="number" min="1" max="9999" th:value="${selectedYear}" required>
+                </p>
+            </div>
+            <button type="submit">View ledger</button>
+        </form>
+    </div>
+    <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
+
+    <th:block th:if="${ledger != null}">
+        <div class="section-heading"><h2 th:text="${ledger.employee.name + ' — ' + ledger.year}">Employee training ledger</h2></div>
+        <p th:unless="${ledger.hasEntitlement}">No training entitlement is configured for this year. Course fees and claims are still listed below.</p>
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Entry</th><th>Amount (S$)</th></tr></thead>
+                <tbody>
+                <th:block th:if="${ledger.hasEntitlement}">
+                    <tr><td>Training budget</td><td th:text="${#numbers.formatDecimal(ledger.trainingBudget, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+                    <tr><td>Occupied budget</td><td th:text="${#numbers.formatDecimal(ledger.occupiedBudget, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+                    <tr><td>Remaining budget</td><td th:text="${#numbers.formatDecimal(ledger.remainingBudget, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+                </th:block>
+                <tr><td>Approved course fees</td><td th:text="${#numbers.formatDecimal(ledger.approvedCourseFees, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+                <tr><td>Pending claims</td><td th:text="${#numbers.formatDecimal(ledger.pendingClaimAmount, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+                <tr><td>Approved claims awaiting payment</td><td th:text="${#numbers.formatDecimal(ledger.approvedClaimAmount, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+                <tr><td>Reimbursed claims</td><td th:text="${#numbers.formatDecimal(ledger.reimbursedAmount, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>Occupied budget follows the existing annual entitlement rules, including pending course applications. Reimbursement does not deduct this budget again. Claims belong to the year the course started; their actual payment dates are shown separately.</p>
+
+        <div class="section-heading"><h2>Approved and completed courses</h2></div>
+        <p th:if="${#lists.isEmpty(ledger.applications)}">No approved or completed courses for this year.</p>
+        <div class="table-scroll">
+            <table th:if="${!#lists.isEmpty(ledger.applications)}">
+                <thead><tr><th>Application ID</th><th>Course</th><th>Category</th><th>Course period</th><th>Fee (S$)</th><th>Status</th></tr></thead>
+                <tbody>
+                <tr th:each="application : ${ledger.applications}">
+                    <td th:text="${application.id}"></td>
+                    <td th:text="${application.courseTitle}"></td>
+                    <td th:text="${application.categoryName}"></td>
+                    <td th:text="${application.fromDate + ' to ' + application.toDate}"></td>
+                    <td th:text="${#numbers.formatDecimal(application.fee, 1, 'COMMA', 2, 'POINT')}"></td>
+                    <td><span th:replace="~{fragments/layout :: status(${application.status})}"></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="section-heading"><h2>Reimbursement claims</h2></div>
+        <p th:if="${#lists.isEmpty(ledger.claims)}">No claims for this course year.</p>
+        <div class="table-scroll">
+            <table th:if="${!#lists.isEmpty(ledger.claims)}">
+                <thead><tr><th>Claim ID</th><th>Course</th><th>Amount (S$)</th><th>Status</th><th>Payment date</th><th>Payment reference</th></tr></thead>
+                <tbody>
+                <tr th:each="claim : ${ledger.claims}">
+                    <td><a th:href="@{/claims/{id}(id=${claim.id})}" th:text="${claim.id}"></a></td>
+                    <td th:text="${claim.application.courseTitle}"></td>
+                    <td th:text="${#numbers.formatDecimal(claim.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+                    <td><span th:replace="~{fragments/layout :: status(${claim.status.name()})}"></span></td>
+                    <td th:text="${claim.paymentDate != null ? claim.paymentDate : 'Not reimbursed'}"></td>
+                    <td th:text="${claim.paymentReference}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </th:block>
+</main>
+</body>
+</html>
