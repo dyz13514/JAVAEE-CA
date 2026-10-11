@@ -31,6 +31,122 @@ class CourseCatalogueIntegrationTests {
     @Autowired EmployeeRepository employees;
     @Autowired jakarta.persistence.EntityManager entityManager;
     @Autowired org.springframework.web.context.WebApplicationContext context;
+    @Autowired CourseService courseAdminService;
+    @Autowired CourseApplicationService applicationService;
+    @Autowired EntitlementService entitlementService;
+    @Autowired com.group5.cats.CourseTestDataLoader courseTestDataLoader;
+
+    @Test
+    void adminCanCreateACourseAndEmployeesApplyWithItsStoredDetails() throws Exception {
+        var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup(context).build();
+        Employee admin = employees.findByUsername("admin").orElseThrow();
+        Category category = categories.findByNameIgnoreCase("EXTERNAL").orElseThrow();
+        TrainingProvider provider = providers.findByNameIgnoreCase("AWS").orElseThrow();
+        mvc.perform(get("/admin/courses/new").sessionAttr("loggedInUser", admin))
+                .andExpect(status().isOk()).andExpect(view().name("admin/course-form"))
+                .andExpect(result -> {
+                    String html = result.getResponse().getContentAsString();
+                    assertTrue(html.contains("EXTERNAL"));
+                    assertTrue(html.contains("AWS"));
+                    assertTrue(html.contains("/admin/courses/save"));
+                });
+        mvc.perform(post("/admin/courses/save").sessionAttr("loggedInUser", admin)
+                .param("title", " New Admin Course ").param("categoryId", category.getId().toString())
+                .param("providerId", provider.getId().toString()).param("fee", "250")
+                .param("introduction", "Practice course"))
+                .andExpect(redirectedUrl("/admin/common-courses"))
+                .andExpect(flash().attributeExists("successMessage"));
+        Course created = records.findByTitleIgnoreCaseAndCategory_IdAndProvider_Id(
+                "New Admin Course", category.getId(), provider.getId()).orElseThrow();
+        assertTrue(courseAdminService.findAvailableCourses().stream()
+                .anyMatch(option -> option.id().equals(created.getId())));
+        mvc.perform(post("/admin/common-courses/" + created.getId() + "/add")
+                .sessionAttr("loggedInUser", admin))
+                .andExpect(redirectedUrl("/admin/common-courses"))
+                .andExpect(flash().attributeExists("successMessage"));
+        entityManager.flush();
+        assertTrue(courses.existsByCourse_Id(created.getId()));
+        mvc.perform(get("/admin/common-courses").sessionAttr("loggedInUser", admin))
+                .andExpect(status().isOk()).andExpect(result -> {
+                    String html = result.getResponse().getContentAsString();
+                    assertTrue(html.contains("New Admin Course"));
+                    assertTrue(html.contains("Remove from Common"));
+                });
+        assertNull(courseService.deleteCommonCourse(courses.findAll().get(0).getId()));
+        entityManager.flush();
+        Employee staff = employees.findByUsername("emp1").orElseThrow();
+        java.time.LocalDate from = java.time.LocalDate.now().plusDays(1)
+                .with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.MONDAY));
+        entitlementService.setEntitlement(staff.getId(), from.getYear(), 10, 1000);
+        CourseApplication request = new CourseApplication();
+        request.setCourseId(created.getId());
+        request.setFromDate(from);
+        request.setToDate(from.plusDays(1));
+        request.setJustification("Use these skills at work.");
+        request.setFee(1);
+        request.setCourseTitle("Forged title");
+        assertNull(applicationService.submitApplication(request, staff));
+        entityManager.flush();
+        assertEquals(created.getId(), request.getCourse().getId());
+        assertEquals("New Admin Course", request.getCourseTitle());
+        assertEquals(250, request.getFee());
+        assertEquals(category.getId(), request.getCategoryId());
+        assertEquals(provider.getId(), request.getProviderId());
+        assertNotNull(courseAdminService.deleteCourse(created.getId()));
+        request.setStatus("DELETED");
+        entityManager.flush();
+        assertNotNull(courseAdminService.deleteCourse(created.getId()));
+        assertTrue(records.existsById(created.getId()));
+    }
+
+    @Test
+    void invalidCreationPreservesFormAndRejectsBadReferencesFeesAndDuplicateIdentity() throws Exception {
+        var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup(context).build();
+        Employee admin = employees.findByUsername("admin").orElseThrow();
+        Category internal = categories.findByNameIgnoreCase("INTERNAL").orElseThrow();
+        TrainingProvider provider = providers.findByNameIgnoreCase("ISS").orElseThrow();
+        long before = records.count();
+        mvc.perform(post("/admin/courses/save").sessionAttr("loggedInUser", admin)
+                .param("title", "Internal test").param("categoryId", internal.getId().toString())
+                .param("providerId", provider.getId().toString()).param("fee", "20")
+                .param("introduction", "Retain this text"))
+                .andExpect(status().isOk()).andExpect(view().name("admin/course-form"))
+                .andExpect(model().attribute("title", "Internal test"))
+                .andExpect(model().attribute("introduction", "Retain this text"))
+                .andExpect(model().attributeExists("categories", "providers", "errorMessage"));
+        for (Double fee : java.util.Arrays.asList(null, -1.0, Double.NaN, Double.POSITIVE_INFINITY)) {
+            assertNotNull(courseAdminService.createCourse("Invalid fee", internal.getId(), provider.getId(), fee, ""));
+        }
+        assertNotNull(courseAdminService.createCourse(" ", internal.getId(), provider.getId(), 0.0, ""));
+        assertNotNull(courseAdminService.createCourse("Missing category", Long.MAX_VALUE, provider.getId(), 0.0, ""));
+        assertNotNull(courseAdminService.createCourse("Missing provider", internal.getId(), Long.MAX_VALUE, 0.0, ""));
+        assertNotNull(courseAdminService.createCourse("java", internal.getId(), provider.getId(), 0.0, ""));
+        assertEquals(before, records.count());
+    }
+
+    @Test
+    void courseMustLeaveCommonCatalogueBeforeDeletionAndRestartDoesNotUndoDeletion() throws Exception {
+        var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup(context).build();
+        Employee admin = employees.findByUsername("admin").orElseThrow();
+        Course course = records.findAll().get(0);
+        assertNull(courseService.addCommonCourse(course.getId()));
+        mvc.perform(post("/admin/courses/" + course.getId() + "/delete").sessionAttr("loggedInUser", admin))
+                .andExpect(redirectedUrl("/admin/common-courses"))
+                .andExpect(flash().attributeExists("errorMessage"));
+        assertTrue(records.existsById(course.getId()));
+        assertNull(courseService.deleteCommonCourse(courses.findAll().get(0).getId()));
+        entityManager.flush();
+        mvc.perform(post("/admin/courses/" + course.getId() + "/delete").sessionAttr("loggedInUser", admin))
+                .andExpect(redirectedUrl("/admin/common-courses"))
+                .andExpect(flash().attributeExists("successMessage"));
+        entityManager.flush();
+        assertFalse(records.existsById(course.getId()));
+        records.deleteAll();
+        entityManager.flush();
+        courseTestDataLoader.run();
+        assertEquals(0, records.count());
+        assertEquals("emp123", employees.findByUsername("emp1").orElseThrow().getPassword());
+    }
 
     @Test
     void realPagesAndMembershipRequestsRespectRolesAndNeverChangeTheCourse() throws Exception {

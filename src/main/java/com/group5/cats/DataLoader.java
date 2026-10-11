@@ -12,7 +12,7 @@ import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.EmployeeRepository;
 
 @Component 
-@Order(1)
+@Order(2)
 public class DataLoader implements CommandLineRunner {
 	
 private final EmployeeRepository employeeRepository;

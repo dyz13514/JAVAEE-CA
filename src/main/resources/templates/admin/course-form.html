@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Course - CATS</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{fragments/layout :: shell('common-courses')}"></th:block>
+<main class="page-main admin-content">
+    <h1>Create Course</h1>
+    <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
+    <form th:action="@{/admin/courses/save}" method="post">
+        <p>
+            <label for="title">Course Title</label>
+            <input id="title" name="title" type="text" th:value="${title}" maxlength="255" required>
+        </p>
+        <p>
+            <label for="categoryId">Category</label>
+            <select id="categoryId" name="categoryId" required>
+                <option value="">Select a category</option>
+                <option th:each="category : ${categories}" th:value="${category.id}"
+                        th:text="${category.name}" th:selected="${category.id == categoryId}"></option>
+            </select>
+        </p>
+        <p>
+            <label for="providerId">Training Provider</label>
+            <select id="providerId" name="providerId" required>
+                <option value="">Select a training provider</option>
+                <option th:each="provider : ${providers}" th:value="${provider.id}"
+                        th:text="${provider.name}" th:selected="${provider.id == providerId}"></option>
+            </select>
+        </p>
+        <p>
+            <label for="fee">Course Fee (S$)</label>
+            <input id="fee" name="fee" type="number" th:value="${fee}" min="0" step="0.01" required>
+        </p>
+        <p>INTERNAL courses must have a fee of 0. Employees use the course fee when applying.</p>
+        <p>
+            <label for="introduction">Introduction</label>
+            <textarea id="introduction" name="introduction" maxlength="4000" rows="5"
+                      th:text="${introduction}"></textarea>
+        </p>
+        <button type="submit">Create Course</button>
+        <a th:href="@{/admin/common-courses}">Cancel</a>
+    </form>
+</main>
+</body>
+</html>
