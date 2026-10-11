@@ -23,6 +23,7 @@ class ApplicationPaginationTests {
     @Autowired CourseApplicationService service;
     @Autowired CourseApplicationRepository applications;
     @Autowired EmployeeRepository employees;
+    @Autowired TrainingProviderRepository providers;
 
     @Test
     void pagesContainEveryMatchingRecordExactlyOnceAndRespectYearAndOwner() {
@@ -88,6 +89,23 @@ class ApplicationPaginationTests {
         assertThrows(SecurityException.class, () -> service.searchTeamApplications(staff, search));
     }
 
+    @Test
+    void providerNameSearchTracksTheAssociatedProviderForStaffAndManagers() {
+        Employee manager = employee("Provider manager", EmployeeRole.MANAGER, null);
+        Employee owner = employee("Provider staff", EmployeeRole.REGULAR_STAFF, manager);
+        application(owner, "Java", LocalDate.now());
+        TrainingProvider provider = providers.findByNameIgnoreCase("Test provider").orElseThrow();
+        provider.setName("Renamed academy");
+        providers.saveAndFlush(provider);
+        ApplicationSearch search = new ApplicationSearch();
+        search.setKeyword("renamed academy");
+        assertEquals(1, service.searchEmployeeApplications(owner, true, search).getTotalElements());
+        assertEquals(1, service.searchTeamApplications(manager, search).getTotalElements());
+        search.setKeyword("Test provider");
+        assertEquals(0, service.searchEmployeeApplications(owner, true, search).getTotalElements());
+        assertEquals(0, service.searchTeamApplications(manager, search).getTotalElements());
+    }
+
     private Employee employee(String name, EmployeeRole role, Employee supervisor) {
         return employees.save(new Employee(name, "test-password", name, supervisor,
                 EmployeeDesignation.PROFESSIONAL, role));
@@ -98,7 +116,11 @@ class ApplicationPaginationTests {
         application.setEmployee(employee);
         application.setCourseTitle(title);
         application.setCategory(com.group5.cats.CategoryFixtures.category("EXTERNAL"));
-        application.setProvider("Test provider");
+        TrainingProvider provider = providers.findByNameIgnoreCase("Test provider").orElse(null);
+        if (provider == null) {
+            provider = providers.save(new TrainingProvider("Test provider"));
+        }
+        application.setProvider(provider);
         application.setFromDate(date);
         application.setToDate(date.plusDays(1));
         applications.saveAndFlush(application);

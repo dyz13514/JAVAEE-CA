@@ -17,9 +17,12 @@
             <option th:each="category : ${categories}" th:value="${category.id}"
                     th:text="${category.name + (category.halfDayAllowed ? ' (half-day allowed)' : '')}"></option>
         </select></p>
-    <p><label for="provider">Training Provider</label>
-        <input id="provider" th:field="*{provider}" list="providerNames" maxlength="255">
-        <datalist id="providerNames"><option th:each="provider : ${providers}" th:value="${provider.name}"></option></datalist></p>
+    <p><label for="providerId">Training Provider</label>
+        <select id="providerId" th:field="*{providerId}" required>
+            <option value="">-- Select Provider --</option>
+            <option th:each="provider : ${providers}"
+                    th:value="${provider.id}" th:text="${provider.name}"></option>
+        </select></p>
     <p><label for="fromDate">From Date</label><input type="date" id="fromDate" th:field="*{fromDate}" required></p>
     <p><label for="toDate">To Date</label><input type="date" id="toDate" th:field="*{toDate}" required></p>
 	<p>

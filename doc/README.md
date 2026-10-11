@@ -19,3 +19,10 @@ Do not wrap the password in quotes: Spring treats those quotes as part of it.
 This local file is ignored by Git. Run the application from the project root
 so Spring Boot loads it. Ensure the database exists and the account can access
 it; Hibernate updates the application tables during startup.
+
+## Application provider relationship
+
+Applications now reference the maintained training provider table. Existing
+databases with a string provider column need a one-time migration before
+startup. See [application-provider.md](application-provider.md) for the migration
+steps and webpage verification.

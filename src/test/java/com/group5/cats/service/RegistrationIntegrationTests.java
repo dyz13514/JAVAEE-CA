@@ -11,7 +11,13 @@ import com.group5.cats.dto.RegistrationForm;
 import com.group5.cats.model.*;
 import com.group5.cats.repository.*;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "spring.datasource.url=jdbc:h2:mem:registration-integration;MODE=MySQL;DB_CLOSE_DELAY=-1",
+    "spring.datasource.driver-class-name=org.h2.Driver",
+    "spring.datasource.username=sa", "spring.datasource.password=",
+    "spring.jpa.hibernate.ddl-auto=create-drop", "spring.jpa.show-sql=false",
+    "cats.mail.enabled=false"
+})
 @Transactional
 class RegistrationIntegrationTests {
     @Autowired RegistrationService service;

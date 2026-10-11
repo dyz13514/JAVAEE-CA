@@ -47,6 +47,7 @@ class EmployeeControllerTests {
         var course = new com.group5.cats.model.CommonCourse("Java", com.group5.cats.CategoryFixtures.category("EXTERNAL"),
                 new com.group5.cats.model.TrainingProvider("NUS-ISS"), 250);
         course.setId(7L);
+        course.getProvider().setId(3L);
         when(courses.findCommonCourseById(7L)).thenReturn(course);
         mvc.perform(get("/employee/apply").param("commonCourseId", "7").sessionAttr("loggedInUser", employee))
                 .andExpect(view().name("apply-course"))
@@ -54,10 +55,37 @@ class EmployeeControllerTests {
                     CourseApplication data = (CourseApplication) result.getModelAndView().getModel().get("courseApplication");
                     assertEquals("EXTERNAL", data.getCategoryName());
                     assertEquals("Java", data.getCourseTitle());
-                    assertEquals("NUS-ISS", data.getProvider());
+                    assertEquals("NUS-ISS", data.getProviderName());
+                    assertSame(course.getProvider(), data.getProvider());
                     assertEquals(250, data.getFee());
+                    assertEquals(3L, data.getProviderId());
                     assertNull(data.getId());
                 });
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void selectedProviderIdIsBoundAndPreservedWhenServiceRejectsSubmission() throws Exception {
+        when(service.submitApplication(any(), eq(employee))).thenReturn("Selected training provider no longer exists.");
+        mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
+                .param("courseTitle", "Java").param("categoryId", "2")
+                .param("providerId", "3").param("provider.id", "999").param("provider.name", "Forged").param("fee", "100"))
+                .andExpect(view().name("apply-course"))
+                .andExpect(result -> {
+                    CourseApplication data = (CourseApplication) result.getModelAndView()
+                            .getModel().get("courseApplication");
+                    assertEquals(3L, data.getProviderId());
+                    assertNull(data.getProvider());
+                });
+        verify(service).submitApplication(argThat(data -> Long.valueOf(3L).equals(data.getProviderId())), eq(employee));
+    }
+
+    @Test
+    void malformedProviderIdReturnsTheFormWithoutCallingService() throws Exception {
+        mvc.perform(post("/employee/apply").sessionAttr("loggedInUser", employee)
+                .param("providerId", "abc").param("fee", "100"))
+                .andExpect(view().name("apply-course"))
+                .andExpect(model().attributeHasFieldErrors("courseApplication", "providerId"));
         verifyNoInteractions(service);
     }
 

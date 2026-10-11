@@ -17,6 +17,8 @@ public interface CourseApplicationRepository
 
     boolean existsByCategory_Id(Long categoryId);
 
+    boolean existsByProvider_Id(Long providerId);
+
     List<CourseApplication> findByEmployee(Employee employee);
 
     List<CourseApplication> findByEmployeeIn(List<Employee> employees);
@@ -26,7 +28,7 @@ public interface CourseApplicationRepository
             + "AND (:currentYear = false OR (a.fromDate >= :yearStart AND a.fromDate < :nextYear)) "
             + "AND (:keyword = '' OR LOCATE(LOWER(:keyword), LOWER(a.courseTitle)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.category.name)) > 0 "
-            + "OR LOCATE(LOWER(:keyword), LOWER(a.provider)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.provider.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.status)) > 0)")
     Page<CourseApplication> searchEmployeeApplications(
             @Param("employeeId") Long employeeId, @Param("currentYear") boolean currentYear,
@@ -37,7 +39,7 @@ public interface CourseApplicationRepository
             + "AND (:keyword = '' OR LOCATE(LOWER(:keyword), LOWER(a.employee.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.courseTitle)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.category.name)) > 0 "
-            + "OR LOCATE(LOWER(:keyword), LOWER(a.provider)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.provider.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.status)) > 0)")
     Page<CourseApplication> searchTeamApplications(@Param("managerId") Long managerId,
             @Param("keyword") String keyword, Pageable pageable);

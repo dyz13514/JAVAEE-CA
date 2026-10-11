@@ -23,7 +23,8 @@
                     <dl class="row param-grid">
                         <div class="col-md-4">
                             <dt> Training Provider</dt>
-                            <dd th:text="${courseApplication.provider != null and !courseApplication.provider.isEmpty() ? courseApplication.provider : 'Not Specified'}">Provider</dd>
+                            <dd th:if="${courseApplication.provider != null}" th:text="${courseApplication.providerName}">Provider</dd>
+                            <dd th:if="${courseApplication.provider == null}">Not Specified</dd>
                         </div>
                         <div class="col-md-4">
                             <dt> Course Period</dt>

@@ -85,6 +85,10 @@ class PageRenderingTests {
                 assertFalse(html.contains("<script>alert(1)</script>"));
                 if (!state.equals("empty")) assertTrue(html.contains("&lt;script&gt;"));
             }
+            if (template.equals("application-detail") || (template.equals("course-view") && !state.equals("empty"))) {
+                assertTrue(html.contains("NUS-ISS"));
+                assertFalse(html.contains("TrainingProvider@"));
+            }
             if (template.equals("application-detail")) {
                 assertEquals(state.equals("approved"), html.contains("/complete"));
                 assertEquals(!state.equals("approved"), html.contains("/withdraw"));
@@ -98,6 +102,9 @@ class PageRenderingTests {
             }
             if (template.equals("apply-course")) {
                 assertTrue(html.contains("name=\"categoryId\""));
+                assertTrue(html.contains("name=\"providerId\""));
+                assertFalse(html.contains("name=\"provider\""));
+                assertTrue(html.contains("value=\"1\" selected=\"selected\""));
                 assertTrue(html.contains("action=\"/employee/apply\""));
                 assertFalse(html.contains("name=\"courseId\""));
             }
@@ -143,7 +150,9 @@ class PageRenderingTests {
             course.setEmployee(user);
             course.setCourseTitle("Cloud Architecture Essentials");
             course.setCategory(com.group5.cats.CategoryFixtures.category("EXTERNAL"));
-            course.setProvider("NUS-ISS");
+            TrainingProvider applicationProvider = new TrainingProvider("NUS-ISS");
+            applicationProvider.setId(1L);
+            course.setProvider(applicationProvider);
             course.setFromDate(LocalDate.of(2026, 10, 19));
             course.setToDate(LocalDate.of(2026, 10, 21));
             course.setFee(650);

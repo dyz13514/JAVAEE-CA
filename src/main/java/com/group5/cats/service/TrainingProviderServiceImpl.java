@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.group5.cats.model.TrainingProvider;
 import com.group5.cats.repository.CommonCourseRepository;
+import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.TrainingProviderRepository;
 
 @Service
@@ -16,13 +17,16 @@ public class TrainingProviderServiceImpl
 
     private final TrainingProviderRepository trainingProviderRepository;
     private final CommonCourseRepository commonCourseRepository;
+    private final CourseApplicationRepository courseApplicationRepository;
 
     public TrainingProviderServiceImpl(
             TrainingProviderRepository trainingProviderRepository,
-            CommonCourseRepository commonCourseRepository) {
+            CommonCourseRepository commonCourseRepository,
+            CourseApplicationRepository courseApplicationRepository) {
 
         this.trainingProviderRepository = trainingProviderRepository;
         this.commonCourseRepository = commonCourseRepository;
+        this.courseApplicationRepository = courseApplicationRepository;
     }
 
     @Override
@@ -111,6 +115,10 @@ public class TrainingProviderServiceImpl
 
         if (commonCourseRepository.existsByProvider_Id(id)) {
             return "This provider is used by commonly attended courses and cannot be deleted.";
+        }
+
+        if (courseApplicationRepository.existsByProvider_Id(id)) {
+            return "This provider is used by course applications and cannot be deleted.";
         }
 
         trainingProviderRepository.delete(provider);

@@ -12,6 +12,8 @@ import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Category;
 import com.group5.cats.dto.CourseCategory;
 import com.group5.cats.repository.CategoryRepository;
+import com.group5.cats.model.TrainingProvider;
+import com.group5.cats.repository.TrainingProviderRepository;
 import com.group5.cats.model.Employee;
 import com.group5.cats.repository.CourseApplicationRepository;
 import com.group5.cats.repository.EmployeeRepository;
@@ -33,17 +35,20 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     private final PublicHolidayRepository publicHolidayRepository;
     private final NotificationService notificationService;
     private final CategoryRepository categoryRepository;
+    private final TrainingProviderRepository trainingProviderRepository;
 
     public CourseApplicationServiceImpl(CourseApplicationRepository courseApplicationRepository,
             EmployeeRepository employeeRepository, EntitlementService entitlementService,
             PublicHolidayRepository publicHolidayRepository, NotificationService notificationService,
-            CategoryRepository categoryRepository) {
+            CategoryRepository categoryRepository,
+            TrainingProviderRepository trainingProviderRepository) {
         this.courseApplicationRepository = courseApplicationRepository;
         this.employeeRepository = employeeRepository;
         this.entitlementService = entitlementService;
         this.publicHolidayRepository = publicHolidayRepository;
         this.notificationService = notificationService;
         this.categoryRepository = categoryRepository;
+        this.trainingProviderRepository = trainingProviderRepository;
     }
 
     @Override
@@ -96,6 +101,10 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (supervisorError != null) return supervisorError;
         String error = selectCategory(application);
         if (error != null) return error;
+        error = selectProvider(application);
+        if (error != null) {
+            return error;
+        }
         error = validateBasicRules(application);
         if (error != null) {
             return error;
@@ -130,12 +139,23 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         return null;
     }
 
+    private String selectProvider(CourseApplication application) {
+        Long providerId = application.getProviderId();
+        if (providerId == null || providerId <= 0) {
+            return "Please select a valid training provider.";
+        }
+        TrainingProvider provider = trainingProviderRepository.findById(providerId).orElse(null);
+        if (provider == null) {
+            return "Selected training provider no longer exists.";
+        }
+        application.setProvider(provider);
+        return null;
+    }
+
     private String validateBasicRules(CourseApplication application) {
         String error = validateText(application.getCourseTitle(), "Course title", true);
         if (error != null) return error;
         error = validateText(application.getJustification(), "Justification", true);
-        if (error != null) return error;
-        error = validateText(application.getProvider(), "Training provider", false);
         if (error != null) return error;
         error = validateText(application.getDissemination(), "Work dissemination", false);
         if (error != null) return error;
@@ -176,7 +196,6 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         application.setCourseTitle(application.getCourseTitle().strip());
         application.setJustification(application.getJustification().strip());
-        if (application.getProvider() != null) application.setProvider(application.getProvider().strip());
         if (application.getDissemination() != null) application.setDissemination(application.getDissemination().strip());
         return null;
     }
@@ -311,6 +330,10 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (supervisorError != null) return supervisorError;
         String error = selectCategory(updatedData);
         if (error != null) return error;
+        error = selectProvider(updatedData);
+        if (error != null) {
+            return error;
+        }
         error = validateBasicRules(updatedData);
         if (error != null) {
             return error;

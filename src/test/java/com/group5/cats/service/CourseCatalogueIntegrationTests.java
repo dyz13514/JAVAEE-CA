@@ -24,6 +24,7 @@ class CourseCatalogueIntegrationTests {
     @Autowired CategoryRepository categories;
     @Autowired CategoryService categoryService;
     @Autowired TrainingProviderRepository providers;
+    @Autowired TrainingProviderService providerService;
     @Autowired CourseApplicationRepository applications;
     @Autowired EmployeeRepository employees;
     @Autowired jakarta.persistence.EntityManager entityManager;
@@ -52,7 +53,7 @@ class CourseCatalogueIntegrationTests {
         course.setIntroduction("Java introduction");
         CourseApplication application = new CourseApplication();
         application.setEmployee(employees.findByUsername("emp1").orElseThrow());
-        application.setCourseTitle("Java"); application.setProvider(provider.getName());
+        application.setCourseTitle("Java"); application.setProvider(provider);
         application.setCategory(category); application.setFee(150);
         applications.saveAndFlush(application);
         Long id = application.getId();
@@ -62,7 +63,10 @@ class CourseCatalogueIntegrationTests {
         entityManager.flush(); entityManager.clear();
         CourseApplication saved = applications.findById(id).orElseThrow();
         assertEquals("Java", saved.getCourseTitle());
-        assertEquals("Catalogue provider", saved.getProvider());
+        assertEquals("Provider renamed", saved.getProviderName());
+        assertEquals(provider.getId(), saved.getProviderId());
+        assertNotNull(providerService.deleteProvider(provider.getId()));
+        assertTrue(providers.existsById(provider.getId()));
         assertEquals(150, saved.getFee());
         assertEquals("WORKSHOP", saved.getCategoryName());
         assertNotNull(categoryService.deleteCategory(category.getId()));

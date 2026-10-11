@@ -25,6 +25,8 @@ class CourseApplicationServiceTests {
     private CourseApplicationRepository applications;
     private EntitlementService entitlements;
     private CategoryRepository categories;
+    private TrainingProviderRepository providers;
+    private TrainingProvider provider;
     private PublicHolidayRepository holidays;
     private CourseApplicationServiceImpl service;
     private NotificationService notifications;
@@ -43,9 +45,13 @@ class CourseApplicationServiceTests {
             return id >= 1 && id <= 4 ? Optional.of(com.group5.cats.CategoryFixtures.category(
                     id == 1 ? "INTERNAL" : id == 2 ? "EXTERNAL" : id == 3 ? "CERTIFICATION" : "WORKSHOP")) : Optional.empty();
         });
+        providers = mock(TrainingProviderRepository.class);
+        provider = new TrainingProvider("Test provider");
+        provider.setId(1L);
+        when(providers.findById(1L)).thenReturn(Optional.of(provider));
         employees = mock(EmployeeRepository.class);
         service = new CourseApplicationServiceImpl(applications, employees,
-                entitlements, holidays, notifications, categories);
+                entitlements, holidays, notifications, categories, providers);
         employee = new Employee();
         employee.setId(1L);
         Employee manager = new Employee();
@@ -61,6 +67,7 @@ class CourseApplicationServiceTests {
     private CourseApplication validApplication() {
         CourseApplication application = new CourseApplication();
         application.setCourseTitle("Spring MVC");
+        application.setProviderId(1L);
         application.setCategory(com.group5.cats.CategoryFixtures.category("EXTERNAL"));
         application.setJustification("Improve our application maintenance.");
         LocalDate from = LocalDate.now().plusDays(1).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
@@ -132,6 +139,61 @@ class CourseApplicationServiceTests {
         verify(applications, never()).save(any());
     }
 
+    @Test
+    void missingInvalidOrDeletedProviderCannotBeSaved() {
+        for (Long id : new Long[] {null, 0L, -1L, 999L}) {
+            CourseApplication application = validApplication();
+            application.setProviderId(id);
+            assertNotNull(service.submitApplication(application, employee));
+        }
+        verify(applications, never()).save(any());
+        verifyNoInteractions(notifications);
+    }
+
+    @Test
+    void submissionUsesStoredProviderInsteadOfSubmittedName() {
+        CourseApplication application = validApplication();
+        TrainingProvider submitted = new TrainingProvider("Forged name");
+        submitted.setId(1L);
+        application.setProvider(submitted);
+        assertNull(service.submitApplication(application, employee));
+        assertSame(provider, application.getProvider());
+        assertEquals("Test provider", application.getProviderName());
+    }
+
+    @Test
+    void updateChangesProviderAndRejectsDeletedProviderWithoutChangingSavedRecord() {
+        CourseApplication saved = validApplication();
+        saved.setId(10L);
+        saved.setEmployee(employee);
+        saved.setProvider(provider);
+        when(applications.findById(10L)).thenReturn(Optional.of(saved));
+        CourseApplication update = validApplication();
+        update.setProviderId(999L);
+        assertNotNull(service.updateApplication(10L, update, employee));
+        assertSame(provider, saved.getProvider());
+        verify(applications, never()).save(any());
+
+        TrainingProvider replacement = new TrainingProvider("New provider");
+        replacement.setId(2L);
+        when(providers.findById(2L)).thenReturn(Optional.of(replacement));
+        update.setProviderId(2L);
+        assertNull(service.updateApplication(10L, update, employee));
+        assertSame(replacement, saved.getProvider());
+        assertEquals("UPDATED", saved.getStatus());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 3})
+    void finalHalfDayCountsAcrossMultipleTrainingDays(int daysAfterStart) {
+        CourseApplication application = validApplication();
+        application.setCategory(com.group5.cats.CategoryFixtures.category("INTERNAL"));
+        application.setHalfDay(true);
+        application.setToDate(application.getFromDate().plusDays(daysAfterStart));
+        assertNull(service.submitApplication(application, employee));
+        assertEquals(daysAfterStart + 0.5, application.getTrainingDays());
+    }
+
     static Stream<Double> invalidAmounts() {
         return Stream.of(-1.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
     }
@@ -159,14 +221,13 @@ class CourseApplicationServiceTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"title", "justification", "provider", "dissemination"})
+    @ValueSource(strings = {"title", "justification", "dissemination"})
     void textExceedingStorageLimitCannotBeSaved(String field) {
         CourseApplication application = validApplication();
         String text = "x".repeat(256);
         switch (field) {
             case "title" -> application.setCourseTitle(text);
             case "justification" -> application.setJustification(text);
-            case "provider" -> application.setProvider(text);
             case "dissemination" -> application.setDissemination(text);
         }
         assertNotNull(service.submitApplication(application, employee));

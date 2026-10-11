@@ -68,7 +68,7 @@ public class EmployeeController {
 
     @InitBinder("courseApplication")
     public void configureApplicationBinding(WebDataBinder binder) {
-        binder.setAllowedFields("courseTitle", "categoryId", "provider", "fromDate", "toDate",
+        binder.setAllowedFields("courseTitle", "categoryId", "providerId", "fromDate", "toDate",
                 "fee", "justification", "dissemination", "halfDay");
     }
 
@@ -158,7 +158,7 @@ public class EmployeeController {
             }
             application.setCourseTitle(course.getTitle());
             application.setCategory(course.getCategory());
-            application.setProvider(course.getProvider().getName());
+            application.setProvider(course.getProvider());
             application.setFee(course.getFee());
         }
         model.addAttribute("courseApplication", application);

@@ -21,7 +21,7 @@
                 <tbody><tr th:each="courseApplication : ${applications}">
                     <td><a th:if="${ownCourses}" th:href="@{/employee/history/{id}(id=${courseApplication.id})}" th:text="${courseApplication.courseTitle}"></a>
                         <span th:unless="${ownCourses}" th:text="${courseApplication.courseTitle}"></span></td>
-                    <td th:text="${courseApplication.provider}"></td><td th:text="${courseApplication.fromDate}"></td><td th:text="${courseApplication.toDate}"></td>
+                    <td th:text="${courseApplication.providerName}"></td><td th:text="${courseApplication.fromDate}"></td><td th:text="${courseApplication.toDate}"></td>
                     <td><span th:replace="~{fragments/layout :: status(${courseApplication.status})}"></span></td>
                 </tr></tbody></table>
         </div>

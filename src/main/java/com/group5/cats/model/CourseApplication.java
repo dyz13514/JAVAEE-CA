@@ -1,72 +1,68 @@
 package com.group5.cats.model;
+
 import java.time.LocalDate;
+
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Transient;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
-
-@Entity 
+@Entity
 @Table(name = "course_applications")
 public class CourseApplication {
- @Id
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     private Employee employee;
 
-    // Form input: the service resolves this ID to a stored Category.
-    @Transient
-    private Long categoryId;
-
-    public Long getCategoryId() {
-        if (categoryId != null) {
-            return categoryId;
-        }
-        return category == null ? null : category.getId();
-    }
-
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    // The actual title and provider are kept on each application.
     private String courseTitle;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    private String provider;
+    // 接收表单中的类别 ID，由 Service 查询对应类别。
+    @Transient
+    private Long categoryId;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "provider_id", nullable = false)
+    private TrainingProvider provider;
+
+    // 接收表单中的机构 ID，由 Service 查询对应机构。
+    @Transient
+    private Long providerId;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate fromDate;
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate toDate;
 
     private double fee;
 
     private String justification;
-    private String dissemination;
 
-    
+    private String dissemination;
 
     private String status = "APPLIED";
 
     private String managerComment;
+
     private String experienceComments;
 
     private double trainingDays;
 
     private Boolean halfDay;
-
-    
 
     public CourseApplication() {
     }
@@ -104,16 +100,61 @@ public class CourseApplication {
         this.categoryId = null;
     }
 
-    public String getCategoryName() {
-        return category == null ? null : category.getName();
+    public Long getCategoryId() {
+        if (categoryId != null) {
+            return categoryId;
+        }
+
+        if (category == null) {
+            return null;
+        }
+
+        return category.getId();
     }
 
-    public String getProvider() {
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        if (category == null) {
+            return null;
+        }
+
+        return category.getName();
+    }
+
+    public TrainingProvider getProvider() {
         return provider;
     }
 
-    public void setProvider(String provider) {
+    public void setProvider(TrainingProvider provider) {
         this.provider = provider;
+        this.providerId = null;
+    }
+
+    public Long getProviderId() {
+        if (providerId != null) {
+            return providerId;
+        }
+
+        if (provider == null) {
+            return null;
+        }
+
+        return provider.getId();
+    }
+
+    public void setProviderId(Long providerId) {
+        this.providerId = providerId;
+    }
+
+    public String getProviderName() {
+        if (provider == null) {
+            return null;
+        }
+
+        return provider.getName();
     }
 
     public LocalDate getFromDate() {
@@ -187,15 +228,12 @@ public class CourseApplication {
     public void setTrainingDays(double trainingDays) {
         this.trainingDays = trainingDays;
     }
-      public Boolean getHalfDay() {
+
+    public Boolean getHalfDay() {
         return halfDay;
     }
 
     public void setHalfDay(Boolean halfDay) {
         this.halfDay = halfDay;
     }
-
-    
-        
 }
-
