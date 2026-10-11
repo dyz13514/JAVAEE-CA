@@ -28,6 +28,7 @@ public interface CourseApplicationRepository
             + "AND (:currentYear = false OR (a.fromDate >= :yearStart AND a.fromDate < :nextYear)) "
             + "AND (:keyword = '' OR LOCATE(LOWER(:keyword), LOWER(a.courseTitle)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.category.name)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.categoryNameSnapshot)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.provider.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.status)) > 0)")
     Page<CourseApplication> searchEmployeeApplications(
@@ -39,6 +40,7 @@ public interface CourseApplicationRepository
             + "AND (:keyword = '' OR LOCATE(LOWER(:keyword), LOWER(a.employee.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.courseTitle)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.category.name)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.categoryNameSnapshot)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.provider.name)) > 0 "
             + "OR LOCATE(LOWER(:keyword), LOWER(a.status)) > 0)")
     Page<CourseApplication> searchTeamApplications(@Param("managerId") Long managerId,

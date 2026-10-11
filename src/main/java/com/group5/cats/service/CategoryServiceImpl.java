@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.group5.cats.model.Category;
 import com.group5.cats.repository.CategoryRepository;
-import com.group5.cats.repository.CommonCourseRepository;
+import com.group5.cats.repository.CourseRepository;
 import com.group5.cats.repository.CourseApplicationRepository;
 
 @Service
@@ -15,13 +15,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    private final CommonCourseRepository commonCourseRepository;
+    private final CourseRepository courseRepository;
     private final CourseApplicationRepository applicationRepository;
 
     public CategoryServiceImpl(CategoryRepository categoryRepository,
-            CommonCourseRepository commonCourseRepository, CourseApplicationRepository applicationRepository) {
+            CourseRepository courseRepository, CourseApplicationRepository applicationRepository) {
         this.categoryRepository = categoryRepository;
-        this.commonCourseRepository = commonCourseRepository;
+        this.courseRepository = courseRepository;
         this.applicationRepository = applicationRepository;
     }
 
@@ -160,7 +160,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id).orElse(null);
         if (category == null) return "Category not found.";
         if (isDefaultCategory(category)) return "The original three categories cannot be deleted.";
-        if (commonCourseRepository.existsByCategory_Id(id)
+        if (courseRepository.existsByCategory_Id(id)
                 || applicationRepository.existsByCategory_Id(id)) {
             return "This category is in use and cannot be deleted.";
         }

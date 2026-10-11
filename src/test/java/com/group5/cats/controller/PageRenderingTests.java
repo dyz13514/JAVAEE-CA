@@ -27,7 +27,6 @@ import com.group5.cats.dto.AttendanceReport;
 import com.group5.cats.dto.AttendanceReportRow;
 import com.group5.cats.dto.BudgetReport;
 import com.group5.cats.dto.BudgetReportRow;
-import com.group5.cats.dto.CommonCourseForm;
 import com.group5.cats.dto.CourseCategory;
 import com.group5.cats.dto.CourseFeeDetail;
 import com.group5.cats.dto.EmployeeForm;
@@ -41,7 +40,7 @@ class PageRenderingTests {
             "manager-reports",
             "admin/home", "admin/notifications", "admin/employees", "admin/employee-form", "admin/employee-edit",
             "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses",
-            "admin/categories", "admin/category-form", "admin/common-course-form", "admin/common-course-edit", "admin/public-holidays",
+            "admin/categories", "admin/category-form", "admin/public-holidays",
             "admin/public-holiday-form", "admin/public-holiday-edit", "error/404"})
     void templatesRenderWithRealBindings(String template) throws Exception {
         var templateResolver = new ClassLoaderTemplateResolver();
@@ -101,18 +100,36 @@ class PageRenderingTests {
             }
             if (template.equals("courses")) {
                 assertTrue(html.contains("id=\"keyword\""));
-                assertTrue(html.contains("Commonly Attended Courses"));
+                assertTrue(html.contains("Commonly Attended Course Catalogue"));
+                assertTrue(html.contains("All Course"));
+                assertFalse(html.contains("Add to Common"));
+                assertFalse(html.contains("Remove from Common"));
+                assertFalse(html.contains("Already Added"));
+                assertFalse(html.contains("/admin/common-courses/1/edit"));
+            }
+            if (template.equals("admin/common-courses")) {
+                assertTrue(html.contains("All Course"));
+                assertFalse(html.contains(">Edit</a>"));
+                assertFalse(html.contains(">Delete</button>"));
+                if (!state.equals("empty")) {
+                    assertTrue(html.contains("Already Added"));
+                    assertTrue(html.contains("Remove from Common"));
+                    assertTrue(html.contains("Add to Common"));
+                }
             }
             if (template.equals("course-detail")) {
-                assertEquals(!state.equals("approved"), html.contains(">Use for Application</a>"));
+                assertEquals(!state.equals("approved"), html.contains(">Apply</a>"));
             }
             if (template.equals("apply-course")) {
                 assertTrue(html.contains("name=\"categoryId\""));
                 assertTrue(html.contains("name=\"providerId\""));
                 assertFalse(html.contains("name=\"provider\""));
-                assertTrue(html.contains("value=\"1\" selected=\"selected\""));
+                assertTrue(html.contains("window.courseSelection"));
+                assertTrue(html.contains("providerId: 1"));
                 assertTrue(html.contains("action=\"/employee/apply\""));
-                assertFalse(html.contains("name=\"courseId\""));
+                assertTrue(html.contains("name=\"courseId\""));
+                assertTrue(html.contains("readonly"));
+                assertTrue(html.contains("/js/course-selection.js"));
             }
             if (template.equals("manager-reports")) {
                 assertTrue(html.contains("Team training reports"), template);
@@ -216,14 +233,16 @@ class PageRenderingTests {
                     "selectedYear", 2026, "canEdit", true, "toBeViewedEmployees", List.of(user)));
             model.addAllAttributes(Map.of("employeeForm", new EmployeeForm(), "employeeId", 1L,
                     "roles", EmployeeRole.values(), "designations", EmployeeDesignation.values(),
-                    "managers", List.of(user), "employees", List.of(user),
-                    "commonCourseForm", new CommonCourseForm(), "commonCourseId", 1L));
+                    "managers", List.of(user), "employees", List.of(user)));
             TrainingProvider provider = new TrainingProvider("NUS-ISS");
             provider.setId(1L);
             CommonCourse recordedCourse = new CommonCourse("Cloud Architecture", com.group5.cats.CategoryFixtures.category("EXTERNAL"), provider, 650);
             recordedCourse.setId(1L);
+            recordedCourse.getCourse().setId(1L);
+            if (template.equals("apply-course") && !state.equals("empty")) course.setCourse(recordedCourse.getCourse());
+            model.addAttribute("courseOptions", state.equals("empty") ? List.of() : List.of(new com.group5.cats.dto.CourseOption(recordedCourse.getCourse())));
             recordedCourse.setIntroduction("Learn cloud architecture.");
-            model.addAttribute("course", recordedCourse);
+            model.addAttribute("course", recordedCourse.getCourse());
             model.addAttribute("selectedCourse", recordedCourse);
             model.addAttribute("canViewOthers", true);
             model.addAttribute("others", state.equals("empty"));
@@ -241,13 +260,15 @@ class PageRenderingTests {
             model.addAttribute("selectedEmployee", state.equals("empty") ? null : user);
             CommonCourse commonCourse = recordedCourse;
             commonCourse.setId(1L);
-            model.addAttribute("courses", state.equals("empty") ? List.of() : List.of(recordedCourse));
+            model.addAttribute("courses", state.equals("empty") ? List.of() : List.of(recordedCourse.getCourse()));
             CommonCourse internalCourse = new CommonCourse("Workplace Communication", com.group5.cats.CategoryFixtures.category("INTERNAL"), provider, 0);
-            internalCourse.setId(2L);
+            internalCourse.setId(2L); internalCourse.getCourse().setId(2L);
             CommonCourse certificate = new CommonCourse("Project Management Certification", com.group5.cats.CategoryFixtures.category("CERTIFICATION"), provider, 1200);
-            certificate.setId(3L);
-            if (template.equals("courses") && !state.equals("empty")) {
-                model.addAttribute("courses", List.of(recordedCourse, internalCourse, certificate));
+            certificate.setId(3L); certificate.getCourse().setId(3L);
+            model.addAttribute("featuredCourses", state.equals("empty") ? List.of() : List.of(recordedCourse.getCourse()));
+            model.addAttribute("commonCourseIds", state.equals("empty") ? List.of() : List.of(1L));
+            if ((template.equals("courses") || template.equals("admin/common-courses")) && !state.equals("empty")) {
+                model.addAttribute("courses", List.of(recordedCourse.getCourse(), internalCourse.getCourse(), certificate.getCourse()));
             }
             model.addAttribute("keyword", "");
             model.addAttribute("category", "");

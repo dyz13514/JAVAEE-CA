@@ -9,10 +9,10 @@
 <p th:text="${course.category.description}"></p>
 <p>Half-day Allowed: <span th:text="${course.category.halfDayAllowed ? 'Yes' : 'No'}"></span></p>
 <p>Training Provider: <span th:text="${course.provider.name}"></span></p>
-<p>Reference Fee (S$): <span th:text="${course.fee}"></span></p><p th:text="${course.introduction}"></p>
-<p>Enter your own training dates and actual fee in the application.</p>
+<p>Course Fee (S$): <span th:text="${course.fee}"></span></p><p th:text="${course.introduction}"></p>
+<p>Enter your own training dates in the application. The course fee is fixed.</p>
 <div class="action-row">
-<a class="primary-button" th:if="${canApply}" th:href="@{/employee/apply(commonCourseId=${course.id})}">Use for Application</a>
-<a class="secondary-button" th:href="@{/employee/courses}">Back to Catalogue</a>
+<a class="primary-button" th:if="${canApply}" th:href="@{/employee/apply(courseId=${course.id})}">Apply</a>
+<a class="secondary-button" th:href="@{/employee/courses}">Back to All Course</a>
 </div>
 </main></body></html>

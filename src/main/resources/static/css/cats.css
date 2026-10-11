@@ -1849,3 +1849,5 @@ body .page-main .metric-card:hover {
     .action-row > a,.action-row > button { flex:1 1 140px; }
     .report-page .report-filter .field { flex-basis:100%; }
 }
+/* The common catalogue and full library share one course page. */
+.course-list-section + .course-list-section { margin-top: 48px; }
