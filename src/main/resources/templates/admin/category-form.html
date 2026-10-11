@@ -5,7 +5,7 @@
 <body><th:block th:replace="~{fragments/layout :: shell('categories')}"></th:block>
 <main class="page-main admin-content">
 <h1 th:text="${editing ? 'Edit Category' : 'Add Category'}"></h1>
-<p><a th:href="@{/admin/categories}">Back to Categories</a></p>
+<p><a th:href="@{/admin/categories}" class="secondary-button">Back to Categories</a></p>
 <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
 <form th:action="@{${formAction}}" th:object="${category}" method="post">
 <p><label for="name">Name</label><input id="name" th:field="*{name}" th:readonly="${fixedCategory}" maxlength="255" required></p>

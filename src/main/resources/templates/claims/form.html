@@ -15,7 +15,7 @@
         </div>
     </div>
     <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
-    <p><a th:href="@{/employee/claims}">Back to My claims</a></p>
+    <p><a th:href="@{/employee/claims}" class="secondary-button">Back to My claims</a></p>
     <p th:if="${#lists.isEmpty(applications)}">No eligible courses found. The course must be completed, have a positive fee, and have an assigned manager. Courses with an existing claim are shown in My claims.</p>
 
     <form th:if="${!#lists.isEmpty(applications)}" th:action="@{${formAction}}"
@@ -26,8 +26,8 @@
                 <label for="applicationId">Completed course</label>
                 <select id="applicationId" th:field="*{applicationId}" required>
                     <option value="">Select a completed course</option>
-                    <option th:each="application : ${applications}" th:value="${application.id}"
-                            th:text="${application.courseTitle + ' (S$ ' + #numbers.formatDecimal(application.fee, 1, 'COMMA', 2, 'POINT') + ')'}"></option>
+                    <option th:each="courseEntry : ${applications}" th:value="${courseEntry.id}"
+                            th:text="${courseEntry.courseTitle + ' (S$ ' + #numbers.formatDecimal(courseEntry.fee, 1, 'COMMA', 2, 'POINT') + ')'}"></option>
                 </select>
             </p>
             <th:block th:if="${resubmission}">
@@ -43,8 +43,7 @@
                 <small>The amount must not exceed the fee of the selected course.</small>
             </p>
             <p>
-                <input id="paidPersonally" type="checkbox" th:field="*{paidPersonally}" required>
-                <label for="paidPersonally">I confirm that I paid this course fee myself.</label>
+                <label class="checkbox-inline" for="paidPersonally"><input id="paidPersonally" type="checkbox" th:field="*{paidPersonally}" required>I confirm that I paid this course fee myself.</label>
             </p>
         </div>
         <div class="form-section">
@@ -55,13 +54,13 @@
                 <label for="receipt">Receipt</label>
                 <input id="receipt" name="receipt" type="file" accept=".pdf,.png,.jpg,.jpeg" th:required="${!resubmission}">
                 <a th:if="${resubmission}" th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${claim.receipt.id})}"
-                   th:text="${claim.receipt.originalFilename}">Current receipt</a>
+                   th:text="${claim.receipt.originalFilename}" class="record-link">Current receipt</a>
             </p>
             <p>
                 <label for="certificate">Certificate of completion</label>
                 <input id="certificate" name="certificate" type="file" accept=".pdf,.png,.jpg,.jpeg" th:required="${!resubmission}">
                 <a th:if="${resubmission}" th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${claim.certificate.id})}"
-                   th:text="${claim.certificate.originalFilename}">Current certificate</a>
+                   th:text="${claim.certificate.originalFilename}" class="record-link">Current certificate</a>
             </p>
         </div>
         <div class="form-actions">

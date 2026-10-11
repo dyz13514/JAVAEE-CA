@@ -13,10 +13,10 @@
             <h1>Training Calendar</h1>
             <p>Approved training, one month at a time.</p>
         </div>
-        <a th:href="@{${homeUrl}}">Back to Home</a>
+        <a th:href="@{${homeUrl}}" class="secondary-button">Back to Home</a>
     </div>
 
-    <p><a th:href="@{/course-view(employeeId=${calendarEmployee != null ? calendarEmployee.id : null})}">Course view — application list and status</a></p>
+    <p><a th:href="@{/course-view(employeeId=${calendarEmployee != null ? calendarEmployee.id : null})}" class="secondary-button">Course view — application list and status</a></p>
     <nav class="calendar-tabs" aria-label="Calendar views">
         <a th:if="${session.loggedInUser.role.name() != 'ADMIN'}" th:href="@{/training-calendar(year=${selectedYear},month=${selectedMonth})}"
            th:attr="aria-current=${isOwnCalendar ? 'page' : null}">My Calendar</a>
@@ -30,7 +30,7 @@
             <p th:text="${calendarEmployee.name + ' · ' + calendarEmployee.username}"></p>
         </div>
         <a th:if="${canViewOthers and !isOwnCalendar}"
-           th:href="@{/training-calendar/employees}">Back to Employee List</a>
+           th:href="@{/training-calendar/employees}" class="secondary-button">Back to Employee List</a>
     </div>
 
     <form th:action="@{/training-calendar}" th:if="${calendarEmployee != null}"

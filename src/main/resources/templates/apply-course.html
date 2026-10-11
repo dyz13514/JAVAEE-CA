@@ -6,43 +6,72 @@
 <main class="page-main admin-content">
 <h1 th:text="${courseApplication.id == null ? 'Apply for a Course' : 'Edit Application'}"></h1>
 <p>Select a course, category and training provider, or choose a course from the commonly attended catalogue.</p>
-<p><a th:href="@{/employee/courses}">Browse all courses</a></p>
+<p><a th:href="@{/employee/courses}" class="secondary-button">Browse all courses</a></p>
 <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
-<form th:action="@{${formAction}}" th:object="${courseApplication}" method="post" id="courseApplicationForm">
+<form class="portal-form" th:action="@{${formAction}}" th:object="${courseApplication}" method="post" id="courseApplicationForm">
     <input type="hidden" id="courseId" th:field="*{courseId}">
     <input th:if="${courseLocked == true}" type="hidden" name="lockedCourseId" th:value="${lockedCourseId}">
-    <p><label for="courseTitle">Course Title</label>
-        <select id="courseTitle" th:field="*{courseTitle}" required>
-            <option value="">-- Select Course --</option>
-        </select></p>
-    <p><label for="categoryId">Category</label>
-        <select id="categoryId" th:field="*{categoryId}" required>
-            <option value="">-- Select Category --</option>
-
-        </select></p>
-    <p><label for="providerId">Training Provider</label>
-        <select id="providerId" th:field="*{providerId}" required>
-            <option value="">-- Select Provider --</option>
-        </select></p>
-    <p><label for="fromDate">From Date</label><input type="date" id="fromDate" th:field="*{fromDate}" required></p>
-    <p><label for="toDate">To Date</label><input type="date" id="toDate" th:field="*{toDate}" required></p>
-	<p>
-	    <label for="halfDay">Last Training Day Is a Half-day</label>
-	    <input type="checkbox" id="halfDay" th:field="*{halfDay}">
-	</p>
-
-	<p>
-	    Select this only for a category that allows half-days.
-	    The last training day counts as 0.5 day.
-	    Weekends and public holidays are excluded from training days.
-	</p>
-    <p><label for="fee">Actual Course Fee (S$)</label><input type="number" id="fee" th:field="*{fee}" min="0" step="0.01" readonly aria-readonly="true"></p>
-    <p>The fee is fixed for the selected course. INTERNAL training is free.</p>
-    <p><label for="justification">Reason for Training</label><textarea id="justification" th:field="*{justification}" maxlength="255" required></textarea></p>
-    <p><label for="dissemination">Knowledge Sharing Plan</label><textarea id="dissemination" th:field="*{dissemination}" maxlength="255"></textarea></p>
+    <section class="form-section" aria-labelledby="course-selection-heading">
+        <h2 id="course-selection-heading">Course selection</h2>
+        <div class="form-grid">
+            <div class="field field--full">
+                <label for="courseTitle">Course Title</label>
+                <select id="courseTitle" th:field="*{courseTitle}" required>
+                    <option value="">-- Select Course --</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="categoryId">Category</label>
+                <select id="categoryId" th:field="*{categoryId}" required>
+                    <option value="">-- Select Category --</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="providerId">Training Provider</label>
+                <select id="providerId" th:field="*{providerId}" required>
+                    <option value="">-- Select Provider --</option>
+                </select>
+            </div>
+            <div class="field field--full">
+                <label for="fee">Course Fee (S$)</label>
+                <input type="number" id="fee" th:field="*{fee}" min="0" step="0.01" readonly aria-readonly="true" aria-describedby="fee-hint">
+                <small id="fee-hint" class="field-hint">The fee is fixed for the selected course. INTERNAL training is free.</small>
+            </div>
+        </div>
+    </section>
+    <section class="form-section" aria-labelledby="training-dates-heading">
+        <h2 id="training-dates-heading">Training dates</h2>
+        <div class="form-grid">
+            <div class="field">
+                <label for="fromDate">From Date</label>
+                <input type="date" id="fromDate" th:field="*{fromDate}" required>
+            </div>
+            <div class="field">
+                <label for="toDate">To Date</label>
+                <input type="date" id="toDate" th:field="*{toDate}" required>
+            </div>
+            <div class="field field--full">
+                <label class="checkbox-inline" for="halfDay"><input type="checkbox" id="halfDay" th:field="*{halfDay}" aria-describedby="half-day-hint">Last Training Day Is a Half-day</label>
+                <small id="half-day-hint" class="field-hint">Select this only for a category that allows half-days. The last training day counts as 0.5 day. Weekends and public holidays are excluded from training days.</small>
+            </div>
+        </div>
+    </section>
+    <section class="form-section" aria-labelledby="training-purpose-heading">
+        <h2 id="training-purpose-heading">Training purpose</h2>
+        <div class="form-grid">
+            <div class="field field--full">
+                <label for="justification">Reason for Training</label>
+                <textarea id="justification" th:field="*{justification}" maxlength="255" required></textarea>
+            </div>
+            <div class="field field--full">
+                <label for="dissemination">Knowledge Sharing Plan</label>
+                <textarea id="dissemination" th:field="*{dissemination}" maxlength="255"></textarea>
+            </div>
+        </div>
+    </section>
     <div class="action-row">
-    <button type="submit">Submit</button>
-    <a class="secondary-button" th:href="@{/employee/history}">Back to My Applications</a>
+        <button type="submit">Submit application</button>
+        <a class="secondary-button" th:href="@{/employee/history}">Back to My Applications</a>
     </div>
 </form>
 </main>

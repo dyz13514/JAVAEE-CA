@@ -5,7 +5,7 @@
 <body><th:block th:replace="~{fragments/layout :: shell('categories')}"></th:block>
 <main class="page-main admin-content">
 <h1>Course Categories</h1>
-<p><a th:href="@{/admin/categories/new}">Add Category</a></p>
+<p><a th:href="@{/admin/categories/new}" class="primary-button">Add Category</a></p>
 <p>The original three names and half-day settings are fixed. Their descriptions can be edited.</p>
 <p role="status" th:if="${successMessage != null}" th:text="${successMessage}"></p>
 <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
@@ -14,8 +14,8 @@
 <tbody><tr th:each="category : ${categories}" th:with="fixed=${category.name == 'INTERNAL' or category.name == 'EXTERNAL' or category.name == 'CERTIFICATION'}">
 <td th:text="${category.id}"></td><td th:text="${category.name}"></td><td th:text="${category.description}"></td>
 <td th:text="${category.halfDayAllowed ? 'Yes' : 'No'}"></td>
-<td><a th:href="@{/admin/categories/{id}/edit(id=${category.id})}">Edit</a>
+<td><div class="table-actions"><a th:href="@{/admin/categories/{id}/edit(id=${category.id})}" class="secondary-button">Edit</a>
 <form th:unless="${fixed}" th:action="@{/admin/categories/{id}/delete(id=${category.id})}" method="post"
-onsubmit="return confirm('Delete this category?');"><button type="submit">Delete</button></form></td>
+onsubmit="return confirm('Delete this category?');"><button type="submit" class="danger-button">Delete</button></form></div></td>
 </tr></tbody></table></div>
 </main></body></html>

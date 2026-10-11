@@ -36,7 +36,7 @@
 
                 <h5 class="fw-bold text-dark mt-3">No matching applications</h5>
                 <p class="text-secondary small">Try another search or apply for a course to get started.</p>
-                <a th:href="@{/employee/apply}" class="btn btn-primary rounded-pill px-4 mt-2">
+                <a th:href="@{/employee/apply}" class="btn btn-primary mt-2">
                      Apply for a Course
                 </a>
             </div>
@@ -60,7 +60,7 @@
                             <td>
                                 <a th:href="@{/employee/history/{id}(id=${app.id})}"
                                    th:text="${app.courseTitle}"
-                                   class="course-title-link">Course Title</a>
+                                   class="course-title-link record-link">Course Title</a>
                             </td>
                             <td>
                                 <span class="badge rounded-pill bg-light text-dark border px-2 py-1" th:text="${app.categoryName}">Category</span>
@@ -75,7 +75,7 @@
                                 <span th:replace="~{fragments/layout :: status(${app.status})}"></span>
                             </td>
                             <td class="text-end">
-                                <a th:href="@{/employee/history/{id}(id=${app.id})}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <a th:href="@{/employee/history/{id}(id=${app.id})}" class="btn btn-outline-primary">
                                     Details
                                 </a>
                             </td>

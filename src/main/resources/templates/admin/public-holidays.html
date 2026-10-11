@@ -62,8 +62,8 @@
         <td th:text="${holiday.holidayDate}"></td>
         <td th:text="${holiday.name}"></td>
 
-        <td>
-            <a th:href="@{/admin/public-holidays/{id}/edit(id=${holiday.id})}">
+        <td><div class="table-actions">
+            <a th:href="@{/admin/public-holidays/{id}/edit(id=${holiday.id})}" class="secondary-button">
                 Edit
             </a>
 
@@ -71,9 +71,9 @@
                   method="post"
                   onsubmit="return confirm('Are you sure you want to delete this public holiday?');">
 
-                <button type="submit">Delete</button>
+                <button type="submit" class="danger-button">Delete</button>
             </form>
-        </td>
+        </div></td>
     </tr>
     </tbody>
 </table></div>

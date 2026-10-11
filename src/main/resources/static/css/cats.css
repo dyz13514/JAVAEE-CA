@@ -531,7 +531,7 @@ label {
     font-weight:500;
 }
 
-input:not([type=checkbox]):not([type=hidden]),select,textarea,.form-control,.form-select {
+:where(input:not([type=checkbox]):not([type=hidden]),select,textarea,.form-control,.form-select) {
     display:block;
     width:100%;
     padding:12px 14px;
@@ -843,20 +843,8 @@ input[type=checkbox] {
     margin-bottom:32px;
 }
 
-.admin-content>p>a {
-    display:inline-block;
-    padding:6px 0;
-}
-
 .admin-content>p:has(a[href$='/new']) {
     margin:24px 0;
-}
-
-.admin-content>p>a[href$='/new'] {
-    background:var(--blue);
-    color:#fff;
-    padding:10px 20px;
-    border-radius:4px;
 }
 
 .admin-content>form {
@@ -908,7 +896,7 @@ body .text-secondary,body .text-muted {
 }
 
 body .rounded-pill,body .rounded-3,body .rounded-circle {
-    border-radius:4px!important;
+    border-radius:var(--control-radius,6px)!important;
 }
 
 body .shadow-sm {
@@ -924,7 +912,7 @@ body .bg-white,body .bg-light {
 }
 
 body .btn {
-    border-radius:4px!important;
+    border-radius:var(--control-radius,6px)!important;
     box-shadow:none;
     background:var(--blue);
     color:#fff;

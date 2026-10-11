@@ -15,7 +15,7 @@
             <option th:each="status : ${statuses}" th:value="${status.name()}" th:selected="${selectedStatus == status.name()}" th:text="${#strings.capitalize(#strings.toLowerCase(status.name()))}"></option>
         </select></div>
         <button type="submit" class="primary-button">Filter</button>
-        <a th:href="@{/admin/notifications(status=${selectedStatus})}">Refresh</a>
+        <a th:href="@{/admin/notifications(status=${selectedStatus})}" class="secondary-button">Refresh</a>
     </form>
     <p class="field-hint">Sent means the mail server accepted the message. It does not confirm that the recipient read it.</p>
     <p class="empty-state" th:if="${notifications.empty}">No email notifications found. Records appear when email is enabled and a course application is submitted or reviewed.</p>
