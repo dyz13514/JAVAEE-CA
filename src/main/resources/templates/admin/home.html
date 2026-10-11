@@ -1,62 +1,291 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Administration - CATS</title>
-<th:block th:replace="~{fragments/layout :: assets}">
-</th:block>
+    <meta charset="UTF-8">
+    <title>Administration - CATS</title>
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+    <style>
+        /* ================= ADMIN MINIMAL ACTION HUB ================= */
+        .hub-container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 1rem 0 2rem;
+        }
+
+        /* 1. Page Header */
+        .hub-header {
+            margin-bottom: 2.25rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .hub-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #0f172a;
+            margin: 0 0 0.35rem 0;
+            line-height: 1.2;
+        }
+        .hub-header p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* 2. Priority Action Focus (Pending Registrations) */
+        .priority-focus-panel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            padding: 1.75rem 2rem;
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.4) 100%);
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #003d7c;
+            border-radius: 8px;
+            margin-bottom: 2.5rem;
+            transition: all 0.2s ease;
+        }
+        .priority-focus-panel:hover {
+            border-color: #cbd5e1;
+            border-left-color: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+        .priority-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .priority-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .priority-badge {
+            font-size: 0.725rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+        }
+        .priority-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+        .priority-desc {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin: 0;
+            max-width: 600px;
+        }
+
+        /* 3. Action-Driven Quick Dispatch */
+        .dispatch-section-title {
+            font-size: 0.775rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .dispatch-stream {
+            display: flex;
+            flex-direction: column;
+        }
+        .dispatch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.15rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s ease;
+            border-radius: 6px;
+        }
+        .dispatch-row:hover {
+            background: rgba(248, 250, 252, 0.95);
+        }
+        .dispatch-info {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        .dispatch-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #003d7c;
+            flex-shrink: 0;
+        }
+        .dispatch-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+        .dispatch-texts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .dispatch-action-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0f172a;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .dispatch-action-name:hover {
+            color: #003d7c;
+        }
+        .dispatch-hint {
+            font-size: 0.825rem;
+            color: #64748b;
+        }
+
+        /* Smooth pseudo-bold action link */
+        .text-action-link {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #003d7c;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .text-action-link span {
+            display: inline-block;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .text-action-link:hover {
+            color: #1d4ed8;
+            text-decoration: none !important;
+            text-shadow: 0 0 0.45px #1d4ed8, 0 0 0.45px #1d4ed8;
+        }
+        .text-action-link:hover span {
+            transform: translateX(4px);
+        }
+    </style>
 </head>
 <body>
-<th:block th:replace="~{fragments/layout :: shell('home')}">
-</th:block>
+<th:block th:replace="~{fragments/layout :: shell('home')}"></th:block>
 <main class="page-main">
-<div th:if="${successMessage}" class="notice" role="status" th:text="${successMessage}">
-</div>
-<div th:if="${errorMessage}" class="notice error" role="alert" th:text="${errorMessage}">
-</div>
-<div class="page-heading">
-<div>
-<h1>Training administration.</h1>
-<p>Manage staff, course records and annual allowances.</p>
-</div>
-</div>
-<div class="management-links">
-<a class="management-link" th:href="@{/admin/notifications}">
-<svg th:replace="~{fragments/icons :: icon('history')}"></svg>
-<strong>Email notifications</strong>
-<span>Delivery history and failure details.</span>
-</a>
-<a class="management-link" th:href="@{/admin/employees}">
-<svg th:replace="~{fragments/icons :: icon('employees')}"></svg>
-<strong>Employees</strong>
-<span>Accounts, roles and supervisors.</span>
-</a>
-<a class="management-link allowance-link" th:href="@{/entitlements}">
-<svg th:replace="~{fragments/icons :: icon('calendar')}"></svg>
-<strong>Training allowances</strong>
-<span>Annual training days and budgets.</span>
-</a>
-<a class="management-link" th:href="@{/admin/providers}">
-<svg th:replace="~{fragments/icons :: icon('providers')}"></svg>
-<strong>Training providers</strong>
-<span>Maintain provider details.</span>
-</a>
-<a class="management-link" th:href="@{/admin/categories}">
-<svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
-<strong>Course categories</strong>
-<span>Category names, descriptions and half-day settings.</span>
-</a>
-<a class="management-link" th:href="@{/admin/common-courses}">
-<svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
-<strong>Common course catalogue</strong>
-<span>Common courses and reference fees.</span>
-</a>
-<a class="management-link" th:href="@{/admin/public-holidays}">
-<svg th:replace="~{fragments/icons :: icon('holidays')}"></svg>
-<strong>Public holidays</strong>
-<span>Maintain holidays by year.</span>
-</a>
-</div>
+    <div class="hub-container">
+        <!-- Global Feedback Notices -->
+        <div th:if="${successMessage}" class="notice" role="status" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="notice error" role="alert" th:text="${errorMessage}"></div>
+
+        <!-- Page Header -->
+        <div class="hub-header">
+            <h1>System Administration</h1>
+            <p>Action hub for onboarding verification, course provisioning, and annual quota setups.</p>
+        </div>
+
+        <!-- Priority Focus: Staff Registration Review -->
+        <section aria-labelledby="registration-focus" class="priority-focus-panel">
+            <div class="priority-content">
+                <div class="priority-badge-row">
+                    <span class="priority-badge">Action Required</span>
+                </div>
+                <h2 id="registration-focus" class="priority-title">New Staff Onboarding &amp; Verification</h2>
+                <p class="priority-desc">Review pending account requests to assign designations, configure reporting managers, and generate training allowances.</p>
+            </div>
+            <div>
+                <a th:href="@{/admin/registrations}" class="primary-button" style="padding: 0.75rem 1.4rem;">
+                    Review Registrations &rarr;
+                </a>
+            </div>
+        </section>
+
+        <!-- Quick Operational Actions -->
+        <section aria-labelledby="dispatch-title">
+            <h2 id="dispatch-title" class="dispatch-section-title">Direct Administrative Operations</h2>
+
+            <div class="dispatch-stream">
+                <!-- Action 1: Publish Course -->
+                <div class="dispatch-row">
+                    <div class="dispatch-info">
+                        <div class="dispatch-icon">
+                            <svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
+                        </div>
+                        <div class="dispatch-texts">
+                            <a class="dispatch-action-name" th:href="@{/admin/courses/new}">Publish New Training Course</a>
+                            <span class="dispatch-hint">Record an approved curriculum offering with reference fees, durations, and session schedules.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <a class="text-action-link" th:href="@{/admin/courses/new}">
+                            Add Course <span>&rarr;</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Action 2: Provision Staff Account -->
+                <div class="dispatch-row">
+                    <div class="dispatch-info">
+                        <div class="dispatch-icon">
+                            <svg th:replace="~{fragments/icons :: icon('employees')}"></svg>
+                        </div>
+                        <div class="dispatch-texts">
+                            <a class="dispatch-action-name" th:href="@{/admin/employees/new}">Provision Staff Profile Directly</a>
+                            <span class="dispatch-hint">Create an employee account immediately with designated roles without self-service registration.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <a class="text-action-link" th:href="@{/admin/employees/new}">
+                            Add Employee <span>&rarr;</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Action 3: Annual Entitlement Maintenance -->
+                <div class="dispatch-row">
+                    <div class="dispatch-info">
+                        <div class="dispatch-icon">
+                            <svg th:replace="~{fragments/icons :: icon('calendar')}"></svg>
+                        </div>
+                        <div class="dispatch-texts">
+                            <a class="dispatch-action-name" th:href="@{/entitlements}">Initialize &amp; Maintain Annual Allowances</a>
+                            <span class="dispatch-hint">Verify training day limits and budget ceilings, or batch-create default allowances for the current calendar year.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <a class="text-action-link" th:href="@{/entitlements}">
+                            Manage Quotas <span>&rarr;</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Action 4: Public Holiday Calendar -->
+                <div class="dispatch-row">
+                    <div class="dispatch-info">
+                        <div class="dispatch-icon">
+                            <svg th:replace="~{fragments/icons :: icon('holidays')}"></svg>
+                        </div>
+                        <div class="dispatch-texts">
+                            <a class="dispatch-action-name" th:href="@{/admin/public-holidays}">Public Holiday Calendar</a>
+                            <span class="dispatch-hint">Maintain official statutory holidays to ensure automatic training day deductions skip non-working dates.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <a class="text-action-link" th:href="@{/admin/public-holidays}">
+                            View Calendar <span>&rarr;</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 </main>
 </body>
 </html>

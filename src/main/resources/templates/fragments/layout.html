@@ -5,6 +5,61 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" th:href="@{/css/cats.css}" href="/css/cats.css">
         <script defer th:src="@{/js/cats.js}" src="/js/cats.js"></script>
+
+        <!-- Global Header Account Styling (全站所有角色、所有页面通用生效) -->
+        <style>
+            .app-header .account {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            /* 1. 身份状态徽章：带在线绿点的精致圆角胶囊 */
+            .app-header .account span {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: #334155;
+                background: #f1f5f9;
+                padding: 0.28rem 0.75rem;
+                border-radius: 9999px;
+                border: 1px solid #e2e8f0;
+                user-select: none;
+            }
+            .app-header .account span::before {
+                content: "";
+                display: inline-block;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #10b981;
+                box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            }
+
+            /* 2. 登出操作：显式幽灵按钮，悬停微红提示 */
+            .app-header .account a {
+                display: inline-flex;
+                align-items: center;
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: #64748b;
+                text-decoration: none !important;
+                padding: 0.28rem 0.75rem;
+                border-radius: 6px;
+                border: 1px solid #cbd5e1;
+                background: #ffffff;
+                transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .app-header .account a:hover {
+                color: #dc2626;
+                background: #fef2f2;
+                border-color: #fca5a5;
+                box-shadow: 0 1px 3px rgba(220, 38, 38, 0.08);
+                transform: translateY(-1px);
+            }
+        </style>
     </th:block>
 </head>
 <body>

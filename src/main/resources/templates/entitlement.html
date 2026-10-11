@@ -2,469 +2,307 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
   <head>
     <meta charset="UTF-8" />
-
     <title>Annual Entitlement - CATS</title>
+    <link href="/vendor/bootstrap.min.css" rel="stylesheet" />
+    <th:block th:replace="~{fragments/layout :: assets}"></th:block>
+    <style>
+      /* ================= EXPLICIT SEARCH TOOLBAR ENHANCEMENTS ================= */
+      .btn-search-pill {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.35rem;
+        background: #eff6ff !important;
+        color: #003d7c !important;
+        border: 1px solid #bfdbfe !important;
+        font-weight: 600 !important;
+        font-size: 0.825rem !important;
+        padding: 0.35rem 0.95rem !important;
+        border-radius: 9999px !important;
+        box-shadow: 0 1px 2px rgba(0, 61, 124, 0.04);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      }
+      .btn-search-pill svg {
+        width: 13px;
+        height: 13px;
+        stroke-width: 2.5;
+      }
+      .btn-search-pill:hover {
+        background: #003d7c !important;
+        color: #ffffff !important;
+        border-color: #003d7c !important;
+        box-shadow: 0 2px 6px rgba(0, 61, 124, 0.2);
+        transform: translateY(-1px);
+      }
 
-    <link
-      href="/vendor/bootstrap.min.css"
-      rel="stylesheet"
-    />
-
-  <th:block th:replace="~{fragments/layout :: assets}"></th:block>
-</head>
+      .btn-reset-pill {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.35rem;
+        background: #ffffff !important;
+        color: #475569 !important;
+        border: 1px solid #cbd5e1 !important;
+        font-weight: 500 !important;
+        font-size: 0.825rem !important;
+        padding: 0.35rem 0.95rem !important;
+        border-radius: 9999px !important;
+        text-decoration: none !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      }
+      .btn-reset-pill:hover {
+        background: #fef2f2 !important;
+        color: #dc2626 !important;
+        border-color: #fca5a5 !important;
+        transform: translateY(-1px);
+      }
+    </style>
+  </head>
   <body>
-<th:block th:replace="~{fragments/layout :: shell('entitlement')}"></th:block>
-<main class="page-main">
+    <th:block th:replace="~{fragments/layout :: shell('entitlement')}"></th:block>
+    <main class="page-main">
+      <div class="container py-4">
+        <div class="mb-4">
+          <h1 class="fw-bold text-dark mb-1">Annual entitlement</h1>
+          <p class="text-secondary small mb-0">View training days and budget for the selected year.</p>
+        </div>
 
-    <div class="container py-4">
+        <div class="filter-panel">
+          <!-- 顶部搜索工具栏：具有清晰实体感 -->
+          <div class="row g-3 align-items-end mb-3 pb-3 border-bottom">
+            <div class="col-md-5">
+              <form th:action="@{/entitlements/search}" method="get" class="d-flex gap-2">
+                <input
+                  type="number"
+                  name="queryEmployeeId"
+                  aria-label="Search by employee ID"
+                  class="form-control form-control-sm"
+                  placeholder="Search by Employee ID..."
+                  min="1"
+                  required
+                />
+                <button type="submit" class="btn btn-search-pill text-nowrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                  Search
+                </button>
+              </form>
+            </div>
+            <div class="col-md-5">
+              <form th:action="@{/entitlements/search}" method="get" class="d-flex gap-2">
+                <input
+                  type="text"
+                  name="queryEmployeeName"
+                  aria-label="Search by employee name"
+                  class="form-control form-control-sm"
+                  placeholder="Search by Employee Name..."
+                  required
+                />
+                <button type="submit" class="btn btn-search-pill text-nowrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                  Search
+                </button>
+              </form>
+            </div>
+            <div class="col-md-2 text-md-end">
+              <a th:href="@{/entitlements}" class="btn btn-reset-pill text-nowrap">
+                <span>&circlearrowleft;</span> Reset search
+              </a>
+            </div>
+          </div>
 
-      <div class="mb-4">
-        <h1 class="fw-bold text-dark mb-1">
-          Annual entitlement
-        </h1>
-        <p class="text-secondary small mb-0">
-          View training days and budget for the selected year.
-        </p>
-      </div>
-
-      <div class="filter-panel">
-        <div class="row g-3 align-items-end mb-3 pb-3 border-bottom">
-
-          <div class="col-md-5">
-            <form
-              th:action="@{/entitlements/search}"
-              method="get"
-              class="d-flex gap-2"
-            >
+          <!-- 下方选择人员与年份主表单 -->
+          <form id="entitlementQueryForm" th:action="@{/entitlements}" method="get" class="row g-3 align-items-end">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Select Employee <span class="text-danger">*</span></label>
+              <select name="employeeId" class="form-select" required>
+                <option value="" th:selected="${selectedId == null}">-- Select an Employee --</option>
+                <option
+                  th:each="employee : ${toBeViewedEmployees}"
+                  th:value="${employee.id}"
+                  th:text="${employee.id + ' - ' + employee.name}"
+                  th:selected="${employee.id == selectedId}"
+                ></option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Entitlement Year <span class="text-danger">*</span></label>
               <input
                 type="number"
-                name="queryEmployeeId" aria-label="Search by employee ID"
-                class="form-control form-control-sm"
-                placeholder="Search by Employee ID..."
+                name="entitlementYear"
+                class="form-control"
+                th:value="${selectedYear}"
                 min="1"
                 required
               />
-              <button
-                type="submit"
-                class="btn btn-outline-primary btn-sm rounded-pill px-3 text-nowrap"
-              >
-                Search
-              </button>
-            </form>
-          </div>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-primary w-100 rounded-pill fw-semibold">View allowance</button>
+            </div>
+          </form>
+          <div id="queryMessage" role="status" aria-live="polite" class="mt-3 text-danger small fw-semibold" th:text="${message}"></div>
+        </div>
 
-          <div class="col-md-5">
-            <form
-              th:action="@{/entitlements/search}"
-              method="get"
-              class="d-flex gap-2"
-            >
-              <input
-                type="text"
-                name="queryEmployeeName" aria-label="Search by employee name"
-                class="form-control form-control-sm"
-                placeholder="Search by Employee Name..."
-                required
-              />
-              <button
-                type="submit"
-                class="btn btn-outline-primary btn-sm rounded-pill px-3 text-nowrap"
-              >
-                Search
-              </button>
-            </form>
+        <!-- 额度结果显示面板 -->
+        <div id="entitlementResult" th:style="${entitlement == null ? 'display:none;' : ''}">
+          <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 mb-3 shadow-sm">
+            <div>
+              <h5 class="fw-bold mb-0">
+                <span id="resultEmployeeName" th:text="${entitlement == null ? '' : entitlement.employeeName}"></span>
+              </h5>
+              <span class="text-secondary small">
+                Employee ID: #<span id="resultEmployeeId" th:text="${entitlement == null ? '' : entitlement.employeeId}"></span>
+                &bull; Year:
+                <span id="resultYear" th:text="${entitlement == null ? '' : entitlement.entitlementYear}"></span>
+              </span>
+            </div>
           </div>
-
-          <div class="col-md-2 text-md-end">
-            <a
-              th:href="@{/entitlements}"
-              class="btn btn-link btn-sm text-secondary text-decoration-none"
-            >
-               Reset search
-            </a>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="metric-card days">
+                <div class="metric-title">Training Days Limit</div>
+                <div class="metric-val text-primary" id="resultDaysLimit" th:text="${entitlement == null ? '' : entitlement.trainingDaysLimit}">0</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="metric-card days">
+                <div class="metric-title">Occupied Training Days</div>
+                <div class="metric-val text-warning-emphasis" id="resultOccupiedDays" th:text="${occupiedDays}">0</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="metric-card days">
+                <div class="metric-title">Remaining Training Days</div>
+                <div class="metric-val text-success" id="resultRemainingDays" th:text="${remainingDays}">0</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="metric-card budget">
+                <div class="metric-title">Training Budget Limit</div>
+                <div class="metric-val">S$ <span id="resultBudget" th:text="${entitlement == null ? '' : entitlement.trainingBudget}">0</span></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="metric-card budget">
+                <div class="metric-title">Occupied Budget</div>
+                <div class="metric-val text-secondary">S$ <span id="resultOccupiedBudget" th:text="${occupiedBudget}">0</span></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="metric-card budget">
+                <div class="metric-title">Remaining Budget</div>
+                <div class="metric-val text-success">S$ <span id="resultRemainingBudget" th:text="${remainingBudget}">0</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="alert alert-light border small text-secondary">
+            Pending, approved and completed courses count towards your annual allowance.
           </div>
         </div>
 
-        <form
-          id="entitlementQueryForm"
-          th:action="@{/entitlements}"
-          method="get"
-          class="row g-3 align-items-end"
-        >
-          <div class="col-md-6">
-            <label class="form-label fw-semibold small"
-              >Select Employee <span class="text-danger">*</span></label
-            >
-            <select name="employeeId" class="form-select" required>
-              <option value="" th:selected="${selectedId == null}">
-                -- Select an Employee --
-              </option>
-              <option
-                th:each="employee : ${toBeViewedEmployees}"
-                th:value="${employee.id}"
-                th:text="${employee.id + ' - ' + employee.name}"
-                th:selected="${employee.id == selectedId}"
-              ></option>
-            </select>
+        <!-- 管理员可编辑区域 -->
+        <div th:if="${canEdit}" class="admin-zone">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <h5 class="fw-bold text-dark mb-0">Manage allowance</h5>
           </div>
-          <div class="col-md-4">
-            <label class="form-label fw-semibold small"
-              >Entitlement Year <span class="text-danger">*</span></label
-            >
-            <input
-              type="number"
-              name="entitlementYear"
-              class="form-control"
-              th:value="${selectedYear}"
-              min="1"
-              required
-            />
-          </div>
-          <div class="col-md-2">
-            <button
-              type="submit"
-              class="btn btn-primary w-100 rounded-pill fw-semibold"
-            >
-               View allowance
-            </button>
-          </div>
-        </form>
-
-        <div
-          id="queryMessage" role="status" aria-live="polite"
-          class="mt-3 text-danger small fw-semibold"
-          th:text="${message}"
-        ></div>
+          <form th:action="@{/admin/entitlements/create-defaults}" method="post" class="mb-4">
+            <p class="small text-secondary">Create this year's allowances for staff who do not yet have a record.</p>
+            <button type="submit" class="btn btn-primary btn-sm">Create missing allowances</button>
+          </form>
+          <form id="entitlementSaveForm" th:action="@{/admin/entitlements}" method="post" class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Employee ID <span class="text-danger">*</span></label>
+              <input name="employeeId" th:value="${selectedId}" type="number" min="1" class="form-control form-control-sm" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Entitlement Year <span class="text-danger">*</span></label>
+              <input name="entitlementYear" th:value="${selectedYear}" type="number" min="1" class="form-control form-control-sm" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Training Days Limit <span class="text-danger">*</span></label>
+              <input type="number" name="trainingDaysLimit" min="0" step="0.5" class="form-control form-control-sm" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Training budget (S$) <span class="text-danger">*</span></label>
+              <input type="number" name="trainingBudget" min="0" step="1" class="form-control form-control-sm" required />
+            </div>
+            <div class="col-12 d-flex justify-content-between align-items-center pt-2">
+              <small class="text-muted">For deletion, only Employee ID and Entitlement Year are required.</small>
+              <div class="d-flex gap-2">
+                <button
+                  type="submit"
+                  formaction="/admin/entitlements/delete"
+                  formnovalidate
+                  class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                  onclick="return confirm('Are you sure you want to delete this entitlement record?');"
+                >
+                  Delete Entitlement
+                </button>
+                <button type="submit" class="btn btn-warning btn-sm rounded-pill px-4 fw-semibold text-dark">
+                  Save Entitlement
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div th:if="${saveMessage != null}" class="alert alert-info mt-3" th:text="${saveMessage}"></div>
       </div>
 
-      <div
-        id="entitlementResult"
-        th:style="${entitlement == null ? 'display:none;' : ''}"
-      >
-
-        <div
-          class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 mb-3 shadow-sm"
-        >
-
-          <div>
-            <h5 class="fw-bold mb-0">
-              <span
-                id="resultEmployeeName"
-                th:text="${entitlement == null ? '' : entitlement.employeeName}"
-              ></span>
-            </h5>
-            <span class="text-secondary small">
-              Employee ID: #<span
-                id="resultEmployeeId"
-                th:text="${entitlement == null ? '' : entitlement.employeeId}"
-              ></span>
-              &bull; Year:
-              <span
-                id="resultYear"
-                th:text="${entitlement == null ? '' : entitlement.entitlementYear}"
-              ></span>
-            </span>
-          </div>
-        </div>
-
-        <div class="row g-3 mb-3">
-
-          <div class="col-md-4">
-            <div class="metric-card days">
-              <div class="metric-title">
-                 Training Days
-                Limit
-              </div>
-              <div
-                class="metric-val text-primary"
-                id="resultDaysLimit"
-                th:text="${entitlement == null ? '' : entitlement.trainingDaysLimit}"
-              >
-                0
-              </div>
-
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="metric-card days">
-              <div class="metric-title">
-                 Occupied
-                Training Days
-              </div>
-              <div
-                class="metric-val text-warning-emphasis"
-                id="resultOccupiedDays"
-                th:text="${occupiedDays}"
-              >
-                0
-              </div>
-
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="metric-card days">
-              <div class="metric-title">
-                 Remaining
-                Training Days
-              </div>
-              <div
-                class="metric-val text-success"
-                id="resultRemainingDays"
-                th:text="${remainingDays}"
-              >
-                0
-              </div>
-
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="metric-card budget">
-              <div class="metric-title">
-                 Training Budget Limit
-              </div>
-              <div class="metric-val">
-                S$
-                <span
-                  id="resultBudget"
-                  th:text="${entitlement == null ? '' : entitlement.trainingBudget}"
-                  >0</span
-                >
-              </div>
-
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="metric-card budget">
-              <div class="metric-title">
-                 Occupied Budget
-              </div>
-              <div class="metric-val text-secondary">
-                S$
-                <span id="resultOccupiedBudget" th:text="${occupiedBudget}"
-                  >0</span
-                >
-              </div>
-
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="metric-card budget">
-              <div class="metric-title">
-                 Remaining Budget
-              </div>
-              <div class="metric-val text-success">
-                S$
-                <span id="resultRemainingBudget" th:text="${remainingBudget}"
-                  >0</span
-                >
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="alert alert-light border small text-secondary">
-
-          Pending, approved and completed courses count towards your annual allowance.
-        </div>
-      </div>
-
-      <div th:if="${canEdit}" class="admin-zone">
-        <div class="d-flex align-items-center gap-2 mb-3">
-
-          <h5 class="fw-bold text-dark mb-0">
-            Manage allowance
-          </h5>
-        </div>
-
-        <form
-          th:action="@{/admin/entitlements/create-defaults}"
-          method="post"
-          class="mb-4"
-        >
-          <p class="small text-secondary">
-            Create this year’s allowances for staff who do not yet have a record.
-          </p>
-
-          <button type="submit" class="btn btn-primary btn-sm">
-            Create missing allowances
-          </button>
-        </form>
-
-        <form
-          id="entitlementSaveForm"
-          th:action="@{/admin/entitlements}"
-          method="post"
-          class="row g-3"
-        >
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold"
-              >Employee ID <span class="text-danger">*</span></label
-            >
-            <input
-              name="employeeId"
-              th:value="${selectedId}"
-              type="number"
-              min="1"
-              class="form-control form-control-sm"
-              required
-            />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold"
-              >Entitlement Year <span class="text-danger">*</span></label
-            >
-            <input
-              name="entitlementYear"
-              th:value="${selectedYear}"
-              type="number"
-              min="1"
-              class="form-control form-control-sm"
-              required
-            />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold"
-              >Training Days Limit <span class="text-danger">*</span></label
-            >
-            <input
-              type="number"
-              name="trainingDaysLimit"
-              min="0"
-              step="0.5"
-              class="form-control form-control-sm"
-              required
-            />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold"
-              >Training budget (S$) <span class="text-danger">*</span></label
-            >
-            <input
-              type="number"
-              name="trainingBudget"
-              min="0"
-              step="1"
-              class="form-control form-control-sm"
-              required
-            />
-          </div>
-          <div
-            class="col-12 d-flex justify-content-between align-items-center pt-2"
-          >
-            <small class="text-muted"
-              > For deletion, only Employee ID
-              and Entitlement Year are required.</small
-            >
-            <div class="d-flex gap-2">
-              <button
-                type="submit"
-                formaction="/admin/entitlements/delete"
-                formnovalidate
-                class="btn btn-outline-danger btn-sm rounded-pill px-3"
-                onclick="
-                  return confirm(
-                    'Are you sure you want to delete this entitlement record?',
-                  );
-                "
-              >
-                 Delete Entitlement
-              </button>
-              <button
-                type="submit"
-                class="btn btn-warning btn-sm rounded-pill px-4 fw-semibold text-dark"
-              >
-                 Save Entitlement
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <div
-        th:if="${saveMessage != null}"
-        class="alert alert-info mt-3"
-        th:text="${saveMessage}"
-      ></div>
-    </div>
-
-    <script>
-      const queryForm = document.getElementById("entitlementQueryForm");
-      const queryMessage = document.getElementById("queryMessage");
-      const resultArea = document.getElementById("entitlementResult");
-      const apiUrl = "/api/entitlements/summary";
-
-      queryForm.addEventListener("submit", async function (event) {
-        event.preventDefault(); // Intercept default full-page reload
-
-        const employeeId = queryForm.elements["employeeId"].value;
-        const entitlementYear = queryForm.elements["entitlementYear"].value;
-        const queryButton = queryForm.querySelector('[type="submit"]');
-
-        if (!employeeId || !entitlementYear) return;
-
-        queryButton.disabled = true;
-        queryMessage.className = "mt-3 text-primary small fw-semibold";
-        queryMessage.textContent =
-          "Loading allowance…";
-        resultArea.style.display = "none";
-
-        const saveForm = document.getElementById("entitlementSaveForm");
-        if (saveForm) {
-          saveForm.elements["employeeId"].value = employeeId;
-          saveForm.elements["entitlementYear"].value = entitlementYear;
-        }
-
-        try {
-          const response = await fetch(
-            apiUrl +
-              "?employeeId=" +
-              encodeURIComponent(employeeId) +
-              "&entitlementYear=" +
-              encodeURIComponent(entitlementYear),
-          );
-          const data = await response.json();
-
-          if (!response.ok) {
-            queryMessage.className = "mt-3 text-danger small fw-semibold";
-            queryMessage.textContent =
-              data.message || "Unable to load this allowance. Status: " + response.status;
-            return;
+      <!-- 异步查询脚本保持完整不变 -->
+      <script>
+        const queryForm = document.getElementById("entitlementQueryForm");
+        const queryMessage = document.getElementById("queryMessage");
+        const resultArea = document.getElementById("entitlementResult");
+        const apiUrl = "/api/entitlements/summary";
+        queryForm.addEventListener("submit", async function (event) {
+          event.preventDefault();
+          const employeeId = queryForm.elements["employeeId"].value;
+          const entitlementYear = queryForm.elements["entitlementYear"].value;
+          const queryButton = queryForm.querySelector('[type="submit"]');
+          if (!employeeId || !entitlementYear) return;
+          queryButton.disabled = true;
+          queryMessage.className = "mt-3 text-primary small fw-semibold";
+          queryMessage.textContent = "Loading allowance...";
+          resultArea.style.display = "none";
+          const saveForm = document.getElementById("entitlementSaveForm");
+          if (saveForm) {
+            saveForm.elements["employeeId"].value = employeeId;
+            saveForm.elements["entitlementYear"].value = entitlementYear;
           }
-
-          // Populate DOM nodes with JSON response
-          document.getElementById("resultEmployeeId").textContent =
-            data.employeeId;
-          document.getElementById("resultEmployeeName").textContent =
-            data.employeeName;
-          document.getElementById("resultYear").textContent =
-            data.entitlementYear;
-          document.getElementById("resultDaysLimit").textContent =
-            data.trainingDaysLimit;
-          document.getElementById("resultOccupiedDays").textContent =
-            data.occupiedDays;
-          document.getElementById("resultRemainingDays").textContent =
-            data.remainingDays;
-          document.getElementById("resultBudget").textContent =
-            data.trainingBudget;
-          document.getElementById("resultOccupiedBudget").textContent =
-            data.occupiedBudget;
-          document.getElementById("resultRemainingBudget").textContent =
-            data.remainingBudget;
-
-          queryMessage.textContent = "";
-          resultArea.style.display = "";
-        } catch (error) {
-          queryMessage.className = "mt-3 text-danger small fw-semibold";
-          queryMessage.textContent =
-            "Unable to load your allowance. Please try again.";
-        } finally {
-          queryButton.disabled = false;
-        }
-      });
-    </script>
-    <script src="/vendor/bootstrap.bundle.min.js"></script>
-  </main>
-</body>
+          try {
+            const response = await fetch(
+              apiUrl + "?employeeId=" + encodeURIComponent(employeeId) + "&entitlementYear=" + encodeURIComponent(entitlementYear),
+            );
+            const data = await response.json();
+            if (!response.ok) {
+              queryMessage.className = "mt-3 text-danger small fw-semibold";
+              queryMessage.textContent = data.message || "Unable to load this allowance. Status: " + response.status;
+              return;
+            }
+            document.getElementById("resultEmployeeId").textContent = data.employeeId;
+            document.getElementById("resultEmployeeName").textContent = data.employeeName;
+            document.getElementById("resultYear").textContent = data.entitlementYear;
+            document.getElementById("resultDaysLimit").textContent = data.trainingDaysLimit;
+            document.getElementById("resultOccupiedDays").textContent = data.occupiedDays;
+            document.getElementById("resultRemainingDays").textContent = data.remainingDays;
+            document.getElementById("resultBudget").textContent = data.trainingBudget;
+            document.getElementById("resultOccupiedBudget").textContent = data.occupiedBudget;
+            document.getElementById("resultRemainingBudget").textContent = data.remainingBudget;
+            queryMessage.textContent = "";
+            resultArea.style.display = "";
+          } catch (error) {
+            queryMessage.className = "mt-3 text-danger small fw-semibold";
+            queryMessage.textContent = "Unable to load your allowance. Please try again.";
+          } finally {
+            queryButton.disabled = false;
+          }
+        });
+      </script>
+      <script src="/vendor/bootstrap.bundle.min.js"></script>
+    </main>
+  </body>
 </html>
