@@ -16,11 +16,7 @@
         <a th:href="@{${homeUrl}}" class="secondary-button">Back to Home</a>
     </div>
 
-    <nav class="calendar-tabs" aria-label="Calendar views">
-        <a th:href="@{/training-calendar}">My Calendar</a>
-        <a th:if="${canViewOthers}" th:href="@{/training-calendar/employees}"
-           aria-current="page">Others' Calendars</a>
-    </nav>
+    <nav th:replace="~{fragments/navigation :: team('calendar')}"></nav>
 
     <p th:if="${errorMessage != null}" th:text="${errorMessage}"
        class="notice error" role="alert"></p>

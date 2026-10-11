@@ -18,7 +18,14 @@
 
     <p role="status" th:if="${successMessage != null}" th:text="${successMessage}"></p>
     <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
-    <p><a th:href="@{/training-ledger}" class="secondary-button">View training ledger</a></p>
+    <th:block th:if="${activeNavigation == 'team-claims'}">
+        <nav th:replace="~{fragments/navigation :: approvals('claims')}"></nav>
+        <form method="get" th:action="@{/manager/claims}" class="portal-context">
+            <label for="claim-review-state">Review status</label><select id="claim-review-state" name="reviewState">
+                <option value="pending" th:selected="${reviewState == 'pending'}">Awaiting review</option><option value="processed" th:selected="${reviewState == 'processed'}">Processed</option><option value="all" th:selected="${reviewState == 'all'}">All claims</option>
+            </select><button type="submit">Apply filter</button>
+        </form>
+    </th:block>
     <p th:if="${#lists.isEmpty(claims)}">No course fee claims found.</p>
 
     <div class="table-scroll">

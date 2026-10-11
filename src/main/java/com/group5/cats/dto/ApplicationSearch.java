@@ -3,6 +3,12 @@ package com.group5.cats.dto;
 /** Search and paging values submitted by the application list forms. */
 public class ApplicationSearch {
     private String keyword = "";
+    private String reviewState = "all";
+
+    public String getReviewState() { return reviewState; }
+    public void setReviewState(String reviewState) {
+        this.reviewState = "pending".equals(reviewState) || "processed".equals(reviewState) ? reviewState : "all";
+    }
     private int page = 1;
     private int size = 10;
 

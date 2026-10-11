@@ -61,8 +61,9 @@ public class TrainingCalendarController {
             selectedEmployeeId = loggedInUser.getId();
         }
 
-        model.addAttribute(
-                "isOwnCalendar",
+        model.addAttribute("navScope", loggedInUser.getRole() == EmployeeRole.ADMIN || !loggedInUser.getId().equals(selectedEmployeeId) ? "team" : "personal");
+        model.addAttribute("selectedEmployeeId", selectedEmployeeId);
+        model.addAttribute("isOwnCalendar",
                 loggedInUser.getId().equals(selectedEmployeeId)
         );
 
@@ -169,6 +170,7 @@ public class TrainingCalendarController {
         }
 
         model.addAttribute("employees", employees);
+        model.addAttribute("navScope", "team");
         return "training-calendar-employees";
     }
 

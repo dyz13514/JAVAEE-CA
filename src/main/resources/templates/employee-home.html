@@ -19,7 +19,7 @@
 <h1>Your training, in view.</h1>
 <p>Your annual allowance and course applications.</p>
 </div>
-<a th:if="${session.loggedInUser.role.name() == 'REGULAR_STAFF'}" th:href="@{/employee/apply}" class="primary-button"><svg th:replace="~{fragments/icons :: icon('apply')}"></svg>Apply for course</a>
+<a th:if="${session.loggedInUser.role.name() != 'ADMIN'}" th:href="@{/employee/apply}" class="primary-button"><svg th:replace="~{fragments/icons :: icon('apply')}"></svg>Apply for course</a>
 <a th:if="${session.loggedInUser.role.name() == 'MANAGER'}" th:href="@{/manager/approvals}" class="primary-button"><svg th:replace="~{fragments/icons :: icon('review')}"></svg>Review team applications</a>
 </div>
 <section aria-labelledby="allowance-title">

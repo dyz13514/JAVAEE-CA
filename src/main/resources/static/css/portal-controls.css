@@ -4,6 +4,10 @@
     --button-radius:999px;
     --control-border:#edf1f5;
     --control-focus:#83a9c8;
+    --primary-fill:#b8cbd6;
+    --primary-hover:#a8bfcd;
+    --primary-ink:#304858;
+    --primary-subtle:#e5edf1;
 }
 
 /* Consistent native controls, including macOS select rendering. */
@@ -62,11 +66,11 @@
 
 /* Pill actions retain the original pointer-following light. */
 :is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)) {
-    --action-bg:linear-gradient(145deg,#3975a3,#26587e);
-    --action-ink:#fff;
-    --action-hover:linear-gradient(145deg,#4382b0,#2c648d);
+    --action-bg:var(--primary-fill);
+    --action-ink:var(--primary-ink);
+    --action-hover:var(--primary-hover);
     --action-light:#ffffff5a;
-    --action-shadow:#245c8729;
+    --action-shadow:#607d8d24;
     position:relative;
     display:inline-flex;
     align-items:center;
@@ -86,7 +90,7 @@
     text-decoration:none;
     cursor:pointer;
     overflow:hidden;
-    box-shadow:0 3px 8px #2b648722,inset 0 1px 0 #ffffff26;
+    box-shadow:0 3px 8px #607d8d18,inset 0 1px 0 #ffffff40;
     transition:background 220ms ease,box-shadow 220ms ease,transform 220ms var(--ease);
 }
 :is(.page-main,.login-form,.app-header) :is(.secondary-button,.btn-outline-secondary,.btn-outline-primary,.btn-link) {
@@ -253,3 +257,5 @@
 .page-main .form-actions { justify-content:flex-start; }
 .page-main .report-filter .form-actions { flex-basis:100%; margin-top:0; padding-top:0; border-top:0; }
 .page-main .date-cell { white-space:nowrap; }
+
+.page-main .application-pagination [aria-current="page"] { background:var(--primary-fill); color:var(--primary-ink); }

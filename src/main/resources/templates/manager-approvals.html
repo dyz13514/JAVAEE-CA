@@ -23,12 +23,13 @@
 
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
             <div>
-                <h1 class="fw-bold text-dark mb-1">Team applications</h1>
+                <h1 class="fw-bold text-dark mb-1">Approval centre</h1>
                 <p class="text-secondary small mb-0">Review course requests from your team.</p>
             </div>
 
         </div>
 
+        <nav th:replace="~{fragments/navigation :: approvals('courses')}"></nav>
         <div th:replace="~{fragments/pagination :: search}"></div>
 
         <div th:if="${#lists.isEmpty(applications)}" class="approval-card text-center py-5">
@@ -106,6 +107,7 @@
                                 <input type="hidden" name="page" th:value="${pagination.page}">
                                 <input type="hidden" name="size" th:value="${search.size}">
                                 <input type="hidden" name="keyword" th:value="${search.keyword}">
+                                <input type="hidden" name="reviewState" th:value="${search.reviewState}">
                                 <label th:for="${'comment-' + app.id}" class="form-label small fw-semibold text-secondary">
                                      Decision comment <span class="text-danger">*</span>
                                 </label>

@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +39,7 @@ class TrainingCalendarControllerTests {
     private Employee manager;
     private Employee admin;
     private Employee unrelated;
+    private com.group5.cats.service.CourseApplicationService history;
 
     @BeforeEach
     void setUp() {
@@ -67,8 +66,16 @@ class TrainingCalendarControllerTests {
 
         TrainingCalendarServiceImpl service =
                 new TrainingCalendarServiceImpl(applications, employees);
+        history = mock(com.group5.cats.service.CourseApplicationService.class);
+        when(history.searchEmployeeApplications(eq(staff), eq(true), any()))
+                .thenReturn(org.springframework.data.domain.Page.empty());
         mvc = MockMvcBuilders.standaloneSetup(
-                new TrainingCalendarController(service, employees))
+                new TrainingCalendarController(service, employees),
+                new EmployeeController(history, mock(com.group5.cats.service.EntitlementService.class),
+                        mock(com.group5.cats.service.CommonCourseService.class),
+                        mock(com.group5.cats.service.CategoryService.class),
+                        mock(com.group5.cats.service.TrainingProviderService.class),
+                        mock(com.group5.cats.service.CourseService.class)))
                 .setViewResolvers(views).build();
     }
 
@@ -106,10 +113,25 @@ class TrainingCalendarControllerTests {
         assertTrue(html.contains("/css/cats.css"));
         assertTrue(html.contains("aria-label=\"Main navigation\""));
         assertTrue(html.contains("No approved courses found"));
-        assertEquals(role != EmployeeRole.REGULAR_STAFF, html.contains("Others' Calendars"));
-        savePreview("own-" + role + ".html", html);
+        assertFalse(html.contains("Others' Calendars"), "The personal calendar stays in My training");
+        assertEquals(role == EmployeeRole.MANAGER, html.contains("Team training"));
         verify(applications).findApprovedApplicationsForCalendar(
                 staff.getId(), today.withDayOfMonth(1), today.withDayOfMonth(today.lengthOfMonth()));
+    }
+
+    @Test
+    void applicationsTabFromCalendarOpensHistoryWithDefaultPaging() throws Exception {
+        String calendar = html(mvc.perform(get("/training-calendar")
+                .sessionAttr("loggedInUser", staff)).andExpect(status().isOk()).andReturn());
+        var link = java.util.regex.Pattern.compile("href=\"([^\"]+)\"[^>]*>Applications</a>").matcher(calendar);
+        assertTrue(link.find(), "The calendar must expose the Applications tab");
+        String destination = org.springframework.web.util.HtmlUtils.htmlUnescape(link.group(1));
+        mvc.perform(get(java.net.URI.create(destination)).sessionAttr("loggedInUser", staff))
+                .andExpect(status().isOk()).andExpect(view().name("my-history"));
+        var search = org.mockito.ArgumentCaptor.forClass(com.group5.cats.dto.ApplicationSearch.class);
+        verify(history).searchEmployeeApplications(eq(staff), eq(true), search.capture());
+        assertEquals(10, search.getValue().getSize());
+        assertEquals(1, search.getValue().getPage());
     }
 
     @Test
@@ -124,7 +146,6 @@ class TrainingCalendarControllerTests {
         assertTrue(html.contains("Staff Two"));
         assertFalse(html.contains("Unrelated Four"));
         assertFalse(html.contains("Admin Three"));
-        savePreview("manager-list.html", html);
     }
 
     @Test
@@ -136,7 +157,6 @@ class TrainingCalendarControllerTests {
         assertTrue(html.contains("Staff Two"));
         assertTrue(html.contains("Admin Three"));
         assertTrue(html.contains("Unrelated Four"));
-        savePreview("admin-list.html", html);
     }
 
     @Test
@@ -206,7 +226,6 @@ class TrainingCalendarControllerTests {
                     .andReturn());
             assertTrue(html.contains("type=\"hidden\" name=\"employeeId\" value=\"2\""));
             assertTrue(html.contains("Back to Employee List"));
-            savePreview("other-" + month + ".html", html);
             LocalDate first = LocalDate.of(2026, month, 1);
             verify(applications).findApprovedApplicationsForCalendar(
                     staff.getId(), first, first.withDayOfMonth(first.lengthOfMonth()));
@@ -231,7 +250,6 @@ class TrainingCalendarControllerTests {
                     .sessionAttr("loggedInUser", staff))
                     .andExpect(status().isOk()).andReturn());
             assertEquals(2, html.split("Cross-month training", -1).length - 1);
-            savePreview("courses-" + month + ".html", html);
         }
     }
 
@@ -278,13 +296,4 @@ class TrainingCalendarControllerTests {
         return result.getResponse().getContentAsString(StandardCharsets.UTF_8);
     }
 
-    // Optional rendered pages for checking desktop and mobile styling locally.
-    private void savePreview(String name, String html) throws Exception {
-        String directory = System.getProperty("cats.calendarPreviewDir");
-        if (directory != null) {
-            Path path = Path.of(directory);
-            Files.createDirectories(path);
-            Files.writeString(path.resolve(name), html, StandardCharsets.UTF_8);
-        }
-    }
 }

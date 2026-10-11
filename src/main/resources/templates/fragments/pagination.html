@@ -8,6 +8,14 @@
         <input id="application-keyword" type="search" name="keyword" th:value="${search.keyword}"
                th:placeholder="${listUrl == '/manager/approvals' ? 'Team member, course, category, provider or status' : 'Course, category, provider or status'}">
     </div>
+    <div th:if="${listUrl == '/employee/history' or (listUrl == '/course-view' and ownCourses == true)}">
+        <label for="application-period">Course years</label>
+        <select id="application-period" name="allYears"><option value="false" th:selected="${allYears != true}">Current year</option><option value="true" th:selected="${allYears == true}">All years</option></select>
+    </div>
+    <div th:if="${listUrl == '/manager/approvals'}">
+        <label for="review-state">Review status</label>
+        <select id="review-state" name="reviewState"><option value="pending" th:selected="${search.reviewState == 'pending'}">Awaiting review</option><option value="processed" th:selected="${search.reviewState == 'processed'}">Processed</option><option value="all" th:selected="${search.reviewState == 'all'}">All applications</option></select>
+    </div>
     <div>
         <label for="application-size">Results per page</label>
         <select id="application-size" name="size">
@@ -17,25 +25,25 @@
     </div>
     <!-- Omitting page starts every new search at page 1. -->
     <button type="submit" class="btn btn-primary">Search</button>
-    <a class="secondary-button" th:href="@{${listUrl}(size=${search.size},employeeId=${selectedEmployeeId})}">Reset</a>
+    <a class="secondary-button" th:href="@{${listUrl}(size=${search.size},employeeId=${selectedEmployeeId},allYears=${allYears},reviewState=${listUrl == '/manager/approvals' ? search.reviewState : null})}">Reset</a>
 </form>
 
 <div th:fragment="navigation" class="application-pagination" th:if="${pagination != null}">
     <p aria-live="polite" th:text="${pagination.firstResult + '–' + pagination.lastResult
         + ' of ' + pagination.totalElements + ' applications'}"></p>
     <nav th:if="${pagination.totalPages > 1}" aria-label="Application result pages">
-        <a th:if="${pagination.previous}" th:href="@{${listUrl}(page=1,size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}">First</a>
+        <a th:if="${pagination.previous}" th:href="@{${listUrl}(page=1,size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId},allYears=${allYears},reviewState=${listUrl == '/manager/approvals' ? search.reviewState : null})}">First</a>
         <span th:unless="${pagination.previous}" aria-disabled="true">First</span>
-        <a th:if="${pagination.previous}" th:href="@{${listUrl}(page=${pagination.page - 1},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}">Previous</a>
+        <a th:if="${pagination.previous}" th:href="@{${listUrl}(page=${pagination.page - 1},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId},allYears=${allYears},reviewState=${listUrl == '/manager/approvals' ? search.reviewState : null})}">Previous</a>
         <span th:unless="${pagination.previous}" aria-disabled="true">Previous</span>
         <th:block th:each="number : ${#numbers.sequence(pagination.firstPageLink, pagination.lastPageLink)}">
             <span th:if="${number == pagination.page}" aria-current="page" th:text="${number}"></span>
             <a th:unless="${number == pagination.page}" th:text="${number}"
-               th:href="@{${listUrl}(page=${number},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}"></a>
+               th:href="@{${listUrl}(page=${number},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId},allYears=${allYears},reviewState=${listUrl == '/manager/approvals' ? search.reviewState : null})}"></a>
         </th:block>
-        <a th:if="${pagination.next}" th:href="@{${listUrl}(page=${pagination.page + 1},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}">Next</a>
+        <a th:if="${pagination.next}" th:href="@{${listUrl}(page=${pagination.page + 1},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId},allYears=${allYears},reviewState=${listUrl == '/manager/approvals' ? search.reviewState : null})}">Next</a>
         <span th:unless="${pagination.next}" aria-disabled="true">Next</span>
-        <a th:if="${pagination.next}" th:href="@{${listUrl}(page=${pagination.totalPages},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId})}">Last</a>
+        <a th:if="${pagination.next}" th:href="@{${listUrl}(page=${pagination.totalPages},size=${search.size},keyword=${search.keyword},employeeId=${selectedEmployeeId},allYears=${allYears},reviewState=${listUrl == '/manager/approvals' ? search.reviewState : null})}">Last</a>
         <span th:unless="${pagination.next}" aria-disabled="true">Last</span>
     </nav>
 </div>

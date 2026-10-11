@@ -30,7 +30,7 @@ public class ManagerClaimController {
     }
 
     @GetMapping("/manager/claims")
-    public String showTeamClaims(HttpSession session, Model model) {
+    public String showTeamClaims(@RequestParam(defaultValue = "pending") String reviewState, HttpSession session, Model model) {
         Employee manager = getCurrentUser(session);
         if (manager == null) {
             return "redirect:/employee/login";
@@ -38,7 +38,12 @@ public class ManagerClaimController {
         if (manager.getRole() != EmployeeRole.MANAGER) {
             return "redirect:/employee/home";
         }
-        model.addAttribute("claims", claimService.findTeamClaims(manager));
+        String selectedState = "pending".equals(reviewState) || "processed".equals(reviewState) ? reviewState : "all";
+        model.addAttribute("reviewState", selectedState);
+        model.addAttribute("claims", claimService.findTeamClaims(manager).stream()
+                .filter(claim -> "all".equals(selectedState)
+                        || ("pending".equals(selectedState) == (claim.getStatus() == com.group5.cats.model.ClaimStatus.PENDING)))
+                .toList());
         model.addAttribute("pageTitle", "Team claims");
         model.addAttribute("activeNavigation", "team-claims");
         model.addAttribute("canSubmit", false);

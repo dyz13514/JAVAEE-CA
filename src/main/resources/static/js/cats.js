@@ -20,3 +20,20 @@
         meter.setAttribute('aria-label', `${meter.dataset.label}: ${remaining} of ${limit} remaining`);
     });
 })();
+
+// Keep allowance/ledger switches on the employee and year selected in either form.
+(() => {
+    const links = document.querySelectorAll('[data-finance-route]');
+    if (!links.length) return;
+    const person = document.querySelector('select[name="employeeId"]');
+    const year = document.querySelector('input[name="entitlementYear"], input[name="year"]');
+    const update = () => links.forEach(link => {
+        const url = new URL(link.dataset.financeRoute, window.location.origin);
+        if (person?.value) url.searchParams.set('employeeId', person.value);
+        if (year?.value) url.searchParams.set(link.dataset.financeRoute === '/entitlements' ? 'entitlementYear' : 'year', year.value);
+        link.href = url.pathname + url.search;
+    });
+    person?.addEventListener('change', update);
+    year?.addEventListener('input', update);
+    update();
+})();

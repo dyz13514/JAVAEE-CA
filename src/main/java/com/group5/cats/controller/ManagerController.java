@@ -33,6 +33,7 @@ public class ManagerController {
 
     @GetMapping("/manager/approvals")
     public String showApprovals(@ModelAttribute("search") ApplicationSearch search,
+            @RequestParam(defaultValue = "pending") String reviewState,
             HttpSession session, Model model) {
         Employee manager = (Employee) session.getAttribute("loggedInUser");
         if (manager == null) {
@@ -42,6 +43,7 @@ public class ManagerController {
         if (manager.getRole() != EmployeeRole.MANAGER) {
             return "redirect:/employee/home";
         }
+        search.setReviewState(reviewState);
         Page<CourseApplication> result = courseApplicationService.searchTeamApplications(manager, search);
         model.addAttribute("applications", result.getContent());
         model.addAttribute("pagination", new ApplicationPagination(result));
@@ -73,6 +75,9 @@ public class ManagerController {
         redirectAttrs.addAttribute("page", search.getPage());
         redirectAttrs.addAttribute("size", search.getSize());
         redirectAttrs.addAttribute("keyword", search.getKeyword());
+        if (!"all".equals(search.getReviewState())) {
+            redirectAttrs.addAttribute("reviewState", search.getReviewState());
+        }
         return "redirect:/manager/approvals";
     }
 }

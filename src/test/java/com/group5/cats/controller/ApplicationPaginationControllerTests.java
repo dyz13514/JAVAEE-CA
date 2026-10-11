@@ -70,6 +70,31 @@ class ApplicationPaginationControllerTests {
                 .andExpect(redirectedUrl("/manager/approvals?page=2&size=25&keyword=Java"));
     }
 
+    @Test
+    void allYearsViewIsStillAvailableAndOnlyUsesTheLoggedInEmployee() throws Exception {
+        var service = mock(CourseApplicationService.class);
+        var controller = new EmployeeController(service, mock(EntitlementService.class), mock(CommonCourseService.class),
+                mock(CategoryService.class), mock(TrainingProviderService.class), mock(CourseService.class));
+        var mvc = MockMvcBuilders.standaloneSetup(controller).setViewResolvers(new InternalResourceViewResolver("/templates/", ".html")).build();
+        Employee staff = user(EmployeeRole.REGULAR_STAFF);
+        when(service.searchEmployeeApplications(eq(staff), eq(false), any())).thenReturn(new PageImpl<>(List.of()));
+        mvc.perform(get("/employee/history").sessionAttr("loggedInUser", staff).param("allYears", "true").param("employeeId", "999"))
+                .andExpect(view().name("my-history")).andExpect(model().attribute("allYears", true));
+        verify(service).searchEmployeeApplications(eq(staff), eq(false), any());
+    }
+
+    @Test
+    void reviewKeepsTheStatusFilterAndPagingContext() throws Exception {
+        var service = mock(CourseApplicationService.class);
+        var mvc = MockMvcBuilders.standaloneSetup(new ManagerController(service))
+                .setViewResolvers(new InternalResourceViewResolver("/templates/", ".html")).build();
+        Employee manager = user(EmployeeRole.MANAGER);
+        when(service.reviewApplication(8L, manager, "APPROVE", "Useful")).thenReturn("Approved");
+        mvc.perform(post("/manager/review/8").sessionAttr("loggedInUser", manager)
+                .param("decision", "APPROVE").param("comment", "Useful").param("page", "2").param("keyword", "Java").param("reviewState", "pending"))
+                .andExpect(redirectedUrl("/manager/approvals?page=2&size=10&keyword=Java&reviewState=pending"));
+    }
+
     private Employee user(EmployeeRole role) {
         Employee employee = new Employee();
         employee.setId(1L);

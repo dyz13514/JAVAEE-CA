@@ -13,6 +13,7 @@
         <a th:if="${ledger != null}" class="primary-button"
            th:href="@{/training-ledger/export.csv(employeeId=${selectedId},year=${selectedYear})}">Export CSV</a>
     </div>
+    <nav th:replace="~{fragments/navigation :: finance('ledger')}"></nav>
     <div class="filter-panel">
         <form th:action="@{/training-ledger}" method="get">
             <div class="form-grid">

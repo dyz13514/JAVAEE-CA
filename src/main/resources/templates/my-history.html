@@ -23,12 +23,13 @@
 
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
             <div>
-                <h1 class="fw-bold text-dark mb-1">My applications</h1>
-                <p class="text-secondary small mb-0">Your course applications for the current year.</p>
+                <h1 class="fw-bold text-dark mb-1">My training</h1>
+                <p class="text-secondary small mb-0">Your applications and training dates, in one place.</p>
             </div>
-
+            <a th:href="@{/employee/apply}" class="primary-button">Apply for course</a>
         </div>
 
+        <nav th:replace="~{fragments/navigation :: personal('list')}"></nav>
         <div th:replace="~{fragments/pagination :: search}"></div>
 
         <div th:if="${#lists.isEmpty(applications)}" class="history-card p-5 text-center">

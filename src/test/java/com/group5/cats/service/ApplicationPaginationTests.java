@@ -106,6 +106,28 @@ class ApplicationPaginationTests {
         assertEquals(0, service.searchTeamApplications(manager, search).getTotalElements());
     }
 
+    @Test
+    void approvalStateFiltersBeforePaginationAndNeverIncludesOtherTeams() {
+        Employee manager = employee("State manager", EmployeeRole.MANAGER, null);
+        Employee owner = employee("State staff", EmployeeRole.REGULAR_STAFF, manager);
+        Employee outsider = employee("State outsider", EmployeeRole.REGULAR_STAFF, null);
+        for (int i = 0; i < 13; i++) application(owner, "Review filter " + i, LocalDate.now());
+        application(outsider, "Review filter outsider", LocalDate.now());
+        application(owner, "Review filter approved", LocalDate.now());
+        application(owner, "Review filter rejected", LocalDate.now());
+        for (CourseApplication row : applications.findByEmployee(owner)) {
+            row.setStatus(row.getCourseTitle().endsWith("approved") ? "APPROVED" : row.getCourseTitle().endsWith("rejected") ? "REJECTED" : row.getCourseTitle().endsWith("0") ? "UPDATED" : "APPLIED");
+            applications.saveAndFlush(row);
+        }
+        ApplicationSearch search = new ApplicationSearch(); search.setKeyword("Review filter"); search.setReviewState("pending");
+        var first = service.searchTeamApplications(manager, search);
+        assertEquals(13, first.getTotalElements()); assertEquals(10, first.getNumberOfElements());
+        search.setPage(2); assertEquals(3, service.searchTeamApplications(manager, search).getNumberOfElements());
+        search.setReviewState("processed"); search.setPage(999);
+        assertEquals(2, service.searchTeamApplications(manager, search).getTotalElements()); assertEquals(1, search.getPage());
+        search.setReviewState("all"); assertEquals(15, service.searchTeamApplications(manager, search).getTotalElements());
+    }
+
     private Employee employee(String name, EmployeeRole role, Employee supervisor) {
         return employees.save(new Employee(name, "test-password", name, supervisor,
                 EmployeeDesignation.PROFESSIONAL, role));

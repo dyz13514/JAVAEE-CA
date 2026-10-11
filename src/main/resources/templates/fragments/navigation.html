@@ -1,0 +1,19 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><body>
+<nav th:fragment="personal(view)" class="portal-view-tabs" aria-label="My training views">
+    <a th:href="@{/employee/history(keyword=${search != null ? search.keyword : ''},size=${search != null ? search.size : 10},allYears=${allYears == true})}" th:attr="aria-current=${view == 'list' ? 'page' : null}">Applications</a>
+    <a th:href="@{/training-calendar}" th:attr="aria-current=${view == 'calendar' ? 'page' : null}">My Calendar</a>
+</nav>
+<nav th:fragment="approvals(view)" class="portal-view-tabs" aria-label="Approval types">
+    <a th:href="@{/manager/approvals}" th:attr="aria-current=${view == 'courses' ? 'page' : null}">Course applications</a>
+    <a th:href="@{/manager/claims}" th:attr="aria-current=${view == 'claims' ? 'page' : null}">Fee claims</a>
+</nav>
+<nav th:fragment="team(view)" class="portal-view-tabs" aria-label="Team training views">
+    <a th:href="@{/course-view(others=true,employeeId=${selectedEmployeeId})}" th:attr="aria-current=${view == 'records' ? 'page' : null}">Training records</a>
+    <a th:href="${selectedEmployeeId != null ? '/training-calendar?employeeId=' + selectedEmployeeId : '/training-calendar/employees'}" th:attr="aria-current=${view == 'calendar' ? 'page' : null}">Others' Calendars</a>
+    <a th:if="${session.loggedInUser.role.name() == 'MANAGER'}" th:href="@{/manager/reports}" th:attr="aria-current=${view == 'reports' ? 'page' : null}">Reports</a>
+</nav>
+<nav th:fragment="finance(view)" th:if="${session.loggedInUser.role.name() != 'ADMIN'}" class="portal-view-tabs" aria-label="Allowance and ledger views">
+    <a data-finance-route="/entitlements" th:href="@{/entitlements(employeeId=${selectedId},entitlementYear=${selectedYear})}" th:attr="aria-current=${view == 'allowance' ? 'page' : null}">Annual allowance</a>
+    <a data-finance-route="/training-ledger" th:href="@{/training-ledger(employeeId=${selectedId},year=${selectedYear})}" th:attr="aria-current=${view == 'ledger' ? 'page' : null}">Training ledger</a>
+</nav>
+</body></html>

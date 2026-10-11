@@ -5,16 +5,18 @@
     <link rel="stylesheet" th:href="@{/css/course-view.css(v='f9650b575b')}" href="/css/course-view.css?v=f9650b575b"></head>
 <body><th:block th:replace="~{fragments/layout :: shell('calendar')}"></th:block>
 <main class="page-main calendar-page course-view-page">
-    <div class="page-heading"><div><h1>Course view</h1><p>Applications, review status and training dates.</p></div></div>
-    <nav class="calendar-tabs" aria-label="Course views">
-        <a th:if="${session.loggedInUser.role.name() != 'ADMIN'}" th:href="@{/course-view}" th:attr="aria-current=${!others ? 'page' : null}">My courses</a>
-        <a th:if="${canViewOthers}" th:href="@{/course-view(others=true)}" th:attr="aria-current=${others ? 'page' : null}">Other employees' courses</a>
-    </nav>
+    <div class="page-heading"><div><h1 th:text="${session.loggedInUser.role.name() == 'ADMIN' ? 'Training records' : 'Team training'}">Training records</h1><p>Applications, review status and training dates.</p></div></div>
+    <nav th:replace="~{fragments/navigation :: team('records')}"></nav>
+    <form class="portal-context" method="get" th:action="@{/course-view}" th:if="${!#lists.isEmpty(employees)}">
+        <input type="hidden" name="others" value="true">
+        <label for="record-employee">Employee</label><select id="record-employee" name="employeeId" required>
+            <option value="">Select an employee</option><option th:each="employee : ${employees}" th:value="${employee.id}" th:selected="${employee.id == selectedEmployeeId}" th:text="${employee.name}"></option>
+        </select><button type="submit">View training</button>
+    </form>
     <p role="alert" th:if="${errorMessage}" th:text="${errorMessage}" class="notice error"></p>
     <section th:if="${selectedEmployee != null}">
         <h2 th:text="${selectedEmployee.name}"></h2>
-        <p><a th:href="@{/training-calendar(employeeId=${selectedEmployee.id})}" class="secondary-button">Calendar view</a>
-            <a th:if="${ownCourses}" th:href="@{/employee/history}" class="secondary-button">Manage my applications</a></p>
+
         <div th:replace="~{fragments/pagination :: search}"></div>
         <p th:if="${#lists.isEmpty(applications)}">No matching course applications.</p>
         <div class="calendar-scroll" th:unless="${#lists.isEmpty(applications)}">

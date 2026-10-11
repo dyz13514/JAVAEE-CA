@@ -35,6 +35,7 @@ public class CourseViewController {
     public String showCourses(@RequestParam(required = false) Long employeeId,
             @ModelAttribute("search") ApplicationSearch search,
             @RequestParam(defaultValue = "false") boolean others,
+            @RequestParam(defaultValue = "true") boolean allYears,
             HttpSession session, HttpServletResponse response, Model model) {
         Employee sessionUser = (Employee) session.getAttribute("loggedInUser");
         if (sessionUser == null) return "redirect:/employee/login";
@@ -44,6 +45,7 @@ public class CourseViewController {
         model.addAttribute("canViewOthers", user.getRole() == EmployeeRole.MANAGER
                 || user.getRole() == EmployeeRole.ADMIN);
         model.addAttribute("others", others || (employeeId != null && !employeeId.equals(user.getId())));
+        model.addAttribute("navScope", others || (employeeId != null && !employeeId.equals(user.getId())) ? "team" : "personal");
         model.addAttribute("employees", new ArrayList<Employee>());
         model.addAttribute("applications", new ArrayList<CourseApplication>());
         try {
@@ -52,9 +54,14 @@ public class CourseViewController {
             } else {
                 Employee selected = calendarService.findCalendarEmployee(user,
                         employeeId == null ? user.getId() : employeeId);
-                Page<CourseApplication> result = applicationService.searchEmployeeApplications(selected, false, search);
+                boolean ownCourses = user.getRole() != EmployeeRole.ADMIN && selected.getId().equals(user.getId());
+                Page<CourseApplication> result = applicationService.searchEmployeeApplications(selected, ownCourses && !allYears, search);
                 model.addAttribute("selectedEmployee", selected);
-                model.addAttribute("ownCourses", user.getRole() != EmployeeRole.ADMIN && selected.getId().equals(user.getId()));
+                if (!selected.getId().equals(user.getId()) || user.getRole() == EmployeeRole.ADMIN) {
+                    model.addAttribute("employees", calendarService.findEmployeesForCalendar(user));
+                }
+                model.addAttribute("ownCourses", ownCourses);
+                model.addAttribute("allYears", ownCourses ? allYears : null);
                 model.addAttribute("applications", result.getContent());
                 model.addAttribute("pagination", new ApplicationPagination(result));
                 model.addAttribute("listUrl", "/course-view");
@@ -64,6 +71,7 @@ public class CourseViewController {
             response.setStatus(403);
             model.addAttribute("errorMessage", exception.getMessage());
         }
-        return "course-view";
+        // The old personal course-view URL uses the same application list, with all years retained.
+        return Boolean.TRUE.equals(model.getAttribute("ownCourses")) ? "my-history" : "course-view";
     }
 }
