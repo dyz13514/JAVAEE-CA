@@ -50,7 +50,9 @@
                             <span class="badge rounded-pill bg-light text-dark border px-2 py-1" th:text="${app.categoryName}">Category</span>
                             <span th:replace="~{fragments/layout :: status(${app.status})}"></span>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2" th:text="${app.courseTitle}">Course Title</h4>
+                        <h4 class="fw-bold text-dark mb-2">
+                            <a class="text-dark text-decoration-none" th:href="@{/employee/history/{id}(id=${app.id})}" th:text="${app.courseTitle}">Course Title</a>
+                        </h4>
 
                         <div class="d-flex flex-wrap gap-4 text-secondary small">
                             <div>
@@ -69,6 +71,32 @@
                         <div class="mt-3 p-3 bg-light rounded-3 small">
                             <strong class="text-dark">Reason for training:</strong>
                             <span class="text-secondary ms-1" th:text="${app.justification}">Justification</span>
+                        </div>
+                        <div th:with="aid=${decisionAids != null ? decisionAids[app.id] : null}">
+                            <div class="mt-2 p-3 border rounded-3 small"
+                                 th:if="${aid != null and (app.status == 'APPLIED' or app.status == 'UPDATED')}">
+                                <div class="fw-semibold text-dark mb-1">Decision support</div>
+                                <div th:if="${aid.entitlementPresent}">
+                                    <span th:text="${app.employee.name}">Applicant</span> has used
+                                    <strong th:text="${#numbers.formatDecimal(aid.usedDays,1,1)}">0</strong> of
+                                    <span th:text="${#numbers.formatDecimal(aid.limitDays,1,1)}">0</span> training days and S$
+                                    <strong th:text="${#numbers.formatDecimal(aid.usedBudget,1,'COMMA',2,'POINT')}">0</strong> of S$
+                                    <span th:text="${#numbers.formatDecimal(aid.budgetLimit,1,'COMMA',2,'POINT')}">0</span> budget this year.
+                                </div>
+                                <div th:unless="${aid.entitlementPresent}" class="text-secondary">
+                                    No training allowance has been set for this year.
+                                </div>
+                                <div class="mt-2" th:if="${!#lists.isEmpty(aid.overlappingApproved)}">
+                                    <span class="fw-semibold text-dark">Approved courses in the same period (other team members):</span>
+                                    <ul class="mb-0 mt-1">
+                                        <li th:each="other : ${aid.overlappingApproved}"
+                                            th:text="${other.employee.name + ' - ' + other.courseTitle + ' (' + other.fromDate + ' to ' + other.toDate + ')'}">Team course</li>
+                                    </ul>
+                                </div>
+                                <div class="text-secondary mt-2" th:if="${#lists.isEmpty(aid.overlappingApproved)}">
+                                    No other team member has an approved course in this period.
+                                </div>
+                            </div>
                         </div>
                     </div>
 

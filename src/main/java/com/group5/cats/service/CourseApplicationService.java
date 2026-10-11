@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import com.group5.cats.dto.ApplicationSearch;
+import com.group5.cats.dto.ManagerDecisionAid;
 import com.group5.cats.model.CourseApplication;
 import com.group5.cats.model.Employee;
 
@@ -17,6 +18,7 @@ String updateApplication(Long id, CourseApplication updatedData, Employee employ
 String cancelApplication(Long id, Employee employee);
 String completeApplication(Long id, Employee employee, String experienceComments);
 List<CourseApplication> findSubordinateApplications(Employee manager);
+ManagerDecisionAid buildDecisionAid(CourseApplication application, Employee manager);
 String reviewApplication(Long id, Employee manager, String decision, String comment);
 
 }

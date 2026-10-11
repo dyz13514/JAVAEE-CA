@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import com.group5.cats.dto.ApplicationSearch;
+import com.group5.cats.dto.ManagerDecisionAid;
 import com.group5.cats.model.EmployeeRole;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -412,6 +413,36 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
             return List.of();
         }
         return courseApplicationRepository.findByEmployeeIn(subordinates);
+    }
+
+    @Override
+    public ManagerDecisionAid buildDecisionAid(CourseApplication application, Employee manager) {
+        Employee applicant = application.getEmployee();
+        int year = application.getFromDate() != null
+                ? application.getFromDate().getYear() : LocalDate.now().getYear();
+        Optional<AnnualEntitlement> entitlement =
+                entitlementService.findEntitlement(applicant.getId(), year);
+        boolean entitlementPresent = entitlement.isPresent();
+        double limitDays = entitlementPresent ? entitlement.get().getTrainingDaysLimit() : 0;
+        double budgetLimit = entitlementPresent ? entitlement.get().getTrainingBudget() : 0;
+        double usedDays = entitlementService.getOccupiedTrainingDays(applicant.getId(), year);
+        double usedBudget = entitlementService.getOccupiedTrainingBudget(applicant.getId(), year);
+
+        List<CourseApplication> overlappingApproved = List.of();
+        if (application.getFromDate() != null && application.getToDate() != null) {
+            List<Employee> subordinates = employeeRepository.findBySupervisor_Id(manager.getId());
+            if (!subordinates.isEmpty()) {
+                overlappingApproved = courseApplicationRepository.findByEmployeeIn(subordinates).stream()
+                        .filter(existing -> "APPROVED".equals(existing.getStatus()))
+                        .filter(existing -> existing.getFromDate() != null && existing.getToDate() != null)
+                        .filter(existing -> !existing.getEmployee().getId().equals(applicant.getId()))
+                        .filter(existing -> !existing.getFromDate().isAfter(application.getToDate())
+                                && !application.getFromDate().isAfter(existing.getToDate()))
+                        .toList();
+            }
+        }
+        return new ManagerDecisionAid(entitlementPresent, usedDays, limitDays,
+                usedBudget, budgetLimit, overlappingApproved);
     }
 
     @Override

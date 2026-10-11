@@ -173,6 +173,9 @@ class PageRenderingTests {
                     "applications", state.equals("empty") ? List.of() : List.of(course),
                     "recentApplications", state.equals("empty") ? List.of() : List.of(course),
                     "currentUser", user, "entitlementYear", 2026));
+            // The preview renders the employee's own application, so the owner
+            // action buttons (withdraw/cancel/complete) must be visible.
+            model.addAttribute("isOwner", true);
             if (template.equals("login") && state.equals("approved")) {
                 model.addAttribute("loginRole", "admin");
             }

@@ -1,10 +1,14 @@
 package com.group5.cats.controller;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import com.group5.cats.dto.ApplicationSearch;
 import com.group5.cats.dto.ApplicationPagination;
+import com.group5.cats.dto.ManagerDecisionAid;
 import com.group5.cats.model.CourseApplication;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +46,14 @@ public class ManagerController {
         model.addAttribute("applications", result.getContent());
         model.addAttribute("pagination", new ApplicationPagination(result));
         model.addAttribute("listUrl", "/manager/approvals");
+        // Spec (page 7): approvals must show the applicant's allowance usage
+        // and other subordinates' approved courses in the same period.
+        Map<Long, ManagerDecisionAid> decisionAids = new LinkedHashMap<>();
+        for (CourseApplication app : result.getContent()) {
+            decisionAids.put(app.getId(),
+                    courseApplicationService.buildDecisionAid(app, manager));
+        }
+        model.addAttribute("decisionAids", decisionAids);
         return "manager-approvals";
     }
 

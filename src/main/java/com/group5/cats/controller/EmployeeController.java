@@ -202,11 +202,19 @@ public class EmployeeController {
 
         Employee viewer = (Employee) session.getAttribute("loggedInUser");
         if (viewer == null) return "redirect:/employee/login";
-        if (!result.get().getEmployee().getId().equals(viewer.getId())) {
+        Employee applicant = result.get().getEmployee();
+        boolean isOwner = viewer.getId().equals(applicant.getId());
+        // The assigned manager may also open a subordinate's application to
+        // review the complete details before deciding (spec, page 7).
+        boolean isSupervisor = viewer.getRole() == EmployeeRole.MANAGER
+                && applicant.getSupervisor() != null
+                && viewer.getId().equals(applicant.getSupervisor().getId());
+        if (!isOwner && !isSupervisor) {
             response.setStatus(403);
             return "error/404";
         }
         model.addAttribute("courseApplication", result.get());
+        model.addAttribute("isOwner", isOwner);
 
         return "application-detail";
     }
