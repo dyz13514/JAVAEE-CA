@@ -4,6 +4,7 @@
     <th:block th:fragment="assets">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" th:href="@{/css/cats.css}" href="/css/cats.css">
+        <link rel="stylesheet" th:href="@{/css/portal-controls.css}" href="/css/portal-controls.css">
         <script defer th:src="@{/js/cats.js}" src="/js/cats.js"></script>
 
         <!-- Global Header Account Styling (全站所有角色、所有页面通用生效) -->
@@ -66,7 +67,7 @@
 <th:block th:fragment="shell(active)" th:with="user=${session.loggedInUser}, admin=${user != null and user.role.name() == 'ADMIN'}">
     <header class="app-header">
         <a class="wordmark" th:href="${admin ? '/admin/home' : '/employee/home'}">CATS</a>
-        <div class="account"><span th:if="${user != null}" th:text="${user.name}"></span><a th:href="${admin ? '/admin/login' : '/employee/login'}">Sign out</a></div>
+        <div class="account"><span th:if="${user != null}" th:text="${user.name}"></span><a class="secondary-button" th:href="${admin ? '/admin/login' : '/employee/login'}">Sign out</a></div>
     </header>
     <aside class="app-sidebar">
         <nav aria-label="Main navigation">

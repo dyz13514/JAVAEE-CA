@@ -2,6 +2,7 @@ package com.group5.cats;
 
 import java.util.List;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import com.group5.cats.repository.CourseRepository;
 import com.group5.cats.repository.TrainingProviderRepository;
 import com.group5.cats.service.CourseService;
 
+@Profile("!demo")
 @Component
 @Order(1)
 public class CourseTestDataLoader implements CommandLineRunner {

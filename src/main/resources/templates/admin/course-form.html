@@ -41,8 +41,10 @@
             <textarea id="introduction" name="introduction" maxlength="4000" rows="5"
                       th:text="${introduction}"></textarea>
         </p>
-        <button type="submit">Create Course</button>
-        <a th:href="@{/admin/common-courses}">Cancel</a>
+        <div class="action-row">
+            <button type="submit">Create Course</button>
+            <a class="secondary-button" th:href="@{/admin/common-courses}">Cancel</a>
+        </div>
     </form>
 </main>
 </body>

@@ -60,13 +60,13 @@
             <table th:if="${!#lists.isEmpty(ledger.applications)}">
                 <thead><tr><th>Application ID</th><th>Course</th><th>Category</th><th>Course period</th><th>Fee (S$)</th><th>Status</th></tr></thead>
                 <tbody>
-                <tr th:each="application : ${ledger.applications}">
-                    <td th:text="${application.id}"></td>
-                    <td th:text="${application.courseTitle}"></td>
-                    <td th:text="${application.categoryName}"></td>
-                    <td th:text="${application.fromDate + ' to ' + application.toDate}"></td>
-                    <td th:text="${#numbers.formatDecimal(application.fee, 1, 'COMMA', 2, 'POINT')}"></td>
-                    <td><span th:replace="~{fragments/layout :: status(${application.status})}"></span></td>
+                <tr th:each="courseEntry : ${ledger.applications}">
+                    <td th:text="${courseEntry.id}"></td>
+                    <td th:text="${courseEntry.courseTitle}"></td>
+                    <td th:text="${courseEntry.categoryName}"></td>
+                    <td th:text="${courseEntry.fromDate + ' to ' + courseEntry.toDate}"></td>
+                    <td th:text="${#numbers.formatDecimal(courseEntry.fee, 1, 'COMMA', 2, 'POINT')}"></td>
+                    <td><span th:replace="~{fragments/layout :: status(${courseEntry.status})}"></span></td>
                 </tr>
                 </tbody>
             </table>
@@ -78,7 +78,7 @@
                 <thead><tr><th>Claim ID</th><th>Course</th><th>Amount (S$)</th><th>Status</th><th>Payment date</th><th>Payment reference</th></tr></thead>
                 <tbody>
                 <tr th:each="claim : ${ledger.claims}">
-                    <td><a th:href="@{/claims/{id}(id=${claim.id})}" th:text="${claim.id}"></a></td>
+                    <td><a th:href="@{/claims/{id}(id=${claim.id})}" th:text="${claim.id}" class="record-link"></a></td>
                     <td th:text="${claim.application.courseTitle}"></td>
                     <td th:text="${#numbers.formatDecimal(claim.amount, 1, 'COMMA', 2, 'POINT')}"></td>
                     <td><span th:replace="~{fragments/layout :: status(${claim.status.name()})}"></span></td>

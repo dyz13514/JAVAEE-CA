@@ -15,7 +15,7 @@
         </div>
         <span th:replace="~{fragments/layout :: status(${claim.status.name()})}"></span>
     </div>
-    <p><a th:href="@{${listUrl}}">Back to claims</a></p>
+    <p><a th:href="@{${listUrl}}" class="secondary-button">Back to claims</a></p>
     <div class="detail-card">
         <dl>
             <dt>Employee</dt><dd th:text="${claim.application.employee.name}"></dd>
@@ -27,13 +27,13 @@
             <dt>Submitted at</dt><dd th:text="${#temporals.format(claim.submittedAt, 'yyyy-MM-dd HH:mm')}"></dd>
             <dt>Receipt</dt>
             <dd><a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${claim.receipt.id})}"
-                   th:text="${claim.receipt.originalFilename}"></a></dd>
+                   th:text="${claim.receipt.originalFilename}" class="record-link"></a></dd>
             <dt>Certificate of completion</dt>
             <dd><a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${claim.certificate.id})}"
-                   th:text="${claim.certificate.originalFilename}"></a></dd>
+                   th:text="${claim.certificate.originalFilename}" class="record-link"></a></dd>
         </dl>
-        <p><a th:href="@{/training-ledger(employeeId=${claim.application.employee.id},year=${claim.application.fromDate.year})}">View employee training ledger</a></p>
-        <p th:if="${isOwner}"><a th:href="@{/employee/history/{id}(id=${claim.application.id})}">View course application</a></p>
+        <p><a th:href="@{/training-ledger(employeeId=${claim.application.employee.id},year=${claim.application.fromDate.year})}" class="secondary-button">View employee training ledger</a></p>
+        <p th:if="${isOwner}"><a th:href="@{/employee/history/{id}(id=${claim.application.id})}" class="secondary-button">View course application</a></p>
         <p th:if="${isOwner and claim.status.name() == 'REJECTED'}">
             <a class="primary-button" th:href="@{/employee/claims/{id}/edit(id=${claim.id})}">Revise and resubmit</a>
         </p>
@@ -55,8 +55,8 @@
                 <textarea id="reason" name="reason" rows="4" maxlength="1000" required></textarea>
             </p>
             <div class="form-actions">
-                <button type="submit" name="decision" value="APPROVE">Approve</button>
-                <button type="submit" name="decision" value="REJECT">Reject</button>
+                <button type="submit" name="decision" value="APPROVE" class="success-button">Approve</button>
+                <button type="submit" name="decision" value="REJECT" class="danger-button">Reject</button>
             </div>
         </form>
     </div>
@@ -106,10 +106,10 @@
                     <td th:text="${'S$ ' + #numbers.formatDecimal(entry.amount, 1, 'COMMA', 2, 'POINT')}"></td>
                     <td th:text="${entry.actorName}"></td>
                     <td th:text="${entry.comment}"></td>
-                    <td>
-                        <a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${entry.receipt.id})}">Receipt</a>
-                        <a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${entry.certificate.id})}">Certificate</a>
-                    </td>
+                    <td><div class="table-actions">
+                        <a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${entry.receipt.id})}" class="secondary-button">Receipt</a>
+                        <a th:href="@{/claims/{claimId}/attachments/{attachmentId}(claimId=${claim.id},attachmentId=${entry.certificate.id})}" class="secondary-button">Certificate</a>
+                    </div></td>
                 </tr>
                 </tbody>
             </table>

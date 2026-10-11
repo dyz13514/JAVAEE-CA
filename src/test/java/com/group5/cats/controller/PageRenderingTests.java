@@ -37,9 +37,9 @@ class PageRenderingTests {
     @ParameterizedTest
     @ValueSource(strings = {"login", "admin/registrations", "employee-home",
             "courses", "course-detail", "course-view", "apply-course", "my-history", "application-detail", "manager-approvals", "entitlement",
-            "manager-reports",
+            "manager-reports", "claims/form", "claims/ledger",
             "admin/home", "admin/notifications", "admin/employees", "admin/employee-form", "admin/employee-edit",
-            "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses",
+            "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses", "admin/course-form",
             "admin/categories", "admin/category-form", "admin/public-holidays",
             "admin/public-holiday-form", "admin/public-holiday-edit", "error/404"})
     void templatesRenderWithRealBindings(String template) throws Exception {
@@ -130,6 +130,15 @@ class PageRenderingTests {
                 assertTrue(html.contains("name=\"courseId\""));
                 assertTrue(html.contains("readonly"));
                 assertTrue(html.contains("/js/course-selection.js"));
+            }
+            if (template.equals("claims/form") && !state.equals("empty")) {
+                assertTrue(html.contains("Cloud Architecture Essentials"));
+                assertTrue(html.contains("name=\"applicationId\""));
+                assertTrue(html.contains("S$ 650.00"));
+            }
+            if (template.equals("claims/ledger") && !state.equals("empty")) {
+                assertTrue(html.contains("Cloud Architecture Essentials"));
+                assertTrue(html.contains("Approved and completed courses"));
             }
             if (template.equals("manager-reports")) {
                 assertTrue(html.contains("Team training reports"), template);
@@ -294,6 +303,18 @@ class PageRenderingTests {
             model.addAttribute("selectedYear", 2026);
             model.addAttribute("attendanceReport", attendanceReport(user, state.equals("empty")));
             model.addAttribute("budgetReport", budgetReport(user, allowance, state.equals("empty")));
+            if (template.equals("claims/form")) {
+                model.addAttribute("claimForm", new com.group5.cats.dto.CourseFeeClaimForm());
+                model.addAttribute("resubmission", false);
+                model.addAttribute("formAction", "/employee/claims");
+            }
+            if (template.equals("claims/ledger")) {
+                var ledger = new com.group5.cats.dto.TrainingLedger();
+                ledger.setEmployee(user);
+                ledger.setYear(2026);
+                ledger.setApplications(state.equals("empty") ? List.of() : List.of(course));
+                model.addAttribute("ledger", ledger);
+            }
             return template;
         }
 

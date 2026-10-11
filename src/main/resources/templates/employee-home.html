@@ -27,7 +27,7 @@
 <h2 id="allowance-title">Annual allowance <span class="year" th:text="${entitlementYear}">
 </span>
 </h2>
-<a class="text-link" th:href="@{/entitlements}">View allowance</a>
+<a class="text-link secondary-button" th:href="@{/entitlements}">View allowance</a>
 </div>
 <div class="allowances" th:if="${allowance != null}">
 <div>
@@ -62,7 +62,7 @@
 <section aria-labelledby="applications-title">
 <div class="section-heading">
 <h2 id="applications-title">Recent applications</h2>
-<a th:href="@{/employee/history}" class="text-link">View all applications</a>
+<a th:href="@{/employee/history}" class="text-link secondary-button">View all applications</a>
 </div>
 <div class="table-scroll" th:unless="${#lists.isEmpty(recentApplications)}">
 <table>
@@ -77,7 +77,7 @@
 <tbody>
 <tr th:each="app : ${recentApplications}">
 <td>
-<a th:href="@{/employee/history/{id}(id=${app.id})}" th:text="${app.courseTitle}">
+<a th:href="@{/employee/history/{id}(id=${app.id})}" th:text="${app.courseTitle}" class="record-link">
 </a>
 <small th:text="${app.categoryName}">
 </small>

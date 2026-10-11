@@ -18,7 +18,7 @@
 
     <p role="status" th:if="${successMessage != null}" th:text="${successMessage}"></p>
     <p role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
-    <p><a th:href="@{/training-ledger}">View training ledger</a></p>
+    <p><a th:href="@{/training-ledger}" class="secondary-button">View training ledger</a></p>
     <p th:if="${#lists.isEmpty(claims)}">No course fee claims found.</p>
 
     <div class="table-scroll">
@@ -42,7 +42,7 @@
                 <td th:text="${'S$ ' + #numbers.formatDecimal(claim.amount, 1, 'COMMA', 2, 'POINT')}"></td>
                 <td><span th:replace="~{fragments/layout :: status(${claim.status.name()})}"></span></td>
                 <td th:text="${#temporals.format(claim.submittedAt, 'yyyy-MM-dd HH:mm')}"></td>
-                <td><a th:href="@{/claims/{id}(id=${claim.id})}">View claim</a></td>
+                <td><a th:href="@{/claims/{id}(id=${claim.id})}" class="secondary-button">View claim</a></td>
             </tr>
             </tbody>
         </table>

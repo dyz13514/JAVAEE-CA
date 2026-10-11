@@ -13,7 +13,7 @@
             <h1>Training Calendar</h1>
             <p>Find an employee and view their approved training.</p>
         </div>
-        <a th:href="@{${homeUrl}}">Back to Home</a>
+        <a th:href="@{${homeUrl}}" class="secondary-button">Back to Home</a>
     </div>
 
     <nav class="calendar-tabs" aria-label="Calendar views">
@@ -52,7 +52,7 @@
                 <tbody>
                 <tr th:each="employee : ${employees}">
                     <td><a th:href="@{/training-calendar(employeeId=${employee.id})}"
-                           th:text="${employee.name}"></a></td>
+                           th:text="${employee.name}" class="record-link"></a></td>
                     <td th:text="${employee.username}"></td>
                     <td th:text="${employee.role.name() == 'REGULAR_STAFF' ? 'Staff' : #strings.capitalize(#strings.toLowerCase(employee.role.name()))}"></td>
                     <td th:text="${employee.designation != null ? #strings.capitalize(#strings.toLowerCase(employee.designation.name())) : 'Not assigned'}"></td>

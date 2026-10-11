@@ -37,8 +37,8 @@
         <td th:text="${provider.id}"></td>
         <td th:text="${provider.name}"></td>
 
-        <td>
-            <a th:href="@{/admin/providers/{id}/edit(id=${provider.id})}">
+        <td><div class="table-actions">
+            <a th:href="@{/admin/providers/{id}/edit(id=${provider.id})}" class="secondary-button">
                 Edit
             </a>
 
@@ -46,9 +46,9 @@
                   method="post"
                   onsubmit="return confirm('Are you sure you want to delete this training provider?');">
 
-                <button type="submit">Delete</button>
+                <button type="submit" class="danger-button">Delete</button>
             </form>
-        </td>
+        </div></td>
     </tr>
     </tbody>
 </table></div>

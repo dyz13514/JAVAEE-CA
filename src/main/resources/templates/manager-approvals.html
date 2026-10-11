@@ -51,7 +51,7 @@
                             <span th:replace="~{fragments/layout :: status(${app.status})}"></span>
                         </div>
                         <h4 class="fw-bold text-dark mb-2">
-                            <a class="text-dark text-decoration-none" th:href="@{/employee/history/{id}(id=${app.id})}" th:text="${app.courseTitle}">Course Title</a>
+                            <a class="record-link" th:href="@{/employee/history/{id}(id=${app.id})}" th:text="${app.courseTitle}">Course Title</a>
                         </h4>
 
                         <div class="d-flex flex-wrap gap-4 text-secondary small">
@@ -112,10 +112,10 @@
                                 <textarea th:id="${'comment-' + app.id}" name="comment" rows="2" class="form-control comment-textarea mb-3" placeholder="Explain your decision." required></textarea>
 
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <button type="submit" name="decision" value="REJECT" class="btn btn-outline-danger rounded-pill px-3 btn-sm fw-semibold">
+                                    <button type="submit" name="decision" value="REJECT" class="btn btn-outline-danger danger-button">
                                          Reject
                                     </button>
-                                    <button type="submit" name="decision" value="APPROVE" class="btn btn-success rounded-pill px-4 btn-sm fw-semibold shadow-sm">
+                                    <button type="submit" name="decision" value="APPROVE" class="btn btn-success success-button">
                                          Approve
                                     </button>
                                 </div>

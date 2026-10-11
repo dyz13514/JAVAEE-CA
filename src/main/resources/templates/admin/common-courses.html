@@ -15,13 +15,13 @@
 <tbody><tr th:each="entry : ${commonCourses}" th:attr="data-course-id=${entry.course.id}">
 <td th:text="${entry.course.id}"></td><td th:text="${entry.title}"></td><td th:text="${entry.category.name}"></td>
 <td th:text="${entry.provider.name}"></td><td th:text="${#numbers.formatDecimal(entry.fee, 1, 2)}"></td>
-<td><form th:action="@{/admin/common-courses/{id}/delete(id=${entry.id})}" method="post">
-<button type="submit">Remove from Common</button></form></td>
+<td><div class="table-actions"><form th:action="@{/admin/common-courses/{id}/delete(id=${entry.id})}" method="post">
+<button type="submit" class="danger-button">Remove from Common</button></form></div></td>
 </tr></tbody></table></div>
 </section>
 <section id="all-courses" class="course-list-section" aria-labelledby="all-courses-heading">
 <h2 id="all-courses-heading">All Course</h2>
-<p><a th:href="@{/admin/courses/new}">Create Course</a></p>
+<p><a class="primary-button" th:href="@{/admin/courses/new}">Create Course</a></p>
 <p>Add courses to the common catalogue. Courses used by applications cannot be deleted.</p>
 <p th:if="${#lists.isEmpty(courses)}">No courses available.</p>
 <div class="table-scroll"><table th:unless="${#lists.isEmpty(courses)}">
@@ -29,11 +29,11 @@
 <tbody><tr th:each="course : ${courses}" th:attr="data-course-id=${course.id}">
 <td th:text="${course.id}"></td><td th:text="${course.title}"></td><td th:text="${course.category.name}"></td>
 <td th:text="${course.provider.name}"></td><td th:text="${#numbers.formatDecimal(course.fee, 1, 2)}"></td>
-<td><span th:if="${#lists.contains(commonCourseIds, course.id)}">Already Added</span>
+<td><div class="table-actions"><span th:if="${#lists.contains(commonCourseIds, course.id)}">Already Added</span>
 <form th:unless="${#lists.contains(commonCourseIds, course.id)}" th:action="@{/admin/common-courses/{courseId}/add(courseId=${course.id})}" method="post">
 <button type="submit">Add to Common</button></form>
 <form th:action="@{/admin/courses/{id}/delete(id=${course.id})}" method="post">
-<button type="submit">Delete Course</button></form></td>
+<button type="submit" class="danger-button">Delete Course</button></form></div></td>
 </tr></tbody></table></div>
 </section>
 </main></body></html>

@@ -64,7 +64,7 @@
 
                     <div class="pt-3 border-top d-flex flex-wrap gap-2 align-items-center justify-content-between">
                         <div>
-                            <a th:href="${isOwner == true ? '/employee/history' : '/manager/approvals'}" class="btn btn-outline-secondary rounded-pill px-4"
+                            <a th:href="${isOwner == true ? '/employee/history' : '/manager/approvals'}" class="btn btn-outline-secondary"
                                th:text="${isOwner == true ? 'Return to History' : 'Return to Approvals'}">
                                  Return to History
                             </a>
@@ -74,20 +74,20 @@
 
                             <a th:if="${isOwner == true and courseApplication.status == 'COMPLETED' and courseApplication.fee > 0 and (courseApplication.categoryName == 'EXTERNAL' or courseApplication.categoryName == 'CERTIFICATION')}"
                                th:href="@{/employee/claims/new(applicationId=${courseApplication.id})}"
-                               class="btn btn-outline-primary rounded-pill px-4">
+                               class="btn btn-outline-primary">
                                  Course fee claim
                             </a>
 
                             <a th:if="${isOwner == true and (courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED')}"
                                th:href="@{/employee/history/{id}/edit(id=${courseApplication.id})}"
-                               class="btn btn-warning rounded-pill px-4 fw-semibold text-dark">
+                               class="btn btn-warning">
                                  Edit Application
                             </a>
 
                             <form method="post" th:action="@{/employee/history/{id}/withdraw(id=${courseApplication.id})}"
                                   th:if="${isOwner == true and (courseApplication.status == 'APPLIED' or courseApplication.status == 'UPDATED')}"
                                   onsubmit="return confirm('Are you sure you want to withdraw this application? ');">
-                                <button type="submit" class="btn btn-action-withdraw btn-outline-danger rounded-pill px-4">
+                                <button type="submit" class="btn btn-action-withdraw btn-outline-danger danger-button">
                                      Withdraw Application
                                 </button>
                             </form>
@@ -95,7 +95,7 @@
                             <form method="post" th:action="@{/employee/history/{id}/cancel(id=${courseApplication.id})}"
                                   th:if="${isOwner == true and courseApplication.status == 'APPROVED'}"
                                   onsubmit="return confirm('Are you sure you want to cancel this approved application? ');">
-                                <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                                <button type="submit" class="btn btn-outline-danger danger-button">
                                      Cancel Application
                                 </button>
                             </form>
@@ -115,7 +115,7 @@
                             <label for="experienceComments">Training feedback</label><textarea id="experienceComments" name="experienceComments" rows="3" class="form-control" placeholder="Share your experience and what you learned." required></textarea>
                         </div>
                         <div class="text-end">
-                            <button type="submit" class="btn btn-success rounded-pill px-4">
+                            <button type="submit" class="btn btn-success">
                                  Complete training
                             </button>
                         </div>
