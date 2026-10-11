@@ -80,6 +80,12 @@ class PageRenderingTests {
                     assertTrue(html.contains("employeeId=" + user.getId()), template);
                 }
             }
+            if (template.equals("admin/home")) {
+                assertFalse(html.contains("/admin/courses"), "Retired course publishing routes must not appear");
+                assertFalse(html.contains("Publish New Training Course"));
+                assertFalse(html.contains("session schedules"));
+                assertTrue(html.contains("/admin/common-courses"), "The supported catalogue remains available");
+            }
             if (template.equals("admin/notifications")) {
                 assertTrue(html.contains("Email notifications") || html.contains("Email Notifications"));
                 assertFalse(html.contains("<script>alert(1)</script>"));
@@ -219,7 +225,6 @@ class PageRenderingTests {
             recordedCourse.setIntroduction("Learn cloud architecture.");
             model.addAttribute("course", recordedCourse);
             model.addAttribute("selectedCourse", recordedCourse);
-            model.addAttribute("availableDates", Map.of(LocalDate.of(2026, 10, 19), LocalDate.of(2026, 10, 21)));
             model.addAttribute("canViewOthers", true);
             model.addAttribute("others", state.equals("empty"));
             model.addAttribute("ownCourses", true);
@@ -241,17 +246,13 @@ class PageRenderingTests {
             internalCourse.setId(2L);
             CommonCourse certificate = new CommonCourse("Project Management Certification", com.group5.cats.CategoryFixtures.category("CERTIFICATION"), provider, 1200);
             certificate.setId(3L);
-            model.addAttribute("featuredCourses", state.equals("empty") ? List.of() : List.of(recordedCourse));
             if (template.equals("courses") && !state.equals("empty")) {
                 model.addAttribute("courses", List.of(recordedCourse, internalCourse, certificate));
             }
-            model.addAttribute("courseId", 1L);
-            model.addAttribute("commonOnly", false);
             model.addAttribute("keyword", "");
             model.addAttribute("category", "");
             model.addAttribute("selectedProviderId", null);
             model.addAttribute("canApply", !(template.equals("course-detail") && state.equals("approved")));
-            model.addAttribute("commonCourseIds", state.equals("empty") ? List.of() : List.of(1L));
             model.addAllAttributes(Map.of("providers", List.of(provider), "providerId", 1L,
                     "commonCourses", state.equals("empty") ? List.of() : List.of(commonCourse), "holidays", List.of(), "holidayId", 1L,
                     "holidayDate", LocalDate.of(2026, 12, 25)));

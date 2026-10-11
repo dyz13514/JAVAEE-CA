@@ -188,7 +188,7 @@
         <!-- Page Header -->
         <div class="hub-header">
             <h1>System Administration</h1>
-            <p>Action hub for onboarding verification, course provisioning, and annual quota setups.</p>
+            <p>Action hub for onboarding verification, staff accounts, and annual training allowances.</p>
         </div>
 
         <!-- Priority Focus: Staff Registration Review -->
@@ -212,25 +212,7 @@
             <h2 id="dispatch-title" class="dispatch-section-title">Direct Administrative Operations</h2>
 
             <div class="dispatch-stream">
-                <!-- Action 1: Publish Course -->
-                <div class="dispatch-row">
-                    <div class="dispatch-info">
-                        <div class="dispatch-icon">
-                            <svg th:replace="~{fragments/icons :: icon('courses')}"></svg>
-                        </div>
-                        <div class="dispatch-texts">
-                            <a class="dispatch-action-name" th:href="@{/admin/courses/new}">Publish New Training Course</a>
-                            <span class="dispatch-hint">Record an approved curriculum offering with reference fees, durations, and session schedules.</span>
-                        </div>
-                    </div>
-                    <div>
-                        <a class="text-action-link" th:href="@{/admin/courses/new}">
-                            Add Course <span>&rarr;</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Action 2: Provision Staff Account -->
+                <!-- Provision Staff Account -->
                 <div class="dispatch-row">
                     <div class="dispatch-info">
                         <div class="dispatch-icon">
@@ -248,7 +230,7 @@
                     </div>
                 </div>
 
-                <!-- Action 3: Annual Entitlement Maintenance -->
+                <!-- Annual Entitlement Maintenance -->
                 <div class="dispatch-row">
                     <div class="dispatch-info">
                         <div class="dispatch-icon">
@@ -266,7 +248,7 @@
                     </div>
                 </div>
 
-                <!-- Action 4: Public Holiday Calendar -->
+                <!-- Public Holiday Calendar -->
                 <div class="dispatch-row">
                     <div class="dispatch-info">
                         <div class="dispatch-icon">
