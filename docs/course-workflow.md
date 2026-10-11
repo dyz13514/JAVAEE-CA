@@ -12,7 +12,8 @@ INTERNAL、EXTERNAL、CERTIFICATION 由 CategoryDataLoader 在缺少时插入。
 员工和经理打开 `/employee/apply` 直接申请，自己填写日期、实际费用和理由。
 也可以从 `/employee/courses` 浏览常用课程，点击 Use for Application 预填信息。
 预填不保存申请，不要求固定开课日期，也不把申请绑定到目录记录。
-之后修改或删除目录、修改机构名称，都不会改写申请中已保存的标题和机构文字。
+之后修改或删除目录，不会改写申请中已保存的标题。
+申请关联培训机构表，因此修改机构名称会同步影响已有申请的机构显示。
 类别仍关联类别表，因此修改自定义类别名称会同步影响已有申请的类别显示。
 
 申请由服务器根据 categoryId 查找类别。半天须为允许半天的类别，并且起止日期相同。
@@ -28,6 +29,5 @@ APPLIED、UPDATED、APPROVED、COMPLETED 占用额度；其他三个状态释放
 审批、通知、个人历史、Course view、月历、报表和额度 REST 查询沿用原来的流程。
 类别搜索和经理报表的类别选项从类别表读取。
 
-旧 MySQL 数据库需要先按 `docs/course-catalogue-upgrade.md` 迁移。
 新数据库由 Hibernate 建表和 DataLoader 初始化。示例目录仅在首次建立演示员工时生成，
 管理员后来删除的目录不会在重启后重新填回。
