@@ -1,0 +1,81 @@
+/* Course view tables share the portal palette with softer surfaces and clear spacing. */
+.course-view-page .calendar-scroll {
+    border:1px solid #e6edf5;
+    border-radius:14px;
+    background:#ffffffc9;
+    box-shadow:0 3px 14px #27476104;
+}
+.course-view-page .course-view-table {
+    margin:0;
+    min-width:820px;
+    font-size:14px;
+    line-height:1.55;
+}
+.course-view-page .course-column { width:34%; }
+.course-view-page .provider-column { width:24%; }
+.course-view-page .date-column { width:12%; }
+.course-view-page .status-column { width:18%; }
+.course-view-page .course-view-table th {
+    padding:16px 18px;
+    background:#f0f5fa;
+    color:#61778c;
+    font-size:13px;
+    font-weight:500;
+    border-bottom:1px solid #e7eef5;
+}
+.course-view-page .course-view-table td {
+    padding:18px;
+    border-bottom:1px solid #edf2f7;
+}
+.course-view-page .course-view-table :is(th,td):first-child { padding-left:24px; }
+.course-view-page .course-view-table :is(th,td):last-child { padding-right:24px; }
+.course-view-page .course-view-table tbody tr:last-child td { border-bottom:0; }
+.course-view-page .course-view-table tbody tr { transition:background-color 180ms ease; }
+.course-view-page .course-view-table tbody tr:is(:hover,:focus-within) { background:#f6fafe; }
+.course-view-page .provider-cell { color:#65768a; }
+.course-view-page .date-cell { white-space:nowrap; color:#52667a; font-size:13px; }
+.course-view-page .course-entry {
+    --action-bg:transparent;
+    --action-hover:#edf4fb;
+    --action-ink:#2d5c7e;
+    --action-light:#a8cfea38;
+    --action-shadow:#2c618010;
+    justify-content:flex-start;
+    gap:8px;
+    min-height:42px;
+    margin-left:-10px;
+    padding:6px 10px;
+    text-align:left;
+    text-decoration:none;
+    line-height:1.5;
+    font-weight:500;
+    box-shadow:none;
+}
+.course-view-page .course-entry svg {
+    width:14px;
+    height:14px;
+    flex-shrink:0;
+    opacity:.6;
+}
+.course-view-page .course-view-table .status {
+    padding:5px 10px;
+    border-radius:999px;
+    background:#edf4fb;
+    font-size:12px;
+    font-weight:500;
+    gap:7px;
+}
+.course-view-page .course-view-table .status::before { width:6px; height:6px; }
+.course-view-page .course-view-table :is(.status-APPROVED,.status-COMPLETED) { background:#edf7f1; }
+.course-view-page .course-view-table .status-REJECTED { background:#fcf0f2; }
+.course-view-page .course-view-table .status-DELETED { background:#f1f4f7; }
+.course-view-page .course-view-table .status-UPDATED { background:#fbf5e9; }
+.course-view-page .application-pagination { margin-top:20px; }
+@media(max-width:760px) {
+    .course-view-page .calendar-scroll { border-radius:12px; }
+    .course-view-page .course-view-table :is(th,td):first-child { padding-left:18px; }
+    .course-view-page .course-view-table :is(th,td):last-child { padding-right:18px; }
+}
+@media(prefers-reduced-motion:reduce) {
+    .course-view-page .course-view-table tbody tr { transition:none; }
+}
