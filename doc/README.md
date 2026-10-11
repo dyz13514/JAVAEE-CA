@@ -25,3 +25,9 @@ it; Hibernate updates the application tables during startup.
 Applications reference the maintained training provider table through
 `provider_id`. See [application-provider.md](application-provider.md) for the
 relationship and webpage verification.
+
+## Fresh demo database
+
+Import [`database/demo.sql`](../database/demo.sql) once into a new local demo database,
+then activate the `demo` profile. See [demo-database.md](demo-database.md) for
+accounts, included workflows, and the startup command.
