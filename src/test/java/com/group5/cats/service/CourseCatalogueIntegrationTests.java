@@ -125,7 +125,7 @@ class CourseCatalogueIntegrationTests {
     }
 
     @Test
-    void courseMustLeaveCommonCatalogueBeforeDeletionAndRestartDoesNotUndoDeletion() throws Exception {
+    void courseMustLeaveCommonCatalogueBeforeDeletionAndLoaderRestoresMissingTestCourses() throws Exception {
         var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup(context).build();
         Employee admin = employees.findByUsername("admin").orElseThrow();
         Course course = records.findAll().get(0);
@@ -144,7 +144,8 @@ class CourseCatalogueIntegrationTests {
         records.deleteAll();
         entityManager.flush();
         courseTestDataLoader.run();
-        assertEquals(0, records.count());
+        assertEquals(18, records.count());
+        assertEquals(0, courses.count());
         assertEquals("emp123", employees.findByUsername("emp1").orElseThrow().getPassword());
     }
 

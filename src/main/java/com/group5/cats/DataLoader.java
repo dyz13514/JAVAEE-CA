@@ -1,5 +1,5 @@
 package com.group5.cats;
-import java.util.List;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.boot.CommandLineRunner;
@@ -11,35 +11,36 @@ import com.group5.cats.model.EmployeeDesignation;
 import com.group5.cats.model.EmployeeRole;
 import com.group5.cats.repository.EmployeeRepository;
 
-@Component 
+@Component
 @Order(2)
 public class DataLoader implements CommandLineRunner {
-	
-private final EmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
 
-
-
-public DataLoader(EmployeeRepository employeeRepository) {
+    public DataLoader(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
     }
 
     @Override
     @Transactional
-     public void run(String... args) throws Exception {
-        boolean freshDemoDatabase = employeeRepository.count() == 0;
-        if (freshDemoDatabase) {
-           Employee manager = employeeRepository.save(
-                new Employee("manager1", "manager123", "Alice Wong",
-                        null, EmployeeDesignation.PROFESSIONAL, EmployeeRole.MANAGER));
+    public void run(String... args) throws Exception {
+        // 按用户名补齐测试账号，已有账号的资料和密码保持不变。
+        Employee manager = findOrCreateEmployee("manager1", "manager123", "Alice Wong",
+                null, EmployeeDesignation.PROFESSIONAL, EmployeeRole.MANAGER);
+        findOrCreateEmployee("admin", "admin123", "System Admin",
+                null, EmployeeDesignation.ADMINISTRATIVE, EmployeeRole.ADMIN);
+        findOrCreateEmployee("emp1", "emp123", "Ben Tan",
+                manager, EmployeeDesignation.PROFESSIONAL, EmployeeRole.REGULAR_STAFF);
+        findOrCreateEmployee("emp2", "emp123", "Cathy Lim",
+                manager, EmployeeDesignation.ADMINISTRATIVE, EmployeeRole.REGULAR_STAFF);
+    }
 
-            employeeRepository.saveAll(List.of(
-                new Employee("admin", "admin123", "System Admin",
-                        null, EmployeeDesignation.ADMINISTRATIVE, EmployeeRole.ADMIN),
-                new Employee("emp1", "emp123", "Ben Tan",
-                        manager, EmployeeDesignation.PROFESSIONAL, EmployeeRole.REGULAR_STAFF),
-                new Employee("emp2", "emp123", "Cathy Lim",
-                        manager, EmployeeDesignation.ADMINISTRATIVE, EmployeeRole.REGULAR_STAFF)
-            ));
+    private Employee findOrCreateEmployee(String username, String password, String name,
+            Employee supervisor, EmployeeDesignation designation, EmployeeRole role) {
+        Employee employee = employeeRepository.findByUsername(username).orElse(null);
+        if (employee == null) {
+            employee = employeeRepository.save(
+                    new Employee(username, password, name, supervisor, designation, role));
         }
+        return employee;
     }
 }
