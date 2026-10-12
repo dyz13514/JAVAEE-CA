@@ -16,13 +16,9 @@
         <a th:href="@{${homeUrl}}" class="secondary-button">Back to Home</a>
     </div>
 
-    <p><a th:href="@{/course-view(employeeId=${calendarEmployee != null ? calendarEmployee.id : null})}" class="secondary-button">Course view — application list and status</a></p>
-    <nav class="calendar-tabs" aria-label="Calendar views">
-        <a th:if="${session.loggedInUser.role.name() != 'ADMIN'}" th:href="@{/training-calendar(year=${selectedYear},month=${selectedMonth})}"
-           th:attr="aria-current=${isOwnCalendar ? 'page' : null}">My Calendar</a>
-        <a th:if="${canViewOthers}" th:href="@{/training-calendar/employees}"
-           th:attr="aria-current=${!isOwnCalendar ? 'page' : null}">Others' Calendars</a>
-    </nav>
+    <th:block th:if="${isOwnCalendar and session.loggedInUser.role.name() != 'ADMIN'}"><nav th:replace="~{fragments/navigation :: personal('calendar')}"></nav></th:block>
+    <th:block th:unless="${isOwnCalendar and session.loggedInUser.role.name() != 'ADMIN'}"><nav th:replace="~{fragments/navigation :: team('calendar')}"></nav></th:block>
+
 
     <div class="calendar-owner" th:if="${calendarEmployee != null}">
         <div>

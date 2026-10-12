@@ -1,0 +1,30 @@
+/* Course-specific column widths and links; table surfaces come from portal-tables.css. */
+.course-view-page .course-view-table { min-width:820px; }
+.course-view-page .course-column { width:34%; }
+.course-view-page .provider-column { width:24%; }
+.course-view-page .date-column { width:12%; }
+.course-view-page .status-column { width:18%; }
+.course-view-page .course-entry {
+    --action-bg:transparent;
+    --action-hover:#edf4fb;
+    --action-ink:#2d5c7e;
+    --action-light:#a8cfea38;
+    --action-shadow:#2c618010;
+    justify-content:flex-start;
+    gap:8px;
+    min-height:42px;
+    margin-left:-10px;
+    padding:6px 10px;
+    text-align:left;
+    text-decoration:none;
+    line-height:1.5;
+    font-weight:500;
+    box-shadow:none;
+}
+.course-view-page .course-entry svg {
+    width:14px;
+    height:14px;
+    flex-shrink:0;
+    opacity:.6;
+}
+.course-view-page .application-pagination { margin-top:20px; }

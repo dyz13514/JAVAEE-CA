@@ -200,6 +200,7 @@ public class EmployeeController {
 
     @GetMapping("/employee/history")
     public String showMyHistory(@ModelAttribute("search") ApplicationSearch search,
+            @RequestParam(defaultValue = "false") boolean allYears,
             HttpSession session, Model model) {
 
         Employee employee =
@@ -209,7 +210,8 @@ public class EmployeeController {
             return "redirect:/employee/login";
         }
 
-        Page<CourseApplication> result = courseApplicationService.searchEmployeeApplications(employee, true, search);
+        Page<CourseApplication> result = courseApplicationService.searchEmployeeApplications(employee, !allYears, search);
+        model.addAttribute("allYears", allYears);
         model.addAttribute("applications", result.getContent());
         model.addAttribute("pagination", new ApplicationPagination(result));
         model.addAttribute("listUrl", "/employee/history");

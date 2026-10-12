@@ -43,7 +43,8 @@
 .login-page .role-tabs { margin-bottom:16px; gap:12px; }
 .login-page .login-form .field { margin-bottom:12px; }
 .login-page .login-form input:not([type=hidden]) { min-height:40px; padding:9px 12px; }
-.login-page .login-form .primary-button { min-height:40px; padding:10px 16px; background:#003da6; }
+.login-page .login-form .primary-button { min-height:40px; padding:10px 16px; background:var(--action-bg); }
+.login-page .login-form .primary-button:is(:hover,:active) { background:var(--action-hover); }
 .login-page .account-switch,.login-page .login-help { margin-top:12px; font-size:12px; }
 .login-information { margin-top:auto; padding-top:16px; color:#777; }
 .login-information section+section { margin-top:24px; }

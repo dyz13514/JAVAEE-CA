@@ -48,6 +48,18 @@ public interface CourseApplicationRepository
     Page<CourseApplication> searchTeamApplications(@Param("managerId") Long managerId,
             @Param("keyword") String keyword, Pageable pageable);
 
+    @Query("SELECT a FROM CourseApplication a WHERE a.employee.supervisor.id = :managerId "
+            + "AND (:reviewState = 'all' OR (:reviewState = 'pending' AND a.status IN ('APPLIED', 'UPDATED')) "
+            + "OR (:reviewState = 'processed' AND a.status NOT IN ('APPLIED', 'UPDATED'))) "
+            + "AND (:keyword = '' OR LOCATE(LOWER(:keyword), LOWER(a.employee.name)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.courseTitle)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.category.name)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.categoryNameSnapshot)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.provider.name)) > 0 "
+            + "OR LOCATE(LOWER(:keyword), LOWER(a.status)) > 0)")
+    Page<CourseApplication> searchTeamApplicationsByReviewState(@Param("managerId") Long managerId,
+            @Param("keyword") String keyword, @Param("reviewState") String reviewState, Pageable pageable);
+
     @Query("SELECT application FROM CourseApplication application "
             + "WHERE application.status = 'APPROVED' "
             + "AND application.employee.id = :employeeId "

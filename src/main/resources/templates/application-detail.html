@@ -10,7 +10,7 @@
 <th:block th:replace="~{fragments/layout :: assets}"></th:block>
 </head>
 <body>
-<th:block th:replace="~{fragments/layout :: shell('history')}"></th:block>
+<th:block th:replace="~{fragments/layout :: shell(${isOwner == false ? 'approvals' : 'history'})}"></th:block>
 <main class="page-main">
 
     <div class="container py-4">

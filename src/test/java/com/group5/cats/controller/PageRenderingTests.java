@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +35,7 @@ class PageRenderingTests {
     @ParameterizedTest
     @ValueSource(strings = {"login", "admin/registrations", "employee-home",
             "courses", "course-detail", "course-view", "apply-course", "my-history", "application-detail", "manager-approvals", "entitlement",
-            "manager-reports", "claims/form", "claims/ledger",
+            "manager-reports", "claims/form", "claims/ledger", "claims/list", "claims/detail",
             "admin/home", "admin/notifications", "admin/employees", "admin/employee-form", "admin/employee-edit",
             "admin/providers", "admin/provider-form", "admin/provider-edit", "admin/common-courses", "admin/course-form",
             "admin/categories", "admin/category-form", "admin/public-holidays",
@@ -57,7 +55,7 @@ class PageRenderingTests {
             var session = new MockHttpSession();
             Employee user = employee();
             user.setRole(template.startsWith("admin/") || template.equals("entitlement")
-                    ? EmployeeRole.ADMIN : template.equals("manager-approvals") || template.equals("manager-reports")
+                    ? EmployeeRole.ADMIN : template.equals("manager-approvals") || template.equals("manager-reports") || template.equals("claims/list") || template.equals("claims/detail")
                     ? EmployeeRole.MANAGER : EmployeeRole.REGULAR_STAFF);
             if ((template.equals("courses") || template.equals("course-detail")) && state.equals("approved")) {
                 user.setRole(EmployeeRole.ADMIN);
@@ -153,12 +151,7 @@ class PageRenderingTests {
                     assertFalse(html.contains("Course fee claims and budget utilisation"), template);
                 }
             }
-            String previewDir = System.getProperty("cats.previewDir");
-            if (previewDir != null) {
-                Path file = Path.of(previewDir, template.replace('/', '-') + "-" + state + ".html");
-                Files.createDirectories(file.getParent());
-                Files.writeString(file, html, StandardCharsets.UTF_8);
-            }
+
         }
     }
 
@@ -303,6 +296,17 @@ class PageRenderingTests {
             model.addAttribute("selectedYear", 2026);
             model.addAttribute("attendanceReport", attendanceReport(user, state.equals("empty")));
             model.addAttribute("budgetReport", budgetReport(user, allowance, state.equals("empty")));
+            if (template.equals("claims/list") || template.equals("claims/detail")) {
+                CourseFeeClaim claim = new CourseFeeClaim(); claim.setId(1L); claim.setVersion(0L); claim.setApplication(course);
+                claim.setAmount(java.math.BigDecimal.valueOf(650)); claim.setStatus(ClaimStatus.PENDING); claim.setSubmittedAt(java.time.LocalDateTime.now());
+                ClaimAttachment receipt = new ClaimAttachment(); receipt.setId(1L); receipt.setOriginalFilename("receipt.pdf");
+                ClaimAttachment certificateAttachment = new ClaimAttachment(); certificateAttachment.setId(2L); certificateAttachment.setOriginalFilename("certificate.pdf");
+                claim.setReceipt(receipt); claim.setCertificate(certificateAttachment);
+                model.addAttribute("claims", state.equals("empty") ? List.of() : List.of(claim)); model.addAttribute("claim", claim);
+                model.addAttribute("pageTitle", "Team claims"); model.addAttribute("activeNavigation", "team-claims");
+                model.addAttribute("canSubmit", false); model.addAttribute("canReview", true); model.addAttribute("canPay", false);
+                model.addAttribute("history", List.of()); model.addAttribute("today", LocalDate.now());
+            }
             if (template.equals("claims/form")) {
                 model.addAttribute("claimForm", new com.group5.cats.dto.CourseFeeClaimForm());
                 model.addAttribute("resubmission", false);

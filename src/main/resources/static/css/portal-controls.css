@@ -1,26 +1,31 @@
 /* Shared controls for administrator, employee and manager portals. */
 :root {
-    --control-radius:6px;
-    --control-border:#bccbda;
-    --control-focus:#5b94bf;
+    --control-radius:10px;
+    --button-radius:999px;
+    --control-border:#edf1f5;
+    --control-focus:#83a9c8;
+    --primary-fill:#b8cbd6;
+    --primary-hover:#a8bfcd;
+    --primary-ink:#304858;
+    --primary-subtle:#e5edf1;
 }
 
 /* Consistent native controls, including macOS select rendering. */
-.page-main :is(input:not(:where([type=checkbox],[type=radio],[type=hidden])), select, textarea) {
+:is(.page-main,.login-form) :is(input:not(:where([type=checkbox],[type=radio],[type=hidden])), select, textarea) {
     width:100%;
     max-width:100%;
     min-width:0;
-    min-height:48px;
-    padding:12px 14px;
+    min-height:44px;
+    padding:10px 14px;
     border:1px solid var(--control-border);
     border-radius:var(--control-radius);
-    background-color:#fff;
+    background-color:#f6f9fc;
     color:var(--ink);
     font:inherit;
     line-height:1.45;
     transition:border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
-.page-main select {
+:is(.page-main,.login-form) select {
     appearance:none;
     -webkit-appearance:none;
     padding-right:44px;
@@ -30,51 +35,52 @@
     background-size:20px;
     cursor:pointer;
 }
-.page-main textarea { min-height:112px; resize:vertical; }
-.page-main input[type=checkbox] { width:18px; height:18px; margin:0; flex-shrink:0; cursor:pointer; }
-.page-main input[type=file] { padding:8px; }
-.page-main input[type=file]::file-selector-button {
+:is(.page-main,.login-form) textarea { min-height:112px; resize:vertical; }
+:is(.page-main,.login-form) input[type=checkbox] { width:18px; height:18px; margin:0; flex-shrink:0; cursor:pointer; }
+:is(.page-main,.login-form) input[type=file] { padding:8px; }
+:is(.page-main,.login-form) input[type=file]::file-selector-button {
     margin-right:12px;
     padding:8px 12px;
     border:1px solid var(--control-border);
-    border-radius:4px;
+    border-radius:var(--button-radius);
     background:#edf3f9;
     color:var(--blue);
     font:inherit;
     cursor:pointer;
 }
-.page-main :is(input,select,textarea):focus-visible {
-    outline:3px solid var(--control-focus);
-    outline-offset:2px;
-    border-color:var(--blue);
-    box-shadow:none;
+:is(.page-main,.login-form) :is(input,select,textarea):focus-visible {
+    outline:0;
+    border-color:#b5cbdd;
+    background-color:#fff;
+    box-shadow:0 0 0 3px #47789f12,0 0 18px #6bb8e818;
 }
-.page-main :is(input,textarea)[readonly] { background-color:#f1f4f8; color:#526279; }
-.page-main :is(input,select,textarea):disabled {
+:is(.page-main,.login-form) :is(input,textarea)[readonly] { background-color:#f1f4f8; color:#526279; }
+:is(.page-main,.login-form) :is(input,select,textarea):disabled {
     opacity:1;
     background-color:#edf1f5;
-    border-color:#cdd7e1;
+    border-color:#e7edf3;
     color:#637389;
     cursor:not-allowed;
 }
-.page-main select:disabled { background-image:none; }
+:is(.page-main,.login-form) select:disabled { background-image:none; }
 
-/* Each action shares dimensions and feedback; variants communicate its purpose. */
-.page-main :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)) {
-    --action-bg:var(--blue);
-    --action-ink:#fff;
-    --action-border:var(--blue);
-    --action-hover:#173d60;
+/* Pill actions retain the original pointer-following light. */
+:is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)) {
+    --action-bg:var(--primary-fill);
+    --action-ink:var(--primary-ink);
+    --action-hover:var(--primary-hover);
+    --action-light:#ffffff5a;
+    --action-shadow:#607d8d24;
     position:relative;
     display:inline-flex;
     align-items:center;
     justify-content:center;
     gap:8px;
-    min-height:46px;
+    min-height:42px;
     max-width:100%;
-    padding:11px 18px;
-    border:1px solid var(--action-border);
-    border-radius:var(--control-radius);
+    padding:10px 20px;
+    border:1px solid transparent;
+    border-radius:var(--button-radius);
     background:var(--action-bg);
     color:var(--action-ink);
     font:inherit;
@@ -83,59 +89,77 @@
     text-align:center;
     text-decoration:none;
     cursor:pointer;
-    transition:background-color 160ms ease,border-color 160ms ease,box-shadow 160ms ease,transform 160ms ease;
+    overflow:hidden;
+    box-shadow:0 3px 8px #607d8d18,inset 0 1px 0 #ffffff40;
+    transition:background 220ms ease,box-shadow 220ms ease,transform 220ms var(--ease);
 }
-.page-main :is(.secondary-button,.btn-outline-secondary,.btn-outline-primary,.btn-link) {
-    --action-bg:#fff;
-    --action-ink:var(--blue);
-    --action-border:var(--control-border);
-    --action-hover:#eaf1f8;
+:is(.page-main,.login-form,.app-header) :is(.secondary-button,.btn-outline-secondary,.btn-outline-primary,.btn-link) {
+    --action-bg:#f4f7fa;
+    --action-ink:#466782;
+    --action-hover:#eaf1f7;
+    --action-light:#8fc7ef42;
+    --action-shadow:#2c618019;
+    box-shadow:none;
 }
-.page-main :is(.danger-button,.btn-outline-danger,.btn-action-withdraw) {
-    --action-bg:#fff5f6;
-    --action-ink:var(--red);
-    --action-border:#d899a1;
-    --action-hover:#f9e5e8;
+:is(.page-main,.login-form,.app-header) :is(.danger-button,.btn-outline-danger,.btn-action-withdraw,.btn-danger) {
+    --action-bg:#fcf5f6;
+    --action-ink:#a34e5d;
+    --action-hover:#faecef;
+    --action-light:#efb1bc55;
+    --action-shadow:#a25b6820;
+    box-shadow:none;
 }
-.page-main :is(.success-button,.btn-success) {
-    --action-bg:var(--green);
-    --action-border:var(--green);
-    --action-hover:#1a6043;
+:is(.page-main,.login-form,.app-header) :is(.success-button,.btn-success) {
+    --action-bg:#eaf6f0;
+    --action-ink:#2c7653;
+    --action-hover:#deefe5;
+    --action-light:#96dbb655;
+    --action-shadow:#347c5920;
+    box-shadow:none;
 }
-.page-main :is(.btn-danger) {
-    --action-bg:var(--red);
-    --action-border:var(--red);
-    --action-hover:#852c36;
+:is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close))::after {
+    content:'';
+    position:absolute;
+    inset:0;
+    border-radius:inherit;
+    pointer-events:none;
+    opacity:0;
+    background:radial-gradient(140px circle at var(--light-x,50%) var(--light-y,50%),var(--action-light),transparent 75%);
+    transition:opacity 200ms ease;
 }
-.page-main :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close))::after { content:none; }
-.page-main :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)):focus-visible {
-    outline:3px solid var(--control-focus);
+:is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)):focus-visible {
+    outline:2px solid var(--control-focus);
     outline-offset:3px;
+    box-shadow:0 0 0 5px #47789f10;
 }
-.page-main :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)):active {
-    background:var(--action-hover);
-    color:var(--action-ink);
-    transform:translateY(0);
-    box-shadow:inset 0 1px 3px #25344920;
-}
-.page-main :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):is(:disabled,[aria-disabled="true"]) {
-    opacity:.6;
+
+:is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):is(:disabled,[aria-disabled="true"]) {
+    opacity:.45;
     cursor:not-allowed;
     transform:none;
     box-shadow:none;
 }
+:is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):is(:disabled,[aria-disabled="true"])::after { opacity:0; }
 @media(hover:hover) and (pointer:fine) {
-    .page-main :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)):not(:disabled):not([aria-disabled="true"]):hover {
+    :is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)):not(:disabled):not([aria-disabled="true"]):hover {
         background:var(--action-hover);
         color:var(--action-ink);
-        border-color:var(--action-border);
-        transform:translateY(-1px);
-        box-shadow:0 3px 10px #25344918;
+        border-color:transparent;
+        transform:translateY(-2px);
+        box-shadow:0 4px 14px var(--action-shadow),inset 0 1px 0 #ffffff30;
     }
-    .page-main :is(input,select,textarea):not(:disabled):not([readonly]):hover { border-color:#809ab3; }
+    :is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)):not(:disabled):not([aria-disabled="true"]):hover::after { opacity:1; }
+    :is(.page-main,.login-form) :is(input,select,textarea):not(:disabled):not([readonly]):hover { border-color:#e2eaf1; background-color:#f9fbfd; }
 }
 
-/* Record names remain readable links; standalone actions have button outlines. */
+:is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):not(:where(.btn-close)):not(:disabled):not([aria-disabled="true"]):active {
+    background:var(--action-hover);
+    color:var(--action-ink);
+    transform:translateY(0) scale(.98);
+    box-shadow:inset 0 1px 3px #25344918;
+}
+
+/* Record names remain readable links; standalone actions use softly tinted pills. */
 .page-main .record-link {
     color:var(--blue);
     text-decoration:underline;
@@ -144,26 +168,30 @@
     font-weight:500;
 }
 .page-main .record-link:hover { color:#173d60; text-decoration-thickness:2px; }
-.page-main .text-action-link { white-space:normal; text-shadow:none; }
-.page-main .text-action-link span { transform:none; }
+.page-main .text-action-link { white-space:normal; }
+.page-main .text-action-link:hover span { transform:translateX(3px); }
 .page-main .application-pagination :is(a,[aria-disabled="true"]) {
-    min-height:46px;
-    padding:11px 16px;
+    min-height:42px;
+    padding:10px 16px;
     border:1px solid var(--control-border);
-    border-radius:var(--control-radius);
+    border-radius:var(--button-radius);
 }
 .page-main .application-pagination [aria-disabled="true"] { color:var(--muted); cursor:not-allowed; }
 .page-main details > summary {
     width:fit-content;
     padding:10px 14px;
-    border:1px solid var(--control-border);
-    border-radius:var(--control-radius);
-    background:#fff;
+    border:1px solid transparent;
+    border-radius:var(--button-radius);
+    background:#f4f7fa;
     color:var(--blue);
     cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition:background 220ms ease,box-shadow 220ms ease;
 }
-.page-main .registration-reject > summary { color:var(--red); border-color:#d899a1; background:#fff5f6; }
-.page-main details > summary:hover { background:#eaf1f8; }
+.page-main .registration-reject > summary { color:var(--red); background:#fcf5f6; }
+.page-main details > summary:hover { background:#eaf1f8; box-shadow:0 4px 12px #2c618015; }
+.page-main details > summary:focus-visible { outline:2px solid var(--control-focus); outline-offset:3px; }
 
 /* Breathing room around form sections and multiple row actions. */
 .page-main .action-row,.page-main .form-actions { flex-wrap:wrap; gap:12px; }
@@ -188,6 +216,7 @@
 .page-main .hub-container .hub-header h1 { color:var(--ink); font-weight:500; }
 
 @media(max-width:760px) {
+    .page-main .action-row > :is(a,button) { flex:0 1 auto; }
     .page-main .form-grid { grid-template-columns:minmax(0,1fr); gap:22px; }
     .page-main .registration-review { grid-template-columns:minmax(0,1fr); }
     .page-main .registration-heading { flex-wrap:wrap; }
@@ -198,8 +227,9 @@
     .page-main .notification-filter .field { flex:1 1 180px; min-width:0; }
 }
 @media(prefers-reduced-motion:reduce) {
-    .page-main :is(button,.btn,a,input,select,textarea) { transition:none; }
-    .page-main :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):hover { transform:none; }
+    :is(.page-main,.login-form,.app-header) :is(button,.btn,a,input,select,textarea), .page-main details > summary { transition:none; }
+    :is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button):is(:hover,:active) { transform:none!important; }
+    :is(.page-main,.login-form,.app-header) :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button)::after { display:none; }
 }
 
 .page-main :is(button,.btn,.primary-button,.secondary-button,.danger-button,.success-button) > svg {
@@ -208,17 +238,15 @@
     flex-shrink:0;
 }
 .app-header .account a.secondary-button {
-    min-height:44px;
-    padding:10px 14px;
-    border:1px solid var(--control-border);
-    border-radius:var(--control-radius);
-    background:#fff;
-    color:var(--blue);
+    min-height:40px;
+    padding:9px 16px;
+    border:1px solid transparent;
+    border-radius:var(--button-radius);
+    background:var(--action-bg);
+    color:var(--action-ink);
     font-size:14px;
-    transition:background-color 160ms ease,box-shadow 160ms ease;
 }
-.app-header .account a.secondary-button:hover { background:#eaf1f8; border-color:var(--blue); color:var(--blue); }
-.app-header .account a.secondary-button:active { box-shadow:inset 0 1px 3px #25344920; }
+.app-header .account a.secondary-button:hover { background:var(--action-hover); border-color:transparent; color:var(--action-ink); }
 
 .page-main p:has(> :is(.primary-button,.secondary-button)) { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
 .page-main .section-heading { flex-wrap:wrap; gap:16px; }
@@ -229,3 +257,5 @@
 .page-main .form-actions { justify-content:flex-start; }
 .page-main .report-filter .form-actions { flex-basis:100%; margin-top:0; padding-top:0; border-top:0; }
 .page-main .date-cell { white-space:nowrap; }
+
+.page-main .application-pagination [aria-current="page"] { background:var(--primary-fill); color:var(--primary-ink); }

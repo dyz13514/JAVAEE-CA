@@ -1,0 +1,130 @@
+/* Shared flat records for employee, manager and administrator portals. */
+:root {
+    --data-divider:#395b7912;
+    --data-heading-divider:#395b791a;
+    --data-hover:#5b92ba0c;
+}
+.page-main :is(.table-scroll,.table-responsive,.calendar-scroll) {
+    max-width:100%;
+    overflow-x:auto;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+}
+.page-main table:not(.calendar-grid) {
+    width:100%;
+    min-width:0;
+    margin:0;
+    border:0;
+    border-collapse:collapse;
+    background:transparent;
+    font-size:14px;
+    line-height:1.55;
+    font-variant-numeric:tabular-nums;
+}
+/* Wider records scroll within their own region rather than squeezing the page. */
+.page-main table:not(.calendar-grid):has(> thead > tr > th:nth-child(3)) { min-width:520px; }
+.page-main table:not(.calendar-grid):has(> thead > tr > th:nth-child(5)) { min-width:720px; }
+.page-main table:not(.calendar-grid):has(> thead > tr > th:nth-child(6)) { min-width:860px; }
+.page-main table:not(.calendar-grid):has(> thead > tr > th:nth-child(7)) { min-width:960px; }
+.page-main table:not(.calendar-grid):has(> thead > tr > th:nth-child(8)) { min-width:1080px; }
+.page-main table:not(.calendar-grid) :is(th,td) {
+    padding:18px 16px;
+    vertical-align:middle;
+    background:transparent;
+    border:0;
+    border-bottom:1px solid var(--data-divider);
+    box-shadow:none;
+}
+.page-main table:not(.calendar-grid) :is(th,td):first-child { padding-left:20px; }
+.page-main table:not(.calendar-grid) :is(th,td):last-child { padding-right:20px; }
+.page-main table:not(.calendar-grid) thead th {
+    padding-top:15px;
+    padding-bottom:15px;
+    color:#687d91;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0;
+    text-transform:none;
+    border-bottom-color:var(--data-heading-divider);
+}
+.page-main table:not(.calendar-grid) tbody tr { transition:background-color 180ms ease; }
+.page-main table:not(.calendar-grid) tbody tr:is(:hover,:focus-within) { background:var(--data-hover); }
+.page-main table:not(.calendar-grid) tbody tr:last-child > td { border-bottom:0; }
+.page-main table:not(.calendar-grid) tfoot th {
+    background:transparent;
+    border-top:1px solid var(--data-heading-divider);
+    border-bottom:0;
+    font-size:13px;
+    font-weight:500;
+}
+.page-main table:not(.calendar-grid) .numeric { text-align:right; }
+.page-main table:not(.calendar-grid) .date-cell { white-space:nowrap; color:#52667a; font-size:13px; }
+.page-main table:not(.calendar-grid) .provider-cell { color:#65768a; }
+.page-main table:not(.calendar-grid) .record-link {
+    display:inline-block;
+    padding:5px 0;
+    color:#2d5c7e;
+    font-weight:500;
+    text-decoration:none;
+    transition:color 180ms ease,text-shadow 180ms ease;
+}
+.page-main table:not(.calendar-grid) .record-link:hover {
+    color:#244f72;
+    text-decoration:underline;
+    text-underline-offset:4px;
+    text-decoration-thickness:1px;
+    text-shadow:0 0 12px #6bb8e826;
+}
+/* One quiet status treatment is shared by tables and review lists. */
+.page-main .status {
+    padding:5px 10px;
+    border:0;
+    border-radius:999px;
+    background:#e8f0f980;
+    font-size:12px;
+    font-weight:500;
+    gap:7px;
+}
+.page-main .status::before { width:6px; height:6px; }
+.page-main :is(.status-APPROVED,.status-COMPLETED,.status-REIMBURSED,.delivery-SENT) { background:#e9f6ed80; }
+.page-main :is(.status-REJECTED,.delivery-FAILED) { background:#faeced80; }
+.page-main :is(.status-DELETED,.status-CANCELLED) { background:#eaf0f680; }
+.page-main :is(.status-UPDATED,.delivery-RETRY) { background:#fff3db80; }
+/* Reviews keep their forms, using the same flat spacing and faint separators. */
+.page-main :is(.approval-card.application-item,.registration-request),
+.page-main .hub-container .dispatch-row {
+    padding:24px 20px;
+    margin-bottom:0;
+    border:0;
+    border-bottom:1px solid var(--data-divider);
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    transition:background-color 180ms ease;
+}
+.page-main :is(.approval-card.application-item,.registration-request):last-child,
+.page-main .hub-container .dispatch-row:last-child { border-bottom:0; }
+.page-main :is(.approval-card.application-item,.registration-request):is(:hover,:focus-within),
+.page-main .hub-container .dispatch-row:is(:hover,:focus-within) { background:var(--data-hover); }
+.page-main table:not(.calendar-grid) .report-detail > td { padding:12px 20px 18px; background:transparent; }
+.page-main table:not(.calendar-grid) .report-detail table { margin:0; }
+/* The monthly calendar retains its date grid while matching the flat palette. */
+.page-main .calendar-grid { background:transparent; }
+.page-main .calendar-grid th { background:transparent; border-bottom-color:var(--data-heading-divider); }
+.page-main .calendar-grid td { background:transparent; border-color:var(--data-divider); }
+.page-main .calendar-grid .empty-day { background:#5b92ba05; }
+@media(max-width:760px) {
+    .page-main table:not(.calendar-grid) :is(th,td) { padding:16px 12px; }
+    .page-main table:not(.calendar-grid) :is(th,td):first-child { padding-left:16px; }
+    .page-main table:not(.calendar-grid) :is(th,td):last-child { padding-right:16px; }
+    .page-main :is(.approval-card.application-item,.registration-request),
+    .page-main .hub-container .dispatch-row { padding:22px 16px; }
+}
+@media(prefers-reduced-motion:reduce) {
+    .page-main table:not(.calendar-grid) tbody tr,
+    .page-main table:not(.calendar-grid) .record-link,
+    .page-main :is(.approval-card.application-item,.registration-request),
+    .page-main .hub-container .dispatch-row { transition:none; }
+}

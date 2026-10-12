@@ -16,12 +16,15 @@
 </div>
 </div>
 
-<nav class="section-tabs" aria-label="Report views">
-<a th:classappend="${activeReport == 'attendance' ? 'active' : ''}" th:attr="aria-current=${activeReport == 'attendance' ? 'page' : null}"
-   th:href="@{/manager/reports(report='attendance')}">Course attendance</a>
-<a th:classappend="${activeReport == 'budget' ? 'active' : ''}" th:attr="aria-current=${activeReport == 'budget' ? 'page' : null}"
-   th:href="@{/manager/reports(report='budget')}">Course fee claims</a>
-</nav>
+<nav th:replace="~{fragments/navigation :: team('reports')}"></nav>
+<form class="portal-context" method="get" th:action="@{/manager/reports}">
+    <input type="hidden" name="employeeId" th:if="${selectedEmployeeId != null}" th:value="${selectedEmployeeId}">
+    <input type="hidden" name="year" th:value="${selectedYear}">
+    <label for="report-type">Report type</label><select id="report-type" name="report">
+        <option value="attendance" th:selected="${activeReport == 'attendance'}">Course attendance</option>
+        <option value="budget" th:selected="${activeReport == 'budget'}">Course fee claims</option>
+    </select><button type="submit">View report</button>
+</form>
 
 <p class="notice error" role="alert" th:if="${errorMessage != null}" th:text="${errorMessage}"></p>
 

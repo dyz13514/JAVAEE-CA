@@ -73,14 +73,21 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         }
         Sort order = Sort.by("employee.name", "employee.id").and(Sort.by(Sort.Direction.DESC, "id"));
         PageRequest request = PageRequest.of(search.getPage() - 1, search.getSize(), order);
-        Page<CourseApplication> result = courseApplicationRepository.searchTeamApplications(
-                manager.getId(), search.getKeyword(), request);
+        Page<CourseApplication> result = searchTeamPage(manager, search, request);
         if (search.getPage() > Math.max(1, result.getTotalPages())) {
             search.setPage(Math.max(1, result.getTotalPages()));
             request = PageRequest.of(search.getPage() - 1, search.getSize(), order);
-            result = courseApplicationRepository.searchTeamApplications(manager.getId(), search.getKeyword(), request);
+            result = searchTeamPage(manager, search, request);
         }
         return result;
+    }
+
+    private Page<CourseApplication> searchTeamPage(Employee manager, ApplicationSearch search, PageRequest request) {
+        if ("all".equals(search.getReviewState())) {
+            return courseApplicationRepository.searchTeamApplications(manager.getId(), search.getKeyword(), request);
+        }
+        return courseApplicationRepository.searchTeamApplicationsByReviewState(
+                manager.getId(), search.getKeyword(), search.getReviewState(), request);
     }
 
     @Override
