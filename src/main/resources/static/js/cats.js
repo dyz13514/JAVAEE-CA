@@ -1,8 +1,6 @@
-// Keep pointer feedback local to controls; touch and reduced-motion users get a quiet UI.
 (() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        // Delegation also covers action links added after the page has loaded.
         document.addEventListener('pointermove', event => {
             if (reducedMotion.matches) return;
             const control = event.target.closest('button, .btn, .primary-button, .secondary-button, .danger-button, .success-button, .app-sidebar nav a, .management-link');
@@ -21,7 +19,6 @@
     });
 })();
 
-// Keep allowance/ledger switches on the employee and year selected in either form.
 (() => {
     const links = document.querySelectorAll('[data-finance-route]');
     if (!links.length) return;

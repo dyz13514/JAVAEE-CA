@@ -36,7 +36,6 @@ public class EntitlementDataLoader implements CommandLineRunner {
 					"entitlememt_test", "entitlememt_test_password", "entitlememt_test",
 					null, EmployeeDesignation.ADMINISTRATIVE, EmployeeRole.REGULAR_STAFF));
 		}
-		// 账号存在时，也补齐当年的额度；已有额度由 Service 保留。
 		entitlementService.createDefaultEntitlement(employee.getId(), LocalDate.now().getYear());
 	}
 

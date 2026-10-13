@@ -1,7 +1,5 @@
-/* Navigation hierarchy uses the existing campus palette and control styles. */
 .app-sidebar nav { gap:6px; }
 .app-sidebar nav a { gap:8px; padding:12px; border-radius:10px; font-size:14px; line-height:1.4; }
-/* The selected background replaces glowing dots, including on child links. */
 .app-sidebar nav a::before { content:none; }
 .app-sidebar nav a.active { color:var(--primary-ink); background:var(--primary-fill); }
 .app-sidebar nav a.active .ui-icon { color:var(--primary-ink); }

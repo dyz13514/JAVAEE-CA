@@ -54,7 +54,6 @@ public class TrainingCalendarServiceImpl
 
         Employee employee = employeeRepository.findById(employeeId).orElse(null);
 
-        // Use the same message for a missing employee and an inaccessible one.
         if (employee == null) {
             throw new SecurityException("You are not allowed to view this calendar.");
         }
@@ -83,7 +82,6 @@ public class TrainingCalendarServiceImpl
             Integer year,
             Integer month) {
 
-        // Check access here too, before querying any course information.
         Employee employee = findCalendarEmployee(currentUser, employeeId);
 
         if (year == null || year < 1 || year > 9999) {

@@ -2,14 +2,6 @@ package com.group5.cats.dto;
 
 import java.util.List;
 
-/**
- * Annual course fee claim position for one employee.
- *
- * <p>The budget figures come from the same entitlement calculation used by the
- * annual entitlement page and API, so the numbers agree everywhere. When an
- * employee has no entitlement row for the year the budget fields are zero and
- * {@link #isHasEntitlement()} is false instead of failing.
- */
 public class BudgetReportRow {
 
     private Long employeeId;

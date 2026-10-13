@@ -27,11 +27,6 @@ import com.group5.cats.service.ManagerReportService;
 
 import jakarta.servlet.http.HttpSession;
 
-/**
- * Manager reporting on the manager's own direct reports, with a CSV export per
- * report. Access follows the existing session-based manager pages; the export
- * endpoints answer with status codes instead of redirects.
- */
 @Controller
 public class ManagerReportController {
 
@@ -97,7 +92,6 @@ public class ManagerReportController {
                             manager, employeeId, reportFrom, reportTo, selectedCategory);
                 }
             } catch (SecurityException exception) {
-                // Hide the unauthorised selection instead of echoing it back.
                 errorMessage = exception.getMessage();
                 selectedEmployeeId = null;
             } catch (IllegalArgumentException exception) {
@@ -190,11 +184,6 @@ public class ManagerReportController {
         return csvResponse("cats-budget-report-" + reportingYear + ".csv", ManagerReportCsv.budgetReport(report));
     }
 
-    /**
-     * Reports cover the direct reports only, so a manager may not read another
-     * manager's team. The export endpoints use status codes: 401 when nobody is
-     * signed in and 403 for a signed-in non-manager.
-     */
     private ResponseEntity<byte[]> deny(Employee manager) {
         if (manager == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

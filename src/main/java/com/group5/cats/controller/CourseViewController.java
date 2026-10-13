@@ -71,7 +71,6 @@ public class CourseViewController {
             response.setStatus(403);
             model.addAttribute("errorMessage", exception.getMessage());
         }
-        // The old personal course-view URL uses the same application list, with all years retained.
         return Boolean.TRUE.equals(model.getAttribute("ownCourses")) ? "my-history" : "course-view";
     }
 }

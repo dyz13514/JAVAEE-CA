@@ -1,4 +1,3 @@
-# Credentials are prompted locally and are never written to a configuration file.
 $ErrorActionPreference = 'Stop'
 $senderAddress = Read-Host 'Gmail sender address (example@gmail.com)'
 if ($senderAddress -notmatch '^[^\s@]+@[^\s@]+\.[^\s@]+$') {

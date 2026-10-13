@@ -23,7 +23,6 @@ public class DataLoader implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // 按用户名补齐测试账号，已有账号的资料和密码保持不变。
         Employee manager = findOrCreateEmployee("manager1", "manager123", "Alice Wong",
                 null, EmployeeDesignation.PROFESSIONAL, EmployeeRole.MANAGER);
         findOrCreateEmployee("admin", "admin123", "System Admin",

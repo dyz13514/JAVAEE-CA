@@ -32,10 +32,7 @@ public interface EntitlementService{
 	Optional<EntitlementSummary> getEntitlementSummary(
 			Long employeeId, Integer entitlementYear);
 
-	/**
-	 * Applications that occupy the employee's entitlement for the year, using the
-	 * same status and category rules as the summary figures.
-	 */
+
 	List<CourseApplication> findOccupyingApplications(
 			Long employeeId, Integer entitlementYear);
 

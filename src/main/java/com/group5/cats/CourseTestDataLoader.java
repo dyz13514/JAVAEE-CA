@@ -34,7 +34,6 @@ public class CourseTestDataLoader implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        // 按课程名称、类别和培训机构补齐测试课程，已有课程保持不变。
         TrainingProvider iss = findOrCreateProvider("ISS");
         TrainingProvider aws = findOrCreateProvider("AWS");
         TrainingProvider academy = findOrCreateProvider("Demo Skills Academy");

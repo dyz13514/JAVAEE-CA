@@ -63,7 +63,6 @@ public class AdminCommonCourseController {
         return "redirect:/admin/common-courses";
     }
 
-    // Old bookmarks lead to the membership page; course editing is no longer available.
     @GetMapping({"/admin/common-courses/new", "/admin/common-courses/{id}/edit"})
     public String oldCourseForm(HttpSession session) {
         if (!isLoggedInAdmin(session)) return "redirect:/admin/login";

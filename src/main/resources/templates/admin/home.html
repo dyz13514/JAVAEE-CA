@@ -5,14 +5,12 @@
     <title>Administration - CATS</title>
     <th:block th:replace="~{fragments/layout :: assets}"></th:block>
     <style>
-        /* ================= ADMIN MINIMAL ACTION HUB ================= */
         .hub-container {
             max-width: 980px;
             margin: 0 auto;
             padding: 1rem 0 2rem;
         }
 
-        /* 1. Page Header */
         .hub-header {
             margin-bottom: 2.25rem;
             padding-bottom: 1.5rem;
@@ -32,7 +30,6 @@
             margin: 0;
         }
 
-        /* 2. Priority Action Focus (Pending Registrations) */
         .priority-focus-panel {
             display: flex;
             align-items: center;
@@ -84,7 +81,6 @@
             max-width: 600px;
         }
 
-        /* 3. Action-Driven Quick Dispatch */
         .dispatch-section-title {
             font-size: 0.775rem;
             font-weight: 700;
@@ -157,17 +153,14 @@
 <th:block th:replace="~{fragments/layout :: shell('home')}"></th:block>
 <main class="page-main">
     <div class="hub-container">
-        <!-- Global Feedback Notices -->
         <div th:if="${successMessage}" class="notice" role="status" th:text="${successMessage}"></div>
         <div th:if="${errorMessage}" class="notice error" role="alert" th:text="${errorMessage}"></div>
 
-        <!-- Page Header -->
         <div class="hub-header">
             <h1>System Administration</h1>
             <p>Action hub for onboarding verification, staff accounts, and annual training allowances.</p>
         </div>
 
-        <!-- Priority Focus: Staff Registration Review -->
         <section aria-labelledby="registration-focus" class="priority-focus-panel">
             <div class="priority-content">
                 <div class="priority-badge-row">
@@ -183,12 +176,10 @@
             </div>
         </section>
 
-        <!-- Quick Operational Actions -->
         <section aria-labelledby="dispatch-title">
             <h2 id="dispatch-title" class="dispatch-section-title">Direct Administrative Operations</h2>
 
             <div class="dispatch-stream">
-                <!-- Provision Staff Account -->
                 <div class="dispatch-row">
                     <div class="dispatch-info">
                         <div class="dispatch-icon">
@@ -206,7 +197,6 @@
                     </div>
                 </div>
 
-                <!-- Annual Entitlement Maintenance -->
                 <div class="dispatch-row">
                     <div class="dispatch-info">
                         <div class="dispatch-icon">
@@ -224,7 +214,6 @@
                     </div>
                 </div>
 
-                <!-- Public Holiday Calendar -->
                 <div class="dispatch-row">
                     <div class="dispatch-info">
                         <div class="dispatch-icon">

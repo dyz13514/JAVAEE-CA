@@ -17,7 +17,6 @@
 
         <nav th:replace="~{fragments/navigation :: finance('allowance')}"></nav>
         <div class="filter-panel">
-          <!-- 顶部搜索工具栏：具有清晰实体感 -->
           <div class="row g-3 align-items-end mb-3 pb-3 border-bottom">
             <div class="col-md-5">
               <form th:action="@{/entitlements/search}" method="get" class="d-flex gap-2">
@@ -65,7 +64,6 @@
             </div>
           </div>
 
-          <!-- 下方选择人员与年份主表单 -->
           <form id="entitlementQueryForm" th:action="@{/entitlements}" method="get" class="row g-3 align-items-end">
             <div class="col-md-5">
               <label class="form-label fw-semibold small">Select Employee <span class="text-danger">*</span></label>
@@ -97,7 +95,6 @@
           <div id="queryMessage" role="status" aria-live="polite" class="mt-3 text-danger small fw-semibold" th:text="${message}"></div>
         </div>
 
-        <!-- 额度结果显示面板 -->
         <div id="entitlementResult" th:style="${entitlement == null ? 'display:none;' : ''}">
           <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 mb-3 shadow-sm">
             <div>
@@ -154,7 +151,6 @@
           </div>
         </div>
 
-        <!-- 管理员可编辑区域 -->
         <div th:if="${canEdit}" class="admin-zone">
           <div class="d-flex align-items-center gap-2 mb-3">
             <h5 class="fw-bold text-dark mb-0">Manage allowance</h5>
@@ -202,7 +198,6 @@
         <div th:if="${saveMessage != null}" class="alert alert-info mt-3" th:text="${saveMessage}"></div>
       </div>
 
-      <!-- 异步查询脚本保持完整不变 -->
       <script>
         const queryForm = document.getElementById("entitlementQueryForm");
         const queryMessage = document.getElementById("queryMessage");

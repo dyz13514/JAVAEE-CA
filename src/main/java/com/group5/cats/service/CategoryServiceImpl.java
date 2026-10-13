@@ -115,13 +115,11 @@ public class CategoryServiceImpl implements CategoryService {
 
         boolean defaultCategory = isDefaultCategory(category);
 
-        // 原本三种类别不能修改名称。
         if (defaultCategory
                 && !category.getName().equals(categoryName)) {
             return "The original three category names cannot be changed.";
         }
 
-        // 原本三种类别不能修改是否允许半天。
         if (defaultCategory
                 && category.isHalfDayAllowed() != halfDayAllowed) {
             return "The half-day setting of the original three categories cannot be changed.";

@@ -3,9 +3,6 @@ package com.group5.cats.dto;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Attendance report plus the summary figures shown above the table.
- */
 public class AttendanceReport {
 
     private LocalDate fromDate;
@@ -57,7 +54,6 @@ public class AttendanceReport {
         return total;
     }
 
-    /** Every course fee in the report, including internal training (always zero). */
     public double getTotalFee() {
         double total = 0.0;
         for (AttendanceReportRow row : rows) {
@@ -66,7 +62,6 @@ public class AttendanceReport {
         return total;
     }
 
-    /** Only external courses and certifications, matching the entitlement budget rule. */
     public double getBudgetRelevantFee() {
         double total = 0.0;
         for (AttendanceReportRow row : rows) {

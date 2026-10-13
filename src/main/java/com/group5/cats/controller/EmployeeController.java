@@ -238,8 +238,6 @@ public class EmployeeController {
         if (viewer == null) return "redirect:/employee/login";
         Employee applicant = result.get().getEmployee();
         boolean isOwner = viewer.getId().equals(applicant.getId());
-        // The assigned manager may also open a subordinate's application to
-        // review the complete details before deciding (spec, page 7).
         boolean isSupervisor = viewer.getRole() == EmployeeRole.MANAGER
                 && applicant.getSupervisor() != null
                 && viewer.getId().equals(applicant.getSupervisor().getId());

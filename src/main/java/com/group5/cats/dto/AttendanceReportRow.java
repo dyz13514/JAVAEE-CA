@@ -2,7 +2,6 @@ package com.group5.cats.dto;
 
 import java.time.LocalDate;
 
-/** One confirmed course attendance line in the manager attendance report. */
 public class AttendanceReportRow {
 
     private String employeeName;

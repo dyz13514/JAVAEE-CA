@@ -77,7 +77,6 @@ public class CourseBrowseController {
         return "course-detail";
     }
 
-    // The separate course/schedule management pages have been replaced by the catalogue.
     @GetMapping("/admin/courses")
     public String oldCoursePage(HttpSession session, HttpServletResponse response) {
         Employee employee = (Employee) session.getAttribute("loggedInUser");

@@ -6,11 +6,6 @@ import com.group5.cats.dto.BudgetReport;
 import com.group5.cats.dto.BudgetReportRow;
 import com.group5.cats.dto.CourseFeeDetail;
 
-/**
- * Renders the manager reports as CSV. The exported records are exactly the rows
- * of the report the manager is looking at, so both use the same filters and the
- * same attendance and entitlement rules.
- */
 public final class ManagerReportCsv {
 
     private static final String[] ATTENDANCE_HEADERS = {
@@ -43,11 +38,6 @@ public final class ManagerReportCsv {
         return csv.toString();
     }
 
-    /**
-     * One row per contributing course fee claim. An employee with no claims still
-     * gets a row so the annual budget position is visible; an employee without an
-     * entitlement row exports blank budget columns.
-     */
     public static String budgetReport(BudgetReport report) {
         StringBuilder csv = new StringBuilder(CsvSupport.UTF8_BOM);
         csv.append(CsvSupport.row(BUDGET_HEADERS));

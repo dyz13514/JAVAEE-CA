@@ -1,6 +1,5 @@
 package com.group5.cats.dto;
 
-/** Search and paging values submitted by the application list forms. */
 public class ApplicationSearch {
     private String keyword = "";
     private String reviewState = "all";

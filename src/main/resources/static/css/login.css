@@ -1,4 +1,3 @@
-/* Shared sign-in and registration layout; other portal pages are unaffected. */
 .login-page {
     background:radial-gradient(ellipse at 100% 0%,#e4effa 0,transparent 42%),var(--canvas);
 }

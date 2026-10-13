@@ -2,9 +2,6 @@ package com.group5.cats.dto;
 
 import java.time.LocalDate;
 
-/**
- * A single course application that contributes to an employee's annual budget claim.
- */
 public class CourseFeeDetail {
 
     private String courseTitle;

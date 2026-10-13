@@ -8,7 +8,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-/** A catalogue entry refers to the same course used by applications. */
 @Entity
 @Table(name = "common_courses")
 public class CommonCourse {

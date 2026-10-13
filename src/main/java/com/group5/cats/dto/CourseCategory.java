@@ -1,9 +1,5 @@
 package com.group5.cats.dto;
 
-/**
- * Names of the three original categories and the manager report's ALL option.
- * The Category table supplies the selectable categories.
- */
 public final class CourseCategory {
 
     public static final String ALL = "ALL";

@@ -25,7 +25,6 @@ public interface CourseApplicationRepository
 
     List<CourseApplication> findByEmployeeIn(List<Employee> employees);
 
-    // LOCATE treats % and _ as ordinary search characters, not SQL wildcards.
     @Query("SELECT a FROM CourseApplication a WHERE a.employee.id = :employeeId "
             + "AND (:currentYear = false OR (a.fromDate >= :yearStart AND a.fromDate < :nextYear)) "
             + "AND (:keyword = '' OR LOCATE(LOWER(:keyword), LOWER(a.courseTitle)) > 0 "

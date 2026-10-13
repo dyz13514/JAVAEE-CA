@@ -55,7 +55,6 @@ public class TrainingCalendarController {
         }
         addNavigationDetails(loggedInUser, model);
 
-        // Opening the calendar without an employee ID always shows your own.
         Long selectedEmployeeId = employeeId;
         if (selectedEmployeeId == null) {
             selectedEmployeeId = loggedInUser.getId();
@@ -183,7 +182,6 @@ public class TrainingCalendarController {
             return null;
         }
 
-        // Read the current role from the database in case an admin changed it.
         return employeeRepository.findById(sessionEmployee.getId()).orElse(null);
     }
 
@@ -213,8 +211,6 @@ public class TrainingCalendarController {
         int firstWeekday = monthStart.getDayOfWeek().getValue();
         int daysInMonth = monthStart.lengthOfMonth();
 
-        // Monday is 1 and Sunday is 7.
-        // Fill the empty cells before the first day of the month.
         for (int weekday = 1; weekday < firstWeekday; weekday++) {
             week.add(null);
         }
@@ -228,7 +224,6 @@ public class TrainingCalendarController {
             }
         }
 
-        // Fill the empty cells after the last day of the month.
         if (!week.isEmpty()) {
             while (week.size() < 7) {
                 week.add(null);

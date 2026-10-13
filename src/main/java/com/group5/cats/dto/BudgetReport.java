@@ -2,7 +2,6 @@ package com.group5.cats.dto;
 
 import java.util.List;
 
-/** Course fee claim and budget utilisation report for a reporting year. */
 public class BudgetReport {
 
     private Integer year;
@@ -28,7 +27,6 @@ public class BudgetReport {
         return rows.size();
     }
 
-    /** Employees with an entitlement row for the year; the rest cannot report a budget. */
     public int getConfiguredCount() {
         int configured = 0;
         for (BudgetReportRow row : rows) {
@@ -49,7 +47,6 @@ public class BudgetReport {
         return total;
     }
 
-    /** Course fee claims committed or approved in the year, using the entitlement rule. */
     public double getTotalClaimedFees() {
         double total = 0.0;
         for (BudgetReportRow row : rows) {

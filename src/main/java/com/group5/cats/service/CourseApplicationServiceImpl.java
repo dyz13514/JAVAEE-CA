@@ -27,7 +27,6 @@ import com.group5.cats.model.AnnualEntitlement;
 
 @Service
 public class CourseApplicationServiceImpl implements CourseApplicationService {
-    // String columns currently use the JPA default maximum length.
     private static final int TEXT_LIMIT = 255;
     private final CourseApplicationRepository courseApplicationRepository;
     private final EmployeeRepository employeeRepository;
@@ -56,7 +55,6 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         PageRequest request = PageRequest.of(search.getPage() - 1, search.getSize(), order);
         Page<CourseApplication> result = courseApplicationRepository.searchEmployeeApplications(
                 employee.getId(), currentYear, yearStart, yearStart.plusYears(1), search.getKeyword(), request);
-        // A bookmarked page may no longer exist after records or filters change.
         if (search.getPage() > Math.max(1, result.getTotalPages())) {
             search.setPage(Math.max(1, result.getTotalPages()));
             request = PageRequest.of(search.getPage() - 1, search.getSize(), order);
@@ -96,7 +94,6 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         if (application.getId() != null) {
             return "New applications must not contain an existing application ID.";
         }
-        // Session objects may predate changes to the employee or supervisor email address.
         application.setEmployee(employeeRepository.findById(employee.getId()).orElse(employee));
         if (application.getEmployee().getRole() == EmployeeRole.ADMIN) {
             return "Administrators manage courses and cannot submit course applications.";

@@ -3,7 +3,6 @@ package com.group5.cats.dto;
 import org.springframework.data.domain.Page;
 import com.group5.cats.model.CourseApplication;
 
-/** Converts Spring's zero-based page numbers into labels for the screen. */
 public class ApplicationPagination {
     private final Page<CourseApplication> result;
 

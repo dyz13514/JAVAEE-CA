@@ -9,7 +9,6 @@
         <link rel="stylesheet" th:href="@{/css/portal-navigation.css(v='morandi-2')}" href="/css/portal-navigation.css?v=morandi-2">
         <script defer th:src="@{/js/cats.js(v='navigation-1')}" src="/js/cats.js?v=navigation-1"></script>
 
-        <!-- Global Header Account Styling (全站所有角色、所有页面通用生效) -->
         <style>
             .app-header .account {
                 display: inline-flex;
@@ -17,7 +16,6 @@
                 gap: 0.75rem;
             }
 
-            /* 1. 身份状态徽章：带在线绿点的精致圆角胶囊 */
             .app-header .account span {
                 display: inline-flex;
                 align-items: center;
@@ -41,7 +39,6 @@
                 box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
             }
 
-            /* 2. 登出操作：显式幽灵按钮，悬停微红提示 */
             .app-header .account a {
                 display: inline-flex;
                 align-items: center;

@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-/** New credentials use BCrypt; existing accounts keep working without a data rewrite. */
 public final class PasswordSupport {
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
     private static final String PREFIX = "{bcrypt}";

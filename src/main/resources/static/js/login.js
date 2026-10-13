@@ -29,7 +29,6 @@
             else indicator.style.transform = `translateX(${x}px)`;
             return;
         }
-        // Change width once, compensate with scale, then animate only transforms.
         gsap.set(indicator, { scaleX: previousWidth / width });
         roleAnimation = gsap.timeline()
             .to(indicator, { x, scaleX: 1.04, duration: .2, ease: 'power3.out' })

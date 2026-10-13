@@ -106,7 +106,6 @@ public class ClaimAttachmentServiceImpl implements ClaimAttachmentService {
             Files.createDirectories(uploadDirectory);
             Files.createFile(storedPath);
 
-            // A failed claim transaction must not leave its new files behind.
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCompletion(int status) {

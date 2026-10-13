@@ -43,7 +43,6 @@ public class NotificationDispatcher {
             repository.finish(id, DeliveryStatus.PROCESSING, lease, DeliveryStatus.SENT,
                     attempts, null, null, LocalDateTime.now());
         } catch (RuntimeException exception) {
-            // Store a generic error: SMTP exception messages may contain credentials or server data.
             DeliveryStatus status = attempts >= maxAttempts ? DeliveryStatus.FAILED : DeliveryStatus.PENDING;
             LocalDateTime next = status == DeliveryStatus.FAILED ? null : LocalDateTime.now().plusSeconds(60L * attempts);
             repository.finish(id, DeliveryStatus.PROCESSING, lease, status, attempts, next,

@@ -4,11 +4,6 @@ import java.util.List;
 
 import com.group5.cats.model.CourseApplication;
 
-/**
- * Decision-support figures shown next to a pending application on the
- * manager approvals page: the applicant's allowance usage this year and
- * other subordinates' approved courses during the same course period.
- */
 public class ManagerDecisionAid {
 
     private final boolean entitlementPresent;

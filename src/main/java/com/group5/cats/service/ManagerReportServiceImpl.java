@@ -24,11 +24,6 @@ import com.group5.cats.repository.CategoryRepository;
 @Service
 public class ManagerReportServiceImpl implements ManagerReportService {
 
-    /**
-     * A course only counts as confirmed attendance once a manager has approved it.
-     * Pending, rejected, withdrawn and cancelled applications are excluded, and a
-     * completed course keeps counting because the training took place.
-     */
     private static final List<String> CONFIRMED_ATTENDANCE_STATUSES =
             List.of("APPROVED", "COMPLETED");
 
@@ -127,10 +122,6 @@ public class ManagerReportServiceImpl implements ManagerReportService {
         return report;
     }
 
-    /**
-     * Reporting always runs over the direct reports. Selecting the manager's own
-     * account or anybody else's employee is rejected instead of being ignored.
-     */
     private List<Employee> resolveEmployees(Employee manager, Long employeeId) {
 
         List<Employee> reports = findReportableEmployees(manager);
@@ -149,11 +140,6 @@ public class ManagerReportServiceImpl implements ManagerReportService {
         throw new SecurityException("You are not allowed to report on this employee.");
     }
 
-    /**
-     * The reporting period is inclusive and a course is included when its training
-     * period overlaps it, so a course that starts before the period or ends after
-     * it still appears on every selected period it touches.
-     */
     private boolean countsAsConfirmedAttendance(
             CourseApplication application,
             LocalDate fromDate,
@@ -169,7 +155,6 @@ public class ManagerReportServiceImpl implements ManagerReportService {
         if (application.getFromDate().isAfter(toDate) || application.getToDate().isBefore(fromDate)) {
             return false;
         }
-        // Filter by the current category selection while displaying the historical name.
         String currentCategory = application.getCategory() == null
                 ? application.getCategoryName() : application.getCategory().getName();
         return CourseCategory.ALL.equals(category) || category.equals(currentCategory);
@@ -198,11 +183,6 @@ public class ManagerReportServiceImpl implements ManagerReportService {
         return row;
     }
 
-    /**
-     * Budget totals are taken from {@link EntitlementService} so the report cannot
-     * drift from the entitlement page. An employee without an entitlement row for
-     * the year is reported as not configured instead of failing.
-     */
     private BudgetReportRow toBudgetRow(Employee employee, Integer year) {
 
         BudgetReportRow row = new BudgetReportRow();

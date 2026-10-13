@@ -51,7 +51,6 @@ public class CourseApplication {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    // 接收表单中的类别 ID，由 Service 查询对应类别。
     @Transient
     private Long categoryId;
 
@@ -59,7 +58,6 @@ public class CourseApplication {
     @JoinColumn(name = "provider_id", nullable = false)
     private TrainingProvider provider;
 
-    // 接收表单中的机构 ID，由 Service 查询对应机构。
     @Transient
     private Long providerId;
 

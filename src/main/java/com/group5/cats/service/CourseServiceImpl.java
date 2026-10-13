@@ -135,7 +135,6 @@ public class CourseServiceImpl implements CourseService {
         if (course == null) {
             return "Course not found.";
         }
-        // 任何申请引用都保留课程，避免破坏历史记录。
         if (applicationRepository.existsByCourse_Id(id)) {
             return "This course is used by applications and cannot be deleted.";
         }

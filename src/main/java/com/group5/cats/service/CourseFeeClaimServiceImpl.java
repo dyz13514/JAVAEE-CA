@@ -212,7 +212,6 @@ public class CourseFeeClaimServiceImpl implements CourseFeeClaimService {
             return "Certificate of completion: " + error;
         }
 
-        // Validate all business rules before writing either attachment.
         if (receipt != null && !receipt.isEmpty()) {
             claim.setReceipt(attachmentService.store(receipt));
         }
@@ -376,7 +375,6 @@ public class CourseFeeClaimServiceImpl implements CourseFeeClaimService {
                 ledger.setReimbursedAmount(ledger.getReimbursedAmount().add(claim.getAmount()));
             }
         }
-        // Reimbursement records settle existing course fees; they do not reserve budget again.
         return ledger;
     }
 

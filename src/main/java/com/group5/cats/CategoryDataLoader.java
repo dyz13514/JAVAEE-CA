@@ -20,7 +20,6 @@ public class CategoryDataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 按类别名称补齐默认类别，已有类别的设置保持不变。
         if (categoryRepository.findByNameIgnoreCase("INTERNAL").isEmpty()) {
             categoryRepository.save(new Category(
                     "INTERNAL",
